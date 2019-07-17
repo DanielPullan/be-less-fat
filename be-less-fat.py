@@ -7,6 +7,9 @@
 
 import sys
 
+## Added help function just in case
+## How long has emoji support existed?
+
 if sys.argv[1] == "help":
 	print("the order is height, weight, calories, age")
 	raise SystemExit
@@ -19,6 +22,9 @@ else:
 	daily_calorie_intake = int(sys.argv[3])
 	age = int(sys.argv[4])	
 
+## Calculate BMI. bmi = weight/height²
+## Calculate minimum height weight for height (does age come into account?)
+
 def bmiCalc(weight, height, daily_calorie_intake, age):
 	weight = weight
 	height = height
@@ -28,6 +34,7 @@ def bmiCalc(weight, height, daily_calorie_intake, age):
 
 bmi = bmiCalc(weight, height, daily_calorie_intake, age)
 
+## I think the safe bmi values vary by age so need to take that into account
 
 if bmi < 18.5:
 	print("You are very underweight")
