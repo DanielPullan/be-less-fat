@@ -20,7 +20,7 @@ else:
 	height = float(sys.argv[1])
 	weight = int(sys.argv[2])
 	try:
-		daily_calorie_intake = sys.argv[3]
+		daily_calorie_intake = int(sys.argv[3])
 	except IndexError:
 		daily_calorie_intake = 0
 	try:
@@ -36,15 +36,13 @@ else:
 ## For now, if age < 18, just end.
 
 def bmiCalc(weight, height, daily_calorie_intake, age):
-	weight = weight
-	height = height
-	daily_calorie_intake = daily_calorie_intake
 	bmi = weight / (height**2)
 	return bmi
 
 bmi = bmiCalc(weight, height, daily_calorie_intake, age)
 
 ## I think the safe bmi values vary by age so need to take that into account
+
 if age > 18:
 	if bmi < 18.5:
 		print("You are very underweight")
@@ -58,3 +56,11 @@ if age > 18:
 		print("Error")
 else:
 	print("As you are under 18, Be Less Fat currently won't work for you.")
+
+## TODO: Create charts and stuff here.
+## Maybe xkcd plot whilst in development?
+
+## TODO: Child BMI measurements
+
+## TODO: Write a config file with data, then website creates self using data?
+## Would like to use flask or web.py though
