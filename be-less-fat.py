@@ -26,7 +26,7 @@ else:
 	try:
 		age = int(sys.argv[4])
 	except IndexError:
-		age = 0
+		age = "👀"
 
 ## Calculate BMI. bmi = weight/height²
 ## Calculate minimum height weight for height
@@ -43,7 +43,7 @@ bmi = bmiCalc(weight, height, daily_calorie_intake, age)
 
 ## I think the safe bmi values vary by age so need to take that into account
 
-if age > 18:
+if age == "👀" or age >= 18:
 	if bmi < 18.5:
 		print("You are very underweight")
 	elif bmi > 18.5 and bmi < 25:
@@ -54,8 +54,10 @@ if age > 18:
 		print("You are very overweight.")
 	else: 
 		print("Error")
-else:
+elif age < 18:
 	print("As you are under 18, Be Less Fat currently won't work for you.")
+else:
+	print("issue")
 
 ## TODO: Create charts and stuff here.
 ## Maybe xkcd plot whilst in development?
