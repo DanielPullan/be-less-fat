@@ -19,8 +19,16 @@ elif sys.argv[1] == "🤘":
 else:
 	height = float(sys.argv[1])
 	weight = int(sys.argv[2])
-	daily_calorie_intake = int(sys.argv[3])
-	age = int(sys.argv[4])	
+	try:
+		daily_calorie_intake = sys.argv[3]
+		print(daily_calorie_intake)
+	except IndexError:
+		daily_calorie_intake = 0
+	try:
+		age = sys.argv[4]
+		print(age)
+	except IndexError:
+		age = 0
 
 ## Calculate BMI. bmi = weight/height²
 ## Calculate minimum height weight for height (does age come into account?)
