@@ -28,6 +28,19 @@ li {
 	color: #fff;
 	line-height: 2.5;
 }
+.result {
+	font-size: 1.5rem;
+	color: #5492e2;
+}
+.warning {
+	border: 1px solid red;
+	padding: 8px;
+}
+.sidebar {
+	border: 1px solid #5492e2;
+	padding: 8px;
+	margin-bottom: 15px;
+}
 .information {
 	text-align: center;
 }
