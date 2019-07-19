@@ -10,6 +10,10 @@ import sys
 ## Added help function just in case
 ## How long has emoji support existed?
 
+## Example usage - python3 be-less-fat.py 90 1.8 1500 30
+## For help - python3 be-less-fat.py help
+## For Metallica - python3 be-less-fat.py 🤘
+
 if sys.argv[1] == "help":
 	print("the order is height, weight, calories, age")
 	raise SystemExit
@@ -57,6 +61,7 @@ if age == "👀" or age >= 18:
 	else: 
 		bmi_response = ("Error")
 elif age < 18:
+	bmi = ("Unknown")
 	bmi_response = ("As you are under 18, Be Less Fat currently won't work for you.")
 else:
 	bmi_response = ("issue")
