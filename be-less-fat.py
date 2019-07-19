@@ -39,25 +39,30 @@ def bmiCalc(weight, height, daily_calorie_intake, age):
 	bmi = weight / (height**2)
 	return bmi
 
-bmi = bmiCalc(weight, height, daily_calorie_intake, age)
+bmi = int(bmiCalc(weight, height, daily_calorie_intake, age))
+
+bmi_response = 0
 
 ## I think the safe bmi values vary by age so need to take that into account
 
 if age == "👀" or age >= 18:
 	if bmi < 18.5:
-		print("You are very underweight")
+		bmi_response = ("You are very underweight")
 	elif bmi > 18.5 and bmi < 25:
-		print("You are a normal weight")
+		bmi_response = ("You are a normal weight")
 	elif bmi > 25 and bmi < 35:
-		print("You are overweight")
+		bmi_response = ("You are overweight")
 	elif bmi > 35:
-		print("You are very overweight.")
+		bmi_response = ("You are very overweight.")
 	else: 
-		print("Error")
+		bmi_response = ("Error")
 elif age < 18:
-	print("As you are under 18, Be Less Fat currently won't work for you.")
+	bmi_response = ("As you are under 18, Be Less Fat currently won't work for you.")
 else:
-	print("issue")
+	bmi_response = ("issue")
+
+
+print(bmi_response)
 
 ## TODO: Create charts and stuff here.
 ## Maybe xkcd plot whilst in development?
@@ -66,3 +71,27 @@ else:
 
 ## TODO: Write a config file with data, then website creates self using data?
 ## Would like to use flask or web.py though
+
+## This is a one time only type deal. Doesn't take into account previous/historical data
+## Only usable as a rough guide
+
+webpage_data = """var height = "%s";
+var weight = "%s";
+var daily_calorie_intake = "%s";
+var age = "%s";
+var bmi = "%s";
+var bmi_response = "%s";
+
+
+document.getElementById('height').innerHTML = height;
+document.getElementById('weight').innerHTML = weight;
+document.getElementById('daily_calorie_intake').innerHTML = daily_calorie_intake;
+document.getElementById('age').innerHTML = age;
+document.getElementById('bmi').innerHTML = bmi;
+document.getElementById('bmi_response').innerHTML = bmi_response;
+
+"""%(height, weight, daily_calorie_intake, age, bmi, bmi_response)
+
+f = open('one-day-data/one-day-data.js', 'w')
+f.write(webpage_data)
+f.close()
