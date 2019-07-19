@@ -1,5 +1,5 @@
 # Be Less Fat
-Loseit sucks*, let's make a better alternative.
+Visualise weight loss and food intake.
 
 ## What is Be Less Fat?
 
@@ -19,5 +19,3 @@ No idea. I haven't written it yet. Probably a python application with a bunch of
 ## Can I trust Be Less Fat?
 
 Hell no. I strongly advise you see a medical professional if you plan to manage your weight in anyway. This is simply a visualation tool with data that may or may not be correct or useful.
-
-*Loseit doesn't actually suck, I just want to make my own.
