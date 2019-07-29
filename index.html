@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<head>
+	<title>Be Less Fat - One Day Data</title>
+	<link rel="stylesheet" href="_style.css">
+	<link rel="stylesheet" href="simple-grid.css">
+	<meta charset="UTF-8">
+</head>
+
+<body>
+	
+	<div class="container">
+		<div class="row">
+			<div class="col-12">
+				<h1 id="title">Be Less Fat</h1>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+				<div class="information">
+					<p><span id="weather"></span></p>
+					<p><span id="summary"></span></p>
+					<p><span id='wind'></span></p>
+			</div>	
+			</div>
+		</div>
+	</div>
+
+
+</body>
+
+<script type="text/javascript" src="weather.js"></script>
+
+<script>
+// if it's raining, background colour should be a nice shade of blue
+// may change this to css animation later on
+if (rain == "rain") {
+	document.getElementById("title").style.backgroundColor = "#3D8FDC";
+} else {
+	document.getElementById("title").style.backgroundColor = "#2a2a2a";
+}
+// if wind level is high (need to decide a number) heading title should spread apart
+if (wind > "500") {
+	document.getElementById("title").style.letterSpacing = "20px";
+} else {
+	document.getElementById("title").style.letterSpacing = "0px";
+}
+// if it's warm (18c or higher) do something
+// if it's damned hot (25c or higher) show robin williams in good morning vietnam
+// if it's cold (8c or lower) do something
+// if it's freezing (0c or lower) do something
+</script>
+</html>
