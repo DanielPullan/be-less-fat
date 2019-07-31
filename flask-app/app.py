@@ -25,4 +25,13 @@ def calorie():
 	goal_calorie = int(goal_calorieURL)
 
 	calorie_per_gram = int(source_calorie/amount)
-	return f'Blah blah blah {escape(calorie_per_gram)}!'
+	return f'Your food is {escape(calorie_per_gram)} calories per gram.'
+
+@app.route('/hr')
+def hr():
+	age = request.args.get("age", "0")
+
+	hrmax = 202 - (0.55 * age)
+	lower_limit =  (55 * hrmax) / 100
+	higher_limit = (85 * hrmax) / 100
+	return f"Your goal should be between {escape(int(lower_limit))} and {escape(int(higher_limit))}."
