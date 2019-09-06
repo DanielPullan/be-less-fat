@@ -10,9 +10,10 @@ import sys
 ## Added help function just in case
 ## How long has emoji support existed?
 
-## Example usage - python3 be-less-fat.py 90 1.8 1500 30
-## For help - python3 be-less-fat.py help
-## For Metallica - python3 be-less-fat.py 🤘
+## Example key - python3 miffler.py height weight calories age gender activity
+## Example usage - python3 miffler.py 160 80 1400 25 male 2
+## For help - python3 miffler.py help
+## For Metallica - python3 miffler.py 🤘
 
 if sys.argv[1] == "help":
     print("the order is height, weight, calories, age, gender, activity")
