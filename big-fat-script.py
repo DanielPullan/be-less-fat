@@ -41,6 +41,10 @@ else:
         activity = sys.argv[6]
     except IndexError:
         activity = "null"
+    try:
+        start_weight = sys.argv[7]
+    except IndexError:
+        start_weight = "null"
 
 ## Sort out activity data
 
@@ -81,6 +85,12 @@ def hr(age):
 def bmiCalc(weight, height):
     bmi = weight / (height**2)
     return bmi
+
+def percentage_calculator(start_weight, weight):
+    weight_loss = start_weight - weight
+    percentage = int((weight_loss / start_weight) * 100)
+    return percentage
+
 
 woo = bmiCalc(weight, height)
 

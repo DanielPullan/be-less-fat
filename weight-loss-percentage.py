@@ -34,4 +34,11 @@ def percentage_calculator(start_weight, current_weight):
 
 result = percentage_calculator(start_weight, current_weight)
 
+if result > 0:
+    print("You have lost " + str(result) + " percent of your body weight.")
+elif result < 0: 
+    print("You have gained " + str(result) + " percent of your body weight.")
+else: 
+    print("you broke how numbers work dumb dumb.")
+
 print(result)
