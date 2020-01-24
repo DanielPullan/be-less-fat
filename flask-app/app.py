@@ -117,6 +117,16 @@ def stare():
 # This is for users to get an overview of their data
 @app.route('/overview')
 def overview():
+	# Check that user is logged in
+
+	# SQL query to get all the user data
+
+	# Sort sql data into variables
+
+	# Run variables through various calculations
+
+	# Turn the results of those calculations into things I can return a template
+
 	return render_template('overview.html')
 
 
@@ -125,7 +135,15 @@ def overview():
 # not equipped to deal with that responsibility.
 # Seriously, learn to protect your data. https://learning.mozilla.org/en-US/activities/protect-your-data/
 @app.route('/submit-data')
-def submit-data():
+def submitdata():
+	# check that user is logged in
+
+	# form stuff
+
+	# sql query to submit form stuff to database
+
+	# redirect to a dead meme
+
 	return render_template('submit-data.html')
 
 
