@@ -1,0 +1,58 @@
+<html>
+
+<head>
+    <title>Be Less Fat</title>
+    <link rel="stylesheet" href="/static/grid.css">
+    <link rel="stylesheet" href="/static/_style.css">
+</head>
+
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome {{username}}</h1>
+            <p>Be Less Fat is currently under heavy development. I finally learned (ish) Flask and all I want to do is code until I'm sick and tired of it.</p>
+                <div class="warning">
+                    <p style="text-align: center;"><strong>Be-Less-Fat is NOT for under 18's, the elderly or pregnant women.</strong></p> 
+                    <p>All data and advice is for entertainment. Contact a medical professional for actual health advice. Talk to nutrionists and people with actual knowledge and qualifications. Be-Less-Fat has NOT been audited by anyone with an actual functioning brain.</p>
+                    <p>Data is currently held in a barely secured database in the UK. Do not submit real health data. Any data in the database is not shared with anyone else but that shouldn't matter as you wouldn't give your personal health data to an eejit like me, would you? <a href="https://learning.mozilla.org/en-US/activities/protect-your-data/">Learn how to protect your data.</a><xmp></RANT></xmp></p>
+                </div>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/overview">Overview of your data</a></li>
+                <li><a href="/give-data">Submit your personal health data to my database</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            {% if username != "Guest" %}
+                <form method="POST" action="/logout">
+
+                    <input type="submit" value="Logout"><br>
+
+                </form>
+            {% endif %}
+            {% if username == "Guest" %}
+                <form action="/login">
+                    <button type="submit">Login</button>
+                </form>
+            
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+    console.log("Hi! Email dan@3264.uk");
+</script>
+
+</body>
+</html>
