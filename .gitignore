@@ -2,3 +2,5 @@
 *.pyc
 
 flask-app/config.py
+
+*.swp

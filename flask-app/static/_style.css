@@ -34,12 +34,9 @@ a:hover, a:focus, a:active {
   text-decoration: underline;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--title_font);
-}
-
 h1 {
-  font-size: 42px;
+  font-family: Ostrich Sans;
+  font-size: 50px;
   margin-bottom: 0px;
   text-decoration: none;
 }
@@ -163,6 +160,13 @@ input[type=text]{
 input[type=submit]{
   color: var(--primary_colour);
   background-color: var(--background);
+  padding: 10px;
+}
+
+input[type=password]{
+  color: var(--primary_colour);
+  background-color: var(--background);
+  padding: 10px;
 }
 
 select {

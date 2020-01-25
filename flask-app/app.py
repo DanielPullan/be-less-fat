@@ -46,7 +46,7 @@ def login():
 
 		# mysql query to check if details exist/are correct
 		cur = conn.cursor()
-		cur.execute("SELECT * FROM blf-login where username = %s;", (username))
+		cur.execute("SELECT * FROM login where username = %s;", (username))
 		cur.close()
 		results = cur.fetchone()
 
@@ -145,6 +145,38 @@ def submitdata():
 	# redirect to a dead meme
 
 	return render_template('submit-data.html')
+
+
+@app.route('/bmi-calculator', methods=['GET', 'POST'])
+def bmicalculator():
+	if request.method == 'POST':
+		# get info from form
+		weight = int(request.form['weight'])
+		height = int(request.form['height'])
+		age = int(request.form['age'])
+		result = weight / (height**2)
+		bmi = int(result)
+		bmi_response = 0
+		if age == "👀" or age >= 18:
+			if bmi < 18.5:
+				bmi_result =  "You are very underweight"
+			elif bmi > 18.5 and bmi < 25:
+				bmi_result =  "You are a normal weight"
+			elif bmi > 25 and bmi < 35:
+				bmi_result =  "You are overweight"
+			elif bmi > 35:
+				bmi_result =  "You are very overweight."
+			else: 
+				bmi_result =  "Error"
+		elif age < 18:
+			bmi = ("Unknown")
+			bmi_result =  "As you are under 18, Be Less Fat currently won't work for you."
+		else:
+			bmi_result =  "issue"
+
+		return render_template("bmi-result.html", bmi_result=bmi_result)
+	return render_template("bmi-calculator.html")
+
 
 
 if __name__ == "__main__":
