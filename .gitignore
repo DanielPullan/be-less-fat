@@ -4,3 +4,5 @@
 flask-app/config.py
 
 *.swp
+blf-app/.DS_Store
+.DS_Store

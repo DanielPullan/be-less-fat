@@ -1,0 +1,188 @@
+/* _alt.css by Daniel Pullan */
+
+
+:root {
+  /* Titles use secondary colour, body text uses primary, things like code comments use tertiary */
+  /* Change colours in :root as you can theme your own version with your own colours quickly */
+  --background: #404552;
+  --primary_colour: #fff;
+  --secondary_colour: #5294e2;
+  --title_font: 'Fira Sans', sans-serif;
+  --body_font: 'Fira Sans', sans-serif;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  font-family: var(--body_font);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(primary_colour);
+  background: var(--background);
+}
+
+a {
+  color: var(--secondary_colour);
+  text-decoration: none;
+}
+
+a:hover, a:focus, a:active {
+  color: var(--secondary_colour);
+  text-decoration: underline;
+}
+
+h1 {
+  font-family: Ostrich Sans;
+  font-size: 50px;
+  margin-bottom: 0px;
+  text-decoration: none;
+}
+
+h2 {
+  color: var(--primary_colour);
+}
+
+p {
+  margin-bottom: 30px;
+  color: var(--primary_colour);
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+li {
+  color: var(--primary_colour);
+}
+
+code {
+  color: var(--primary_colour);
+}
+
+strong {
+  color: var(--primary_colour);
+}
+
+.img-responsive {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+figure {
+  -webkit-margin-start: 0px
+}
+
+.articleGrid {
+  margin-left: 10%;
+}
+
+header {
+  text-align: center;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  text-align: center;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: var(--background);
+  display: inline-block;
+}
+
+.topnav a {
+  float: left;
+  display: block;
+  color: var(--primary_colour);
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: var(--primary_colour);
+  color: black;
+}
+
+.active {
+  background-color: var(--background);
+  color: white;
+  text-decoration: underline;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.me {
+  max-width: 200px;
+  border-radius: 50%;
+  border: 5px var(--secondary_colour) solid;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.homeTitle {
+  text-align: center;
+}
+
+.homeText {
+  text-align: justify;
+}
+
+input {
+  width: 100%;
+}
+
+input[type=text]{
+  color: var(--primary_colour);
+  background-color: var(--background);
+  padding: 10px;
+}
+
+input[type=submit]{
+  color: var(--primary_colour);
+  background-color: var(--background);
+  padding: 10px;
+}
+
+input[type=password]{
+  color: var(--primary_colour);
+  background-color: var(--background);
+  padding: 10px;
+}
+
+select {
+  color: var(--primary_colour);
+  background-color: var(--background);
+  width: 100%;
+}
+
+.warning {
+  border: 1px #fff solid;
+  padding: 10px;
+}
+
+button {
+  color: var(--primary_colour);
+  background-color: var(--background);
+  border-radius: 3px;
+  padding: 10px;
+}
