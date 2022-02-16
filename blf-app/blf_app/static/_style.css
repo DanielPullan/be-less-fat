@@ -171,6 +171,11 @@ li a {
    width: 100%;
    text-align: center;
 }
+
+.homeBox {
+  border: 1px solid red;
+  padding: 2%;
+}
 span {
   color: #fff;
 }

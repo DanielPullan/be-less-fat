@@ -1,6 +1,6 @@
-## Flask app by Dan Pullan (https://danielpullan.co.uk/projects/be-less-fat)
-## Test flask app for Be Less Fat. First time making a website with flask.
-## 29/07/2019
+## BLF Flask by Dan Pullan (https://danielpullan.co.uk/projects/be-less-fat)
+## Another test flask app for Be Less Fat.
+## First attempted 29/07/2019, current attempt 14/02/2022.
 
 ## Never made a thing with flask before. This project may be a great test topic.
 
@@ -27,7 +27,12 @@ def home():
 		user = "Guest"
 		user_logged_in = False
 
-	return render_template("index.html", username=user)
+	weight = 77
+	height = 1.6
+	bmi = 32
+	status = "Work to do"
+
+	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
 
 
 @app.route('/login', methods=['GET', 'POST'])
