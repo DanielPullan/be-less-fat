@@ -5,7 +5,7 @@
 ## Never made a thing with flask before. This project may be a great test topic.
 
 from flask import Flask, request, render_template, make_response, redirect
-import pymysql
+#import pymysql
 from config import *
 
 app = Flask(__name__)

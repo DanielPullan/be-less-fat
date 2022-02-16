@@ -5,8 +5,8 @@
 ## Never made a thing with flask before. This project may be a great test topic.
 
 from flask import Flask, request, render_template, make_response, redirect
-#import pymysql
-#from config import *
+import pymysql
+from config import *
 
 app = Flask(__name__)
 
@@ -14,6 +14,7 @@ the_cookie = "Site"
 the_good_cookie = "Canada_On_Guard_For_Thee"
 the_other_cookie = "Ja_Vi_Elsker_Dette_Landet"
 
+conn = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpass, db=dbname, autocommit=True)
 
 # Splashy thing. Cookies, link to login page, personal website and github.
 @app.route('/')
@@ -38,8 +39,10 @@ def login():
 		form_password = request.form['password']
 		form_pin = request.form['pin']
 
-		# until we have a DB, our 'correct' login
-		results = ['something', 'dan', '123', '123']
+		cur = conn.cursor()
+		cur.execute("SELECT * FROM users where username = %s;", (form_username))
+		cur.close()
+		results = cur.fetchone()
 
 		username = str(results[1])
 		password = str(results[2])
@@ -54,11 +57,8 @@ def login():
 			print('login failed')
 		return "login failed"
 
-	return render_template("login.html")
-
-
-
-	return title
+	title = "Login"
+	return render_template("login.html", title=title)
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -69,7 +69,17 @@ def logout():
 @app.route('/me')
 def me():
 	title = "me"
-	return title
+	cookie = str(request.cookies.get(the_cookie))
+	user = str(request.cookies.get('User'))
+
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+	cur.close()
+	results = cur.fetchone()
+
+	weight = str(results[3])
+
+	return render_template("me.html", title=title, user=user, weight=weight)
 
 @app.route('/track', methods=['GET', 'POST'])
 def track():
@@ -80,8 +90,16 @@ def track():
 		# get login details from form
 		form_weight= request.form['weight']
 
+		weight = form_weight
+
+		date = "1994-06-13"
+
 		if cookie == the_good_cookie:
-			print("data collected")
+			cur = conn.cursor()
+			# cur.execute("INSERT INTO weight (user, logdate, weight) values(%s, %s, %s;", (user, date, weight))
+			cur.execute("INSERT INTO weight (user, logdate, weight) values (%s, %s, %s);", (user, date, weight))
+
+			cur.close()
 		else:
 			print("tracking failed")
 
