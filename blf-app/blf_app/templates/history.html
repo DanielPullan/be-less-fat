@@ -12,4 +12,24 @@
 </div>
 
 
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Time</th>
+        <th>Weight</th>
+    </tr>
+{% for x in results %}
+
+<tr>
+    <td>{{ x[0] }}</td>
+    <td>{{ x[1] }}</td>
+    <td>{{ x[2] }}</td>
+    <td>{{ x[3] }}</td>
+    <td>{{ x[4] }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
 {% include 'footer.html' %}

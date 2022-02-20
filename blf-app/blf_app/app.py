@@ -128,9 +128,15 @@ def track():
 def history():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
+	# Get last 5 weights
+
+	cur = conn.cursor()
+	cur.execute("SELECT user, logdate, weight FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  5;", (user))
+	cur.close()
+	results = cur.fetchall()
 
 	title = "History"
-	return render_template("history.html", title=title, username=user)
+	return render_template("history.html", title=title, username=user, results=results)
 
 @app.route('/notice')
 def notice():
