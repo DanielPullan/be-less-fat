@@ -52,8 +52,6 @@ def login():
 		form_password = request.form['password']
 		form_pin = request.form['pin']
 
-		#todo check for connection
-
 		cur = conn.cursor()
 		cur.execute("SELECT * FROM users where username = %s;", (form_username))
 		cur.close()

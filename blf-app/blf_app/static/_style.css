@@ -202,6 +202,12 @@ input[type=password]{
   background-color: var(--background);
   padding: 10px;
 }
+input[type=number]{
+  color: var(--primary_colour);
+  background-color: var(--background);
+  padding: 10px;
+  -moz-appearance: textfield;
+}
 
 select {
   color: var(--primary_colour);
