@@ -23,14 +23,19 @@ def home():
 	if cookie == the_good_cookie:
 		user = str(request.cookies.get('User'))
 		user_logged_in = True
+		weight = 77
+		height = 1.6
+		bmi = 32
+		status = "Work to do"
 	else:
 		user = "Guest"
 		user_logged_in = False
+		weight = 0
+		height = 0
+		bmi = 0
+		status = "u ain't logged in"
 
-	weight = 77
-	height = 1.6
-	bmi = 32
-	status = "Work to do"
+	
 
 	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
 
@@ -43,6 +48,8 @@ def login():
 		form_username = request.form['username']
 		form_password = request.form['password']
 		form_pin = request.form['pin']
+
+		#todo check for connection
 
 		cur = conn.cursor()
 		cur.execute("SELECT * FROM users where username = %s;", (form_username))
@@ -69,6 +76,8 @@ def login():
 def logout():
 	res = make_response(redirect('/'))
 	res.set_cookie(the_cookie, the_other_cookie)
+	
+	res.delete_cookie('User')
 	return res
 
 @app.route('/me')
@@ -84,7 +93,7 @@ def me():
 
 	weight = str(results[3])
 
-	return render_template("me.html", title=title, user=user, weight=weight)
+	return render_template("me.html", title=title, user=user, weight=weight, username=user)
 
 @app.route('/track', methods=['GET', 'POST'])
 def track():
@@ -110,7 +119,7 @@ def track():
 
 		return render_template("result.html", weight=form_weight, user=user)
 
-	return render_template("track.html")
+	return render_template("track.html", username=user)
 
 
 
@@ -121,5 +130,10 @@ def history():
 	title = "history"
 	return title
 
+@app.route('/notice')
+def notice():
+	title="notice"
+	return render_template("notice.html", title=title)
+
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.run(host='0.0.0.0',debug=True)
