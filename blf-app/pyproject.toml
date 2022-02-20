@@ -8,6 +8,7 @@ authors = ["Daniel Pullan <dan@3264.uk>"]
 python = "^3.10"
 Flask = "^2.0.3"
 PyMySQL = "^1.0.2"
+tzlocal = "^4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

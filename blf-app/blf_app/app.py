@@ -6,6 +6,9 @@
 
 from flask import Flask, request, render_template, make_response, redirect
 import pymysql
+from datetime import datetime # might use time instead
+import time # might use datetime instead
+import tzlocal # might not keep this
 from config import *
 
 app = Flask(__name__)
@@ -82,7 +85,7 @@ def logout():
 
 @app.route('/me')
 def me():
-	title = "me"
+	title = "Me"
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
 
@@ -106,7 +109,7 @@ def track():
 
 		weight = form_weight
 
-		date = "1994-06-13"
+		date = int(time.time())
 
 		if cookie == the_good_cookie:
 			cur = conn.cursor()
@@ -117,22 +120,21 @@ def track():
 		else:
 			print("tracking failed")
 
-		return render_template("result.html", weight=form_weight, user=user)
+		return render_template("result.html", weight=form_weight, user=user, username=user  )
 
 	return render_template("track.html", username=user)
 
-
-
-	return title
-
 @app.route('/history')
 def history():
-	title = "history"
-	return title
+	cookie = str(request.cookies.get(the_cookie))
+	user = str(request.cookies.get('User'))
+
+	title = "History"
+	return render_template("history.html", title=title, username=user)
 
 @app.route('/notice')
 def notice():
-	title="notice"
+	title="Notice"
 	return render_template("notice.html", title=title)
 
 if __name__ == "__main__":
