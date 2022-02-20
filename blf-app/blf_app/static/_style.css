@@ -226,3 +226,17 @@ button {
   border-radius: 3px;
   padding: 10px;
 }
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+th { 
+  background: var(--background); 
+  color: var(--primary_colour); 
+}
+td, th { 
+  padding: 3px;
+  border: 0.5px solid var(--secondary_colour); 
+  text-align: left; 
+}

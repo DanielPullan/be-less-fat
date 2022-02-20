@@ -8,28 +8,24 @@
 </div>
 
 <div class="row">
-    <p>Your name is {{ user }} and your weight is {{ weight }}.</p>
+    <div class="col-12">
+        <table>
+            <tr>
+                <th>Time (Unix)</th>
+                <th>Weight</th>
+            </tr>
+
+            {% for x in results %}
+
+                <tr>
+                    <td>{{ x[1] }}</td>
+                    <td>{{ x[2] }}</td>
+                </tr>
+            
+            {% endfor %}
+
+        </table>
+    </div>
 </div>
-
-
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Time</th>
-        <th>Weight</th>
-    </tr>
-{% for x in results %}
-
-<tr>
-    <td>{{ x[0] }}</td>
-    <td>{{ x[1] }}</td>
-    <td>{{ x[2] }}</td>
-    <td>{{ x[3] }}</td>
-    <td>{{ x[4] }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
 
 {% include 'footer.html' %}
