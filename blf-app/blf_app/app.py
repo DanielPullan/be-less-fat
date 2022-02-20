@@ -122,6 +122,18 @@ def track():
 
 	return render_template("track.html", username=user)
 
+@app.route('/delete-last-weight')
+def deletelastweight():
+	cookie = str(request.cookies.get(the_cookie))
+	user = str(request.cookies.get('User'))
+
+	if cookie == the_good_cookie:
+		cur = conn.cursor()
+		cur.execute("DELETE FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+		cur.close()
+
+		return redirect('/me')
+
 @app.route('/history')
 def history():
 	cookie = str(request.cookies.get(the_cookie))

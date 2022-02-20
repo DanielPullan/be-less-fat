@@ -3,26 +3,35 @@
 
 <div class="row">
     <div class="col-12">
-        <h2 class="homeTitle">Welcome {{username}}</h2>
+        <h2 class="homeTitle">Welcome {{username|capitalize}}</h2>
     </div>
 </div>
 
 {% if username != "Guest" %}
 <div class="row">
-    <div class="col-3 homeBox">
-        <p>{{ weight }}</p>
-    </div>
-    <div class="col-3 homeBox">
-        <p>{{ height }}</p>
-    </div>
-    <div class="col-3 homeBox">
-        <p>{{ bmi }}</p>
-    </div>
-    <div class="col-3 homeBox">
-        <p>{{ status }}</p>
+    <div class="col-12">
+        <table>
+            <tr>
+                <th>Weight</th>
+                <th>Height</th>
+                <th>BMI</th>
+                <th>Status</th>
+            </tr>
+
+            <tr>
+                <td>{{ weight }}</td>
+                <td>{{ height }}</td>
+                <td>{{ bmi }}</td>
+                <td>{{ status }}</td>
+
+            </tr>
+
+
+        </table>
     </div>
 </div>
 {% endif %}
+
 
 
 {% include 'footer.html' %}
