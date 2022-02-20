@@ -26,10 +26,16 @@ def home():
 	if cookie == the_good_cookie:
 		user = str(request.cookies.get('User'))
 		user_logged_in = True
-		weight = 77
-		height = 1.6
-		bmi = 32
-		status = "Work to do"
+		
+		cur = conn.cursor()
+		cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
+		cur.close()
+		alert_result = cur.fetchone()
+
+		weight = 77 # TODO: get this from db
+		height = 1.6 # TODO: get this from db
+		bmi = 32 # TODO: get this from db
+		status = alert_result[1]
 	else:
 		user = "Guest"
 		user_logged_in = False
@@ -38,9 +44,10 @@ def home():
 		bmi = 0
 		status = "u ain't logged in"
 
+	hometime = datetime.now()
+	current_time = hometime.strftime("%H:%M:%S")
 	
-
-	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
+	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status, time=current_time)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -111,9 +118,7 @@ def track():
 
 		if cookie == the_good_cookie:
 			cur = conn.cursor()
-			# cur.execute("INSERT INTO weight (user, logdate, weight) values(%s, %s, %s;", (user, date, weight))
 			cur.execute("INSERT INTO weight (user, logdate, weight) values (%s, %s, %s);", (user, date, weight))
-
 			cur.close()
 		else:
 			print("tracking failed")
