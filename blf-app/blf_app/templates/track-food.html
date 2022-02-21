@@ -1,0 +1,21 @@
+{% include 'header.html' %}
+
+<div class="row">
+    <div class="col-12">
+        <h1>{{ title }}</h1>
+        <p>This is a work in progress. Please treat this as a test environment. Only use dummy data.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <form method="POST">
+              Food <input type="text" name="food"><br>
+              Calories <input type="number" name="calories" pattern="[0-9]*" inputmode="numeric"><br>
+              <input type="submit" value="Submit"><br>
+          </form>
+    </div>
+</div>
+
+
+{% include 'footer.html' %}

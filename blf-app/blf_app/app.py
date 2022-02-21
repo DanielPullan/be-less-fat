@@ -43,11 +43,8 @@ def home():
 		height = 0
 		bmi = 0
 		status = "u ain't logged in"
-
-	hometime = datetime.now()
-	current_time = hometime.strftime("%H:%M:%S")
 	
-	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status, time=current_time)
+	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -103,10 +100,11 @@ def me():
 
 	return render_template("me.html", title=title, user=user, weight=weight, username=user)
 
-@app.route('/track', methods=['GET', 'POST'])
-def track():
+@app.route('/track-weight', methods=['GET', 'POST'])
+def trackweight():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
+	title = "Track Weight"
 
 	if request.method == 'POST':
 		# get login details from form
@@ -123,9 +121,36 @@ def track():
 		else:
 			print("tracking failed")
 
-		return render_template("result.html", weight=form_weight, user=user, username=user  )
+		return render_template("result-weight.html", weight=form_weight, user=user, username=user  )
 
-	return render_template("track.html", username=user)
+	return render_template("track-weight.html", username=user, title=title)
+
+@app.route('/track-food', methods=['GET', 'POST'])
+def trackfood():
+	cookie = str(request.cookies.get(the_cookie))
+	user = str(request.cookies.get('User'))
+	title = "Track Food"
+
+	if request.method == 'POST':
+		# get login details from form
+		form_food= request.form['food']
+		form_calories = request.form['calories']
+
+		food = form_food
+		calories = form_calories
+
+		date = int(time.time())
+
+		if cookie == the_good_cookie:
+			cur = conn.cursor()
+			cur.execute("INSERT INTO calories (user, logdate, food, calories) values (%s, %s, %s, %s);", (user, date, food, calories))
+			cur.close()
+		else:
+			print("tracking failed")
+
+		return render_template("result-food.html", food=form_food, calories=form_calories, user=user, username=user  )
+
+	return render_template("track-food.html", username=user, title=title)
 
 @app.route('/delete-last-weight')
 def deletelastweight():
