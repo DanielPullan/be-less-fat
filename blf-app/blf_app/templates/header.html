@@ -14,24 +14,36 @@
 
 <div class="row">
     <div class="col-12">
-        <h1>Be Less Fat</h1>
-            {% if username != "Guest" %}
-            <div class="topnav" id="myTopnav">
-              <a href="/">Home</a>
-              <a href="/me">Me</a>
-              <a href="/track-weight">Track Weight</a>
-              <a href="/history">Weight History</a>
-              <a href="/delete-last-weight">DelLastWeight</a>
-              <a href="/track-food">Track Food</a>
-              <a href="/Notice">Notice</a>
-              <a href="/logout">Logout</a>
-            </div>
-            {% endif %}
-            {% if username == "Guest" %}
-            <div class="topnav" id="myTopnav">
-              <a href="/login">Login</a>
-            </div>
-            {% endif %}
+    <div class="navbar">
+      <a href="#home">BLF</a>
+      <div class="subnav">
+        <button class="subnavbtn">About</button>
+        <div class="subnav-content">
+          <a href="https://github.com/danielpullan/Be-Less-Fat">GitHub</a>
+          <a href="https://danielpullan.co.uk">Developer</a>
+        </div>
+      </div>
+      <div class="subnav">
+        <button class="subnavbtn">Me</button>
+        <div class="subnav-content">
+          <a href="/history-weight">Weight History</a>
+          <a href="/history-food">Food History</a>
+        </div>
+      </div>
+      <div class="subnav">
+        <button class="subnavbtn">Track</button>
+        <div class="subnav-content">
+          <a href="/track-food">Food</a>
+          <a href="/track-weight">Weight</a>
+        </div>
+      </div>
+      {% if username == "Guest" %}
+      <a href="/login">Login</a>
+      {% endif %}
+      {% if username != "Guest" %}
+      <a href="/logout">Logout</a>
+      {% endif %}
+    </div>
 
             {% if username != "dan" %}
             <div class="warning">

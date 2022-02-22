@@ -117,7 +117,7 @@ li a {
   text-decoration: none;
 }
 
-.topnav {
+/*.topnav {
   overflow: hidden;
   background-color: var(--background);
   display: inline-block;
@@ -135,7 +135,7 @@ li a {
 .topnav a:hover {
   background-color: var(--primary_colour);
   color: black;
-}
+}*/
 
 .active {
   background-color: var(--background);
@@ -240,3 +240,68 @@ td, th {
   border: 0.5px solid var(--secondary_colour); 
   text-align: left; 
 }
+
+
+
+
+
+
+
+
+.navbar {
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+.navbar a {
+  float: left;
+  font-size: 24px;
+  color: var(--primary_colour);
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.subnav {
+  float: left;
+  overflow: hidden;
+}
+
+.subnav .subnavbtn {
+  font-size: 24px;
+  border: none;
+  outline: none;
+  color: var(--primary_colour);
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+
+.navbar a:hover, .subnav:hover .subnavbtn {
+  background-color: var(--secondary_colour);
+}
+
+.subnav-content {
+  display: none;
+  position: absolute;
+  left: 0;
+  background-color: var(--background);
+  width: 100%;
+  z-index: 1;
+}
+
+.subnav-content a {
+  float: left;
+  color: var(--primary_colour);
+  text-decoration: none;
+}
+
+.subnav-content a:hover {
+  background-color: var(--secondary_colour);
+  color: var(--primary_colour);
+}
+
+.subnav:hover .subnav-content {
+  display: block;
+} 
