@@ -11,8 +11,8 @@
     <div class="col-12">
         <table>
             <tr>
-                <th>Time (Unix)</th>
-                <th>Weight</th>
+                <th>Food</th>
+                <th>Calories</th>
             </tr>
 
             {% for x in results %}
@@ -25,6 +25,7 @@
             {% endfor %}
 
         </table>
+        Total calories consumed in past day: {{ totalcalories }}
     </div>
 </div>
 

@@ -8,3 +8,4 @@ blf-app/.DS_Store
 .DS_Store
 blf-app/blf_app/config.py
 blf-app/blf_app/test.py
+blf-app/blf_app/test2.py

@@ -164,8 +164,8 @@ def deletelastweight():
 
 		return redirect('/me')
 
-@app.route('/history')
-def history():
+@app.route('/weight-history')
+def weighthistory():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
 	# Get last 5 weights
@@ -175,8 +175,40 @@ def history():
 	cur.close()
 	results = cur.fetchall()
 
-	title = "History"
-	return render_template("history.html", title=title, username=user, results=results)
+	title = "Weight History"
+	return render_template("weight-history.html", title=title, username=user, results=results)
+
+@app.route('/food-history')
+def foodhistory():
+	cookie = str(request.cookies.get(the_cookie))
+	user = str(request.cookies.get('User'))
+
+	secondsinday = 86400
+
+	currentdateunix = int(time.time()) # get current date in unix timestamp
+
+	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
+
+	print(dateneeded) # check value
+	print(currentdateunix) # check value
+
+	cur = conn.cursor() # open db connection
+	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s;", (dateneeded)) # run the query
+	cur.close() # close db connection
+	results = cur.fetchall() # store our result from db in a value
+
+	print(results) # print all of our googles
+
+	totalcalories = 0
+
+	for x in results:
+		totalcalories = totalcalories + x[2]
+		print(totalcalories)
+
+	title = "Food History"
+
+	return render_template("food-history.html", title=title, username=user, results=results, totalcalories=totalcalories)
+
 
 @app.route('/notice')
 def notice():
