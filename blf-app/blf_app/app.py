@@ -193,7 +193,7 @@ def foodhistory():
 	print(currentdateunix) # check value
 
 	cur = conn.cursor() # open db connection
-	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s;", (dateneeded)) # run the query
+	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s AND user = %s;", (dateneeded, user)) # run the query
 	cur.close() # close db connection
 	results = cur.fetchall() # store our result from db in a value
 
