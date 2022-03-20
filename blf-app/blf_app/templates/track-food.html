@@ -10,10 +10,19 @@
 <div class="row">
     <div class="col-12">
         <form method="POST">
-              Food <input type="text" name="food"><br>
+              Food <input list="common-food" type="text" name="food"><br>
               Calories <input type="number" name="calories" pattern="[0-9]*" inputmode="numeric"><br>
               <input type="submit" value="Submit"><br>
           </form>
+
+        <datalist id="common-food">
+            <option value="Tea">
+            <option value="Coffee">
+            <option value="Apple Crumble">
+            <option value="Custard">
+            <option value="Cheeky Nandos">
+        </datalist>
+
     </div>
 </div>
 

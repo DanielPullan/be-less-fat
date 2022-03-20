@@ -4,7 +4,7 @@
 
 ## Never made a thing with flask before. This project may be a great test topic.
 
-from flask import Flask, request, render_template, make_response, redirect
+from flask import Flask, request, render_template, make_response, redirect, session, url_for
 import pymysql
 from datetime import datetime # might use time instead
 import time # might use datetime instead
@@ -12,6 +12,7 @@ import tzlocal # might not keep this
 from config import *
 
 app = Flask(__name__)
+app.secret_key = "Canada_On_Guard_For_Thee"
 
 the_cookie = "Site"
 the_good_cookie = "Canada_On_Guard_For_Thee"
