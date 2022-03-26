@@ -37,6 +37,17 @@ def get1month():
 
 	return dateneeded
 
+def getcurrentweight():
+	user = str(request.cookies.get('User'))
+	
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+	cur.close()
+	weightresults = cur.fetchone()
+	weight = str(weightresults[3])
+
+	return weight
+
 ## Routes and stuff yo
 @app.route('/')
 def home():
@@ -109,12 +120,14 @@ def me():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
 
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-	cur.close()
-	weightresults = cur.fetchone()
+	weight = getcurrentweight()
 
-	weight = str(weightresults[3])
+	# cur = conn.cursor()
+	# cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+	# cur.close()
+	# weightresults = cur.fetchone()
+
+	# weight = str(weightresults[3])
 
 	dateneeded = get24hours()
 
@@ -198,7 +211,6 @@ def deletelastweight():
 def weighthistory():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
-	# Get last 5 weights
 
 	cur = conn.cursor()
 	cur.execute("SELECT user, logdate, weight FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  5;", (user))
