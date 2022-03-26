@@ -1,11 +1,14 @@
-
+# File Extensions
 *.pyc
-
-flask-app/config.py
-
 *.swp
-blf-app/.DS_Store
+
+# Files
 .DS_Store
+flask-app/config.py
+blf-app/.DS_Store
 blf-app/blf_app/config.py
+
+# Test files
 blf-app/blf_app/test.py
 blf-app/blf_app/test2.py
+blf-app/blf_app/test3.py

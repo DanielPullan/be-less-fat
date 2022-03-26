@@ -3,12 +3,13 @@
 <div class="row">
     <div class="col-12">
         <h1>Me</h1>
-        <p>Hi {{ user }}. Here's your data.</p>
+        <p>Hi {{ user | capitalize }}. Here's your data.</p>
     </div>
 </div>
 
 <div class="row">
-    <p>Your latest weight is {{ weight }}.</p>
+    <p>Your latest weight is {{ weight }} kg.</p>
+    <p>You've consumed {{ food }} calories today.</p>
 </div>
 
 

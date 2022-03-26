@@ -2,8 +2,7 @@
 ## Another test flask app for Be Less Fat.
 ## First attempted 29/07/2019, current attempt 14/02/2022.
 
-## Never made a thing with flask before. This project may be a great test topic.
-
+# imports
 from flask import Flask, request, render_template, make_response, redirect, session, url_for
 import pymysql
 from datetime import datetime # might use time instead
@@ -11,16 +10,34 @@ import time # might use datetime instead
 import tzlocal # might not keep this
 from config import *
 
+# app
 app = Flask(__name__)
 app.secret_key = "Canada_On_Guard_For_Thee"
 
+# the variables so nice, everyone gets to enjoy them
 the_cookie = "Site"
 the_good_cookie = "Canada_On_Guard_For_Thee"
 the_other_cookie = "Ja_Vi_Elsker_Dette_Landet"
 
+# database connection
 conn = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpass, db=dbname, autocommit=True)
 
-# Splashy thing. Cookies, link to login page, personal website and github.
+## Functions and stuff yo
+def get24hours():
+	secondsinday = 86400
+	currentdateunix = int(time.time()) # get current date in unix timestamp
+	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
+
+	return dateneeded
+
+def get1month():
+	secondsinamonth = 2628288 # pretend a month is 30 days...
+	currentdateunix = int(time.time()) 
+	dateneeded = currentdateunix - secondsinamonth
+
+	return dateneeded
+
+## Routes and stuff yo
 @app.route('/')
 def home():
 	cookie = str(request.cookies.get(the_cookie))
@@ -95,11 +112,23 @@ def me():
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
 	cur.close()
-	results = cur.fetchone()
+	weightresults = cur.fetchone()
 
-	weight = str(results[3])
+	weight = str(weightresults[3])
 
-	return render_template("me.html", title=title, user=user, weight=weight, username=user)
+	dateneeded = get24hours()
+
+	cur = conn.cursor() # open db connection
+	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s AND user = %s;", (dateneeded, user)) # run the query
+	cur.close() # close db connection
+	results = cur.fetchall() # store our result from db in a value
+
+	totalcalories = 0
+
+	for x in results:
+		totalcalories = totalcalories + x[2]
+
+	return render_template("me.html", title=title, user=user, weight=weight, food=totalcalories, username=user)
 
 @app.route('/track-weight', methods=['GET', 'POST'])
 def trackweight():
@@ -184,27 +213,17 @@ def foodhistory():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
 
-	secondsinday = 86400
-
-	currentdateunix = int(time.time()) # get current date in unix timestamp
-
-	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
-
-	print(dateneeded) # check value
-	print(currentdateunix) # check value
+	dateneeded = get24hours()
 
 	cur = conn.cursor() # open db connection
 	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s AND user = %s;", (dateneeded, user)) # run the query
 	cur.close() # close db connection
 	results = cur.fetchall() # store our result from db in a value
 
-	print(results) # print all of our googles
-
 	totalcalories = 0
 
 	for x in results:
 		totalcalories = totalcalories + x[2]
-		print(totalcalories)
 
 	title = "Food History"
 
