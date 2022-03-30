@@ -39,7 +39,7 @@ def get1month():
 
 def getcurrentweight():
 	user = str(request.cookies.get('User'))
-	
+
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
 	cur.close()
@@ -47,6 +47,14 @@ def getcurrentweight():
 	weight = str(weightresults[3])
 
 	return weight
+
+def getalert():
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
+	cur.close()
+	alertresult = cur.fetchone()
+
+	return alertresult
 
 ## Routes and stuff yo
 @app.route('/')
@@ -56,15 +64,12 @@ def home():
 		user = str(request.cookies.get('User'))
 		user_logged_in = True
 		
-		cur = conn.cursor()
-		cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
-		cur.close()
-		alert_result = cur.fetchone()
+		alert = getalert()
 
 		weight = 77 # TODO: get this from db
 		height = 1.6 # TODO: get this from db
 		bmi = 32 # TODO: get this from db
-		status = alert_result[1]
+		status = alert[1]
 	else:
 		user = "Guest"
 		user_logged_in = False
@@ -121,13 +126,6 @@ def me():
 	user = str(request.cookies.get('User'))
 
 	weight = getcurrentweight()
-
-	# cur = conn.cursor()
-	# cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-	# cur.close()
-	# weightresults = cur.fetchone()
-
-	# weight = str(weightresults[3])
 
 	dateneeded = get24hours()
 
