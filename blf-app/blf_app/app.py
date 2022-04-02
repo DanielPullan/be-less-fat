@@ -48,6 +48,17 @@ def getcurrentweight():
 
 	return weight
 
+def getcurrentgoalweight():
+	user = str(request.cookies.get('User'))
+
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+	cur.close()
+	weightresults = cur.fetchone()
+	goalweight = str(weightresults[4])
+
+	return goalweight
+
 def getalert():
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
@@ -126,7 +137,7 @@ def me():
 	user = str(request.cookies.get('User'))
 
 	weight = getcurrentweight()
-
+	goalweight = getcurrentgoalweight()
 	dateneeded = get24hours()
 
 	cur = conn.cursor() # open db connection
@@ -139,7 +150,7 @@ def me():
 	for x in results:
 		totalcalories = totalcalories + x[2]
 
-	return render_template("me.html", title=title, user=user, weight=weight, food=totalcalories, username=user)
+	return render_template("me.html", title=title, user=user, weight=weight, goalweight=goalweight, food=totalcalories, username=user)
 
 @app.route('/track-weight', methods=['GET', 'POST'])
 def trackweight():
