@@ -23,19 +23,25 @@ the_other_cookie = "Ja_Vi_Elsker_Dette_Landet"
 conn = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpass, db=dbname, autocommit=True)
 
 ## Functions and stuff yo
-def get24hours():
-	secondsinday = 86400
-	currentdateunix = int(time.time()) # get current date in unix timestamp
-	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
+#def get24hours():
+#	secondsinday = 86400
+#	currentdateunix = int(time.time()) # get current date in unix timestamp
+#	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
+
+#	return dateneeded
+
+#def get1month():
+#	secondsinamonth = 2628288 # pretend a month is 30 days...
+#	currentdateunix = int(time.time()) 
+#	dateneeded = currentdateunix - secondsinamonth
 
 	return dateneeded
+
+def get24hours():
+	return "2022-05-10"
 
 def get1month():
-	secondsinamonth = 2628288 # pretend a month is 30 days...
-	currentdateunix = int(time.time()) 
-	dateneeded = currentdateunix - secondsinamonth
-
-	return dateneeded
+	return "null"
 
 def getcurrentweight():
 	user = str(request.cookies.get('User'))
