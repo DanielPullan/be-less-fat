@@ -44,9 +44,21 @@ def getcurrentweight():
 	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
 	cur.close()
 	weightresults = cur.fetchone()
-	weight = str(weightresults[3])
+	weight = int(weightresults[3])
 
 	return weight
+
+def getcurrentheight():
+	user = str(request.cookies.get('User'))
+
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+	cur.close()
+	heightresults = cur.fetchone()
+	height = float(heightresults[5])
+
+	return height
+
 
 def getcurrentgoalweight():
 	user = str(request.cookies.get('User'))
@@ -55,7 +67,7 @@ def getcurrentgoalweight():
 	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
 	cur.close()
 	weightresults = cur.fetchone()
-	goalweight = str(weightresults[4])
+	goalweight = float(weightresults[4])
 
 	return goalweight
 
@@ -67,6 +79,10 @@ def getalert():
 
 	return alertresult
 
+def bmiCalc(weight, height):
+    bmi = weight / (height**2)
+    return bmi
+
 ## Routes and stuff yo
 @app.route('/')
 def home():
@@ -75,11 +91,16 @@ def home():
 		user = str(request.cookies.get('User'))
 		user_logged_in = True
 		
-		alert = getalert()
 
-		weight = 77 # TODO: get this from db
-		height = 1.6 # TODO: get this from db
-		bmi = 32 # TODO: get this from db
+
+		alert = getalert()
+		weight = getcurrentweight()
+		height = getcurrentheight()
+		bmi = int(bmiCalc(weight, height))
+
+		# weight = 77 # TODO: get this from db
+		# height = 1.6 # TODO: get this from db
+		# bmi = 32 # TODO: get this from db
 		status = alert[1]
 	else:
 		user = "Guest"
