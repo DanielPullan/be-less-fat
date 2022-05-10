@@ -5,7 +5,7 @@
 # imports
 from flask import Flask, request, render_template, make_response, redirect, session, url_for
 import pymysql
-from datetime import datetime # might use time instead
+from datetime import date # might use time instead
 import time # might use datetime instead
 import tzlocal # might not keep this
 from config import *
@@ -23,25 +23,11 @@ the_other_cookie = "Ja_Vi_Elsker_Dette_Landet"
 conn = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpass, db=dbname, autocommit=True)
 
 ## Functions and stuff yo
-#def get24hours():
-#	secondsinday = 86400
-#	currentdateunix = int(time.time()) # get current date in unix timestamp
-#	dateneeded = currentdateunix - secondsinday # take current date, remove 24 hours worth of seconds and store that value
 
-#	return dateneeded
+def getcurrentday():
+	today = str(date.today())# get current date in unix timestamp
 
-#def get1month():
-#	secondsinamonth = 2628288 # pretend a month is 30 days...
-#	currentdateunix = int(time.time()) 
-#	dateneeded = currentdateunix - secondsinamonth
-
-	return dateneeded
-
-def get24hours():
-	return "2022-05-10"
-
-def get1month():
-	return "null"
+	return today
 
 def getcurrentweight():
 	user = str(request.cookies.get('User'))
@@ -103,10 +89,7 @@ def home():
 		weight = getcurrentweight()
 		height = getcurrentheight()
 		bmi = int(bmiCalc(weight, height))
-
-		# weight = 77 # TODO: get this from db
-		# height = 1.6 # TODO: get this from db
-		# bmi = 32 # TODO: get this from db
+		
 		status = alert[1]
 	else:
 		user = "Guest"
@@ -165,10 +148,12 @@ def me():
 
 	weight = getcurrentweight()
 	goalweight = getcurrentgoalweight()
-	dateneeded = get24hours()
+	dateneeded = getcurrentday()
+
+	print(dateneeded)
 
 	cur = conn.cursor() # open db connection
-	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s AND user = %s;", (dateneeded, user)) # run the query
+	cur.execute("SELECT user, food, calories FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
 	cur.close() # close db connection
 	results = cur.fetchall() # store our result from db in a value
 
@@ -261,7 +246,7 @@ def foodhistory():
 	cookie = str(request.cookies.get(the_cookie))
 	user = str(request.cookies.get('User'))
 
-	dateneeded = get24hours()
+	dateneeded = getcurrentday()
 
 	cur = conn.cursor() # open db connection
 	cur.execute("SELECT user, food, calories FROM calories WHERE logdate > %s AND user = %s;", (dateneeded, user)) # run the query
