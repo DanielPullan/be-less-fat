@@ -12,7 +12,7 @@
         <form method="POST">
               Food <input list="common-food" type="text" name="food"><br>
               Calories <input type="number" name="calories" pattern="[0-9]*" inputmode="numeric"><br>
-              Meal <input type="text" name="meal"><br>
+              Meal <input list="meal" type="text" name="meal"><br>
               <input type="submit" value="Submit"><br>
           </form>
 
@@ -22,6 +22,12 @@
             <option value="Apple Crumble">
             <option value="Custard">
             <option value="Cheeky Nandos">
+        </datalist>
+        <datalist id="meal">
+            <option value="Breakfast">
+            <option value="Lunch">
+            <option value="Dinner">
+            <option value="Snack">
         </datalist>
 
     </div>
