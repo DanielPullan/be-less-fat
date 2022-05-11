@@ -165,7 +165,7 @@ def trackweight():
 
         weight = form_weight
 
-        date = getcurrentday()
+        date = getcurrent("date")
 
         if cookie == the_good_cookie:
             cur = conn.cursor()
@@ -197,7 +197,7 @@ def trackfood():
         calories = form_calories
         meal = form_meal
 
-        date = getcurrentday()
+        date = getcurrent("date")
 
         if cookie == the_good_cookie:
             cur = conn.cursor()
@@ -240,7 +240,7 @@ def foodhistory():
     cookie = str(request.cookies.get(the_cookie))
     user = str(request.cookies.get('User'))
 
-    dateneeded = getcurrentday()
+    dateneeded = getcurrent("date")
 
     cur = conn.cursor() # open db connection
     cur.execute("SELECT user, food, calories, meal FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
