@@ -24,52 +24,40 @@ conn = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpass, db=
 
 ## Functions and stuff yo
 
-def getcurrentday():
-	today = str(date.today())# get current date in unix timestamp
+def getcurrent(item):
+    user = str(request.cookies.get('User'))
 
-	return today
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+    cur.close()
+    weightresults = cur.fetchone()
+    weight = int(weightresults[3])
+    goalweight = float(weightresults[4])
+    height = float(weightresults[5])
 
-def getcurrentweight():
-	user = str(request.cookies.get('User'))
+    today = str(date.today())
 
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-	cur.close()
-	weightresults = cur.fetchone()
-	weight = int(weightresults[3])
+    print(height)
 
-	return weight
+    if item == "weight":
+        return weight
+    elif item == "goalweight":
+        return goalweight
+    elif item == "height":
+        return height
+    elif item == "date":
+        return today
+    else:
+        return "uhoh"
 
-def getcurrentheight():
-	user = str(request.cookies.get('User'))
-
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-	cur.close()
-	heightresults = cur.fetchone()
-	height = float(heightresults[5])
-
-	return height
-
-
-def getcurrentgoalweight():
-	user = str(request.cookies.get('User'))
-
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-	cur.close()
-	weightresults = cur.fetchone()
-	goalweight = float(weightresults[4])
-
-	return goalweight
 
 def getalert():
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
-	cur.close()
-	alertresult = cur.fetchone()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM alert ORDER  BY id DESC LIMIT  1;")
+    cur.close()
+    alertresult = cur.fetchone()
 
-	return alertresult
+    return alertresult
 
 def bmiCalc(weight, height):
     bmi = weight / (height**2)
@@ -78,214 +66,215 @@ def bmiCalc(weight, height):
 ## Routes and stuff yo
 @app.route('/')
 def home():
-	cookie = str(request.cookies.get(the_cookie))
-	if cookie == the_good_cookie:
-		user = str(request.cookies.get('User'))
-		user_logged_in = True
-		
+    cookie = str(request.cookies.get(the_cookie))
+    if cookie == the_good_cookie:
+        user = str(request.cookies.get('User'))
+        user_logged_in = True
+        
 
 
-		alert = getalert()
-		weight = getcurrentweight()
-		height = getcurrentheight()
-		bmi = int(bmiCalc(weight, height))
-		
-		status = alert[1]
-	else:
-		user = "Guest"
-		user_logged_in = False
-		weight = 0
-		height = 0
-		bmi = 0
-		status = "u ain't logged in"
-	
-	return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
+        alert = getalert()
+        weight = getcurrentweight()
+        height = getcurrentheight()
+        bmi = int(bmiCalc(weight, height))
+        
+        status = alert[1]
+    else:
+        user = "Guest"
+        user_logged_in = False
+        weight = 0
+        height = 0
+        bmi = 0
+        status = "u ain't logged in"
+    
+    return render_template("index.html", username=user, weight = weight, height=height, bmi=bmi, status=status)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
-	if request.method == 'POST':
-		# get login details from form
-		form_username = request.form['username']
-		form_password = request.form['password']
-		form_pin = request.form['pin']
+    if request.method == 'POST':
+        # get login details from form
+        form_username = request.form['username']
+        form_password = request.form['password']
+        form_pin = request.form['pin']
 
-		cur = conn.cursor()
-		cur.execute("SELECT * FROM users where username = %s;", (form_username))
-		cur.close()
-		results = cur.fetchone()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users where username = %s;", (form_username))
+        cur.close()
+        results = cur.fetchone()
 
-		username = str(results[1])
-		password = str(results[2])
-		pin = str(results[3])
+        username = str(results[1])
+        password = str(results[2])
+        pin = str(results[3])
 
-		if form_username == username and form_password == password and form_pin == pin:
-			resp = make_response(redirect('/me'))
-			resp.set_cookie(the_cookie, the_good_cookie)
-			resp.set_cookie('User', username)
-			return resp
-		else:
-			print('login failed')
-		return "login failed"
+        if form_username == username and form_password == password and form_pin == pin:
+            resp = make_response(redirect('/me'))
+            resp.set_cookie(the_cookie, the_good_cookie)
+            resp.set_cookie('User', username)
+            return resp
+        else:
+            print('login failed')
+        return "login failed"
 
-	title = "Login"
-	return render_template("login.html", title=title)
+    title = "Login"
+    return render_template("login.html", title=title)
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
-	res = make_response(redirect('/'))
-	res.set_cookie(the_cookie, the_other_cookie)
-	
-	res.delete_cookie('User')
-	return res
+    res = make_response(redirect('/'))
+    res.set_cookie(the_cookie, the_other_cookie)
+    
+    res.delete_cookie('User')
+    return res
 
 @app.route('/me')
 def me():
-	title = "Me"
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
+    title = "Me"
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
 
-	weight = getcurrentweight()
-	goalweight = getcurrentgoalweight()
-	dateneeded = getcurrentday()
+    weight = getcurrent("weight")
+    height = getcurrent("height")
+    goalweight = getcurrent("goalweight")
+    dateneeded = getcurrent("date")
 
-	print(dateneeded)
+    print(dateneeded)
 
-	cur = conn.cursor() # open db connection
-	cur.execute("SELECT user, food, calories FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
-	cur.close() # close db connection
-	results = cur.fetchall() # store our result from db in a value
+    cur = conn.cursor() # open db connection
+    cur.execute("SELECT user, food, calories FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
+    cur.close() # close db connection
+    results = cur.fetchall() # store our result from db in a value
 
-	totalcalories = 0
+    totalcalories = 0
 
-	for x in results:
-		totalcalories = totalcalories + x[2]
+    for x in results:
+        totalcalories = totalcalories + x[2]
 
-	return render_template("me.html", title=title, user=user, weight=weight, goalweight=goalweight, food=totalcalories, username=user)
+    return render_template("me.html", title=title, user=user, weight=weight, goalweight=goalweight, food=totalcalories, username=user)
 
 @app.route('/track-weight', methods=['GET', 'POST'])
 def trackweight():
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
-	title = "Track Weight"
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
+    title = "Track Weight"
 
-	if request.method == 'POST':
-		# get login details from form
-		form_weight= request.form['weight']
+    if request.method == 'POST':
+        # get login details from form
+        form_weight= request.form['weight']
 
-		weight = form_weight
+        weight = form_weight
 
-		date = getcurrentday()
+        date = getcurrentday()
 
-		if cookie == the_good_cookie:
-			cur = conn.cursor()
-			cur.execute("INSERT INTO weight (user, logdate, weight) values (%s, %s, %s);", (user, date, weight))
-			cur.close()
-		else:
-			print("tracking failed")
+        if cookie == the_good_cookie:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO weight (user, logdate, weight) values (%s, %s, %s);", (user, date, weight))
+            cur.close()
+        else:
+            print("tracking failed")
 
-		return render_template("result-weight.html", weight=form_weight, user=user, username=user  )
+        return render_template("result-weight.html", weight=form_weight, user=user, username=user  )
 
-	return render_template("track-weight.html", username=user, title=title)
+    return render_template("track-weight.html", username=user, title=title)
 
 @app.route('/track-food', methods=['GET', 'POST'])
 def trackfood():
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
-	title = "Track Food"
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
+    title = "Track Food"
 
-	if request.method == 'POST':
-		# get login details from form
-		form_food= request.form['food']
-		form_calories = request.form['calories']
-		try:
-			form_meal = request.form['meal']
-		except:
-			form_meal = 'NULL'
+    if request.method == 'POST':
+        # get login details from form
+        form_food= request.form['food']
+        form_calories = request.form['calories']
+        try:
+            form_meal = request.form['meal']
+        except:
+            form_meal = 'NULL'
 
-		food = form_food
-		calories = form_calories
-		meal = form_meal
+        food = form_food
+        calories = form_calories
+        meal = form_meal
 
-		date = getcurrentday()
+        date = getcurrentday()
 
-		if cookie == the_good_cookie:
-			cur = conn.cursor()
-			cur.execute("INSERT INTO calories (user, logdate, food, calories, meal) values (%s, %s, %s, %s, %s);", (user, date, food, calories, meal))
-			cur.close()
-		else:
-			print("tracking failed")
+        if cookie == the_good_cookie:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO calories (user, logdate, food, calories, meal) values (%s, %s, %s, %s, %s);", (user, date, food, calories, meal))
+            cur.close()
+        else:
+            print("tracking failed")
 
-		return render_template("result-food.html", food=form_food, calories=form_calories, user=user, username=user  )
+        return render_template("result-food.html", food=form_food, calories=form_calories, user=user, username=user  )
 
-	return render_template("track-food.html", username=user, title=title)
+    return render_template("track-food.html", username=user, title=title)
 
 @app.route('/delete-last-weight')
 def deletelastweight():
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
 
-	if cookie == the_good_cookie:
-		cur = conn.cursor()
-		cur.execute("DELETE FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
-		cur.close()
+    if cookie == the_good_cookie:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  1;", (user))
+        cur.close()
 
-		return redirect('/me')
+        return redirect('/me')
 
 @app.route('/weight-history')
 def weighthistory():
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
 
-	cur = conn.cursor()
-	cur.execute("SELECT user, logdate, weight FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  5;", (user))
-	cur.close()
-	results = cur.fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT user, logdate, weight FROM weight WHERE user = %s ORDER  BY id DESC LIMIT  5;", (user))
+    cur.close()
+    results = cur.fetchall()
 
-	title = "Weight History"
-	return render_template("weight-history.html", title=title, username=user, results=results)
+    title = "Weight History"
+    return render_template("weight-history.html", title=title, username=user, results=results)
 
 @app.route('/food-history')
 def foodhistory():
-	cookie = str(request.cookies.get(the_cookie))
-	user = str(request.cookies.get('User'))
+    cookie = str(request.cookies.get(the_cookie))
+    user = str(request.cookies.get('User'))
 
-	dateneeded = getcurrentday()
+    dateneeded = getcurrentday()
 
-	cur = conn.cursor() # open db connection
-	cur.execute("SELECT user, food, calories, meal FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
-	cur.close() # close db connection
-	results = cur.fetchall() # store our result from db in a value
+    cur = conn.cursor() # open db connection
+    cur.execute("SELECT user, food, calories, meal FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
+    cur.close() # close db connection
+    results = cur.fetchall() # store our result from db in a value
 
-	totalcalories = 0
-	dinnercal = 0
-	lunchcal = 0
-	breakfastcal = 0
-	snackcal = 0
+    totalcalories = 0
+    dinnercal = 0
+    lunchcal = 0
+    breakfastcal = 0
+    snackcal = 0
 
-	for x in results:
-		totalcalories = totalcalories + x[2]
-		if x[3] == 'Dinner':
-			dinnercal = dinnercal + x[2]
-		elif x[3] == 'Lunch':
-			lunchcal = lunchcal + x[2]
-		elif x[3] == 'Breakfast':
-			breakfastcal = breakfastcal + x[2]
-		elif x[3] == 'Snack':
-			snackcal = snackcal + x[2]
-		else:
-			pass
+    for x in results:
+        totalcalories = totalcalories + x[2]
+        if x[3] == 'Dinner':
+            dinnercal = dinnercal + x[2]
+        elif x[3] == 'Lunch':
+            lunchcal = lunchcal + x[2]
+        elif x[3] == 'Breakfast':
+            breakfastcal = breakfastcal + x[2]
+        elif x[3] == 'Snack':
+            snackcal = snackcal + x[2]
+        else:
+            pass
 
-	title = "Food History"
+    title = "Food History"
 
-	return render_template("food-history.html", title=title, username=user, results=results, totalcalories=totalcalories, breakfast=breakfastcal, lunch=lunchcal, dinner=dinnercal, snacks=snackcal)
+    return render_template("food-history.html", title=title, username=user, results=results, totalcalories=totalcalories, breakfast=breakfastcal, lunch=lunchcal, dinner=dinnercal, snacks=snackcal)
 
 
 @app.route('/notice')
 def notice():
-	title="Notice"
-	return render_template("notice.html", title=title)
+    title="Notice"
+    return render_template("notice.html", title=title)
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',debug=True)
