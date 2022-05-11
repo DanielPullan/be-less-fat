@@ -74,8 +74,8 @@ def home():
 
 
         alert = getalert()
-        weight = getcurrentweight()
-        height = getcurrentheight()
+        weight = getcurrent("weight")
+        height = getcurrent("height")
         bmi = int(bmiCalc(weight, height))
         
         status = alert[1]
