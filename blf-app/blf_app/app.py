@@ -199,15 +199,20 @@ def trackfood():
 		# get login details from form
 		form_food= request.form['food']
 		form_calories = request.form['calories']
+		try:
+			form_meal = request.form['meal']
+		except:
+			form_meal = 'NULL'
 
 		food = form_food
 		calories = form_calories
+		meal = form_meal
 
 		date = getcurrentday()
 
 		if cookie == the_good_cookie:
 			cur = conn.cursor()
-			cur.execute("INSERT INTO calories (user, logdate, food, calories) values (%s, %s, %s, %s);", (user, date, food, calories))
+			cur.execute("INSERT INTO calories (user, logdate, food, calories, meal) values (%s, %s, %s, %s, %s);", (user, date, food, calories, meal))
 			cur.close()
 		else:
 			print("tracking failed")
@@ -249,18 +254,32 @@ def foodhistory():
 	dateneeded = getcurrentday()
 
 	cur = conn.cursor() # open db connection
-	cur.execute("SELECT user, food, calories FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
+	cur.execute("SELECT user, food, calories, meal FROM calories WHERE logdate = %s AND user = %s;", (dateneeded, user)) # run the query
 	cur.close() # close db connection
 	results = cur.fetchall() # store our result from db in a value
 
 	totalcalories = 0
+	dinnercal = 0
+	lunchcal = 0
+	breakfastcal = 0
+	snackcal = 0
 
 	for x in results:
 		totalcalories = totalcalories + x[2]
+		if x[3] == 'Dinner':
+			dinnercal = dinnercal + x[2]
+		elif x[3] == 'Lunch':
+			lunchcal = lunchcal + x[2]
+		elif x[3] == 'Breakfast':
+			breakfastcal = breakfastcal + x[2]
+		elif x[3] == 'Snack':
+			snackcal = snackcal + x[2]
+		else:
+			pass
 
 	title = "Food History"
 
-	return render_template("food-history.html", title=title, username=user, results=results, totalcalories=totalcalories)
+	return render_template("food-history.html", title=title, username=user, results=results, totalcalories=totalcalories, breakfast=breakfastcal, lunch=lunchcal, dinner=dinnercal, snacks=snackcal)
 
 
 @app.route('/notice')

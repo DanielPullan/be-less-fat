@@ -13,19 +13,29 @@
             <tr>
                 <th>Food</th>
                 <th>Calories</th>
+                <th>Meal</th>
             </tr>
 
-            {% for x in results %}
+            {% for x in results%}
 
                 <tr>
                     <td>{{ x[1] }}</td>
                     <td>{{ x[2] }}</td>
+                    <td>{{ x[3] }}</td>
                 </tr>
             
             {% endfor %}
 
         </table>
-        Total calories consumed in past day: {{ totalcalories }}
+        Total calories consumed in past day: {{ totalcalories }} <br>
+        
+        Breakfast: {{ breakfast }} <br>
+        
+        Lunch: {{ lunch }} <br>
+        
+        Dinner: {{ dinner }} <br>
+        
+        Snacks: {{ snacks }} <br>
     </div>
 </div>
 
