@@ -1,6 +1,6 @@
 ## BLF Flask by Dan Pullan (https://danielpullan.co.uk/projects/be-less-fat)
 ## Another test flask app for Be Less Fat.
-## First attempted 29/07/2019, current attempt 14/02/2022.
+## First attempted 29/07/2019, current attempt 14/02/2022. Third attempt 21/02/24 (seriously)
 
 # imports
 from flask import Flask, request, render_template, make_response, redirect, session, url_for
@@ -8,7 +8,7 @@ import pymysql
 from datetime import date # might use time instead
 import time # might use datetime instead
 import tzlocal # might not keep this
-from config import *
+from config import dbhost dbpass dbuser dbport dbname
 
 # app
 app = Flask(__name__)
