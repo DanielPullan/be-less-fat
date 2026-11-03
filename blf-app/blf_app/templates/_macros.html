@@ -142,20 +142,21 @@
     <summary class="cursor-pointer font-semibold text-forest-700">How these goals are set</summary>
     <ul class="mt-2 space-y-1.5 list-disc pl-5">
         {% if nutrients.protein %}
-        <li><strong class="text-slate-900">Protein: {{ nutrients.protein.target }} g</strong> is {{ nutrients.protein.per_kg }} g for each kg of your current weight ({{ nutrients.protein.weight }} kg).
-            {% if nutrients.protein.older %}From 65, at least 1.0 g per kg is advised to keep muscle.
-            {% elif nutrients.protein.guessed_activity %}That's the usual adult amount; <a href="{{ url_for('settings') }}" class="font-semibold underline">add your activity level</a> and it goes up if you're active.
-            {% else %}It rises with activity level, from 0.8 g per kg (the usual adult amount) to 1.6 g per kg for very active people.{% endif %}
-            It updates when you weigh in.</li>
+        <li><strong class="text-slate-900">Protein: {{ nutrients.protein.target }} g</strong> is {{ nutrients.protein.per_kg }} g for each kg of your current weight ({{ nutrients.protein.weight }} kg), and updates when you weigh in.
+            {% if nutrients.protein.active %}That's the amount UK guidance gives for people doing hard exercise most days; for everyone else it's 0.75 g per kg.
+            {% else %}0.75 g per kg is the UK reference amount for adults. If you do hard exercise most days, set activity level 4 or 5 in <a href="{{ url_for('settings') }}" class="font-semibold underline">settings</a> for 1.2 g per kg.{% endif %}</li>
         {% else %}
         <li><strong class="text-slate-900">Protein:</strong> <a href="{{ url_for('weighthistory') }}" class="font-semibold underline">track your weight</a> to get a goal.</li>
         {% endif %}
-        {% if nutrients.fibre %}
-        <li><strong class="text-slate-900">Fibre: {{ nutrients.fibre.target }} g</strong> is the advised daily intake for {{ 'men' if nutrients.fibre.sex == 'male' else 'women' }} {{ 'under 51' if nutrients.fibre.group == 'under51' else 'aged 51 and over' }} (US Institute of Medicine). The NHS suggests 30 g for every adult.</li>
-        {% else %}
-        <li><strong class="text-slate-900">Fibre:</strong> <a href="{{ url_for('settings') }}" class="font-semibold underline">add your date of birth and sex</a> to get a goal.</li>
-        {% endif %}
+        <li><strong class="text-slate-900">Fibre: {{ nutrients.fibre.target }} g</strong> is what the NHS advises for every adult.</li>
+        <li><span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold bg-forest-100 text-forest-800 align-middle">High protein</span> marks foods and meals with at least 10 g of protein per 100 kcal.</li>
         <li>Both are amounts to reach each day, not limits.</li>
     </ul>
 </details>
+{%- endmacro %}
+
+
+{#- Marks a food or meal with 10 g+ protein per 100 kcal -#}
+{% macro high_protein_badge(protein, calories) -%}
+<span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold whitespace-nowrap bg-forest-100 text-forest-800 align-middle" title="{{ '%.1f'|format(protein_per_100kcal(protein, calories)) }} g protein per 100 kcal">High protein</span>
 {%- endmacro %}

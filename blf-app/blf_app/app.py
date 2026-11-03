@@ -43,14 +43,15 @@ DAILY_DEFICIT = 500                              # kcal/day, roughly 0.5 kg a we
 MINIMUM_CALORIES = {"male": 1500, "female": 1200}  # never recommend going below this
 KCAL_PER_KG = 7700                               # approx energy in 1 kg of body fat
 
-# Protein, in grams per kg of body weight, by activity level. 0.8 g/kg is the usual adult reference
-# intake (UK RNI 0.75, EFSA 0.83); people who exercise regularly are advised 1.2-2.0 g/kg
-# (International Society of Sports Nutrition), rising with how much they train.
-PROTEIN_PER_KG = {1: 0.8, 2: 1.0, 3: 1.2, 4: 1.4, 5: 1.6}
-PROTEIN_PER_KG_OVER_65 = 1.0   # at least this from 65 (PROT-AGE / ESPEN advice for older adults)
-# Fibre, grams a day: the US Institute of Medicine adequate intakes, by sex and age.
-# (The UK's SACN advises 30 g a day for every adult.)
-FIBRE_PER_DAY = {("male", "under51"): 38, ("male", "51plus"): 30, ("female", "under51"): 25, ("female", "51plus"): 21}
+# UK guidance only (NHS and the British Nutrition Foundation):
+# Protein: the UK Reference Nutrient Intake for adults is 0.75 g per kg of body weight a day. People doing hard
+# exercise most days (activity levels 4 and 5) get 1.2 g/kg, the bottom of the 1.2-2 g/kg UK sources give for
+# resistance exercise.
+PROTEIN_PER_KG = {1: 0.75, 2: 0.75, 3: 0.75, 4: 1.2, 5: 1.2}
+# Fibre: the NHS advises 30 g a day for every adult.
+FIBRE_PER_DAY = 30
+# "High protein": 10 g of protein or more per 100 kcal, a rule of thumb many people use
+HIGH_PROTEIN_PER_100KCAL = 10
 
 # Same policy as SecureMy.School: only our own scripts; Google Fonts only for the optional fonts
 CSP = (
@@ -236,40 +237,34 @@ def calorieTarget(weight, height, goalweight, age, sex, activity, on=None):
     }
 
 
-def nutrientTargets(weight, age, sex, activity):
-    """Daily protein and fibre goals (grams). Either can be None if we don't know enough yet.
-
-    Protein comes from current weight, activity level and age; fibre from sex and age.
-    """
+def nutrientTargets(weight, activity):
+    """Daily protein and fibre goals (grams), from UK guidance. Protein is None until there's a weight."""
     protein = None
     if weight:
         per_kg = PROTEIN_PER_KG.get(activity, PROTEIN_PER_KG[1])
-        older = age is not None and age >= 65
-        if older:
-            per_kg = max(per_kg, PROTEIN_PER_KG_OVER_65)
         protein = {
             "target": int(round(weight * per_kg)),
             "per_kg": per_kg,
             "weight": weight,
-            "older": older,
-            "guessed_activity": activity not in PROTEIN_PER_KG,
+            "active": per_kg > PROTEIN_PER_KG[1],
         }
-    fibre = None
-    if sex in SEXES and age is not None:
-        group = "under51" if age < 51 else "51plus"
-        fibre = {"target": FIBRE_PER_DAY[(sex, group)], "sex": sex, "group": group}
-    return {"protein": protein, "fibre": fibre}
+    return {"protein": protein, "fibre": {"target": FIBRE_PER_DAY}}
 
 
-def user_age(user):
-    try:
-        return ageFrom(user["birthdate"]) if user["birthdate"] else None
-    except ValueError:
+def protein_per_100kcal(protein, calories):
+    """Grams of protein per 100 kcal, or None if we can't say."""
+    if protein is None or not calories:
         return None
+    return protein / calories * 100
+
+
+def is_high_protein(protein, calories):
+    ratio = protein_per_100kcal(protein, calories)
+    return ratio is not None and ratio >= HIGH_PROTEIN_PER_100KCAL
 
 
 def nutrients_for(user):
-    return nutrientTargets(getcurrent("weight"), user_age(user), user["sex"], user["activity"])
+    return nutrientTargets(getcurrent("weight"), user["activity"])
 
 
 def day_totals(rows):
@@ -441,6 +436,7 @@ def profile_complete(user):
 def register_routes(app):
 
     app.template_filter("ukdate")(ukdate)
+    app.jinja_env.globals["protein_per_100kcal"] = protein_per_100kcal
 
     @app.template_filter("shortdate")
     def shortdate(value):
@@ -651,7 +647,8 @@ def register_routes(app):
             )
             db.commit()
             extras = "".join(f", {v:g} g {k}" for k, v in (("protein", protein), ("fibre", fibre)) if v is not None)
-            flash(f"{food} ({calories} kcal{extras}) tracked.", "success")
+            high = " High protein: {:.1f} g per 100 kcal.".format(protein_per_100kcal(protein, calories)) if is_high_protein(protein, calories) else ""
+            flash(f"{food} ({calories} kcal{extras}) tracked.{high}", "success")
         return redirect(safe_next() or url_for("foodhistory"))
 
     @app.route("/delete-food/<int:entry_id>", methods=["POST"])
@@ -845,9 +842,15 @@ def register_routes(app):
         user = current_user()
         results = calories_for(user["id"], logdate)
         per_meal = {meal: 0 for meal in MEALS}
+        meal_protein = {meal: None for meal in MEALS}
         for row in results:
             if row["meal"] in per_meal:
                 per_meal[row["meal"]] += row["calories"]
+                if row["protein"] is not None:
+                    meal_protein[row["meal"]] = (meal_protein[row["meal"]] or 0) + row["protein"]
+        # A meal counts as high protein only if every food in it has a protein amount
+        complete = {meal: all(r["protein"] is not None for r in results if r["meal"] == meal) for meal in MEALS}
+        high_meals = {meal for meal in MEALS if complete[meal] and is_high_protein(meal_protein[meal], per_meal[meal])}
 
         return render_template(
             "food-history.html",
@@ -861,6 +864,10 @@ def register_routes(app):
             totals=day_totals(results),
             nutrients=nutrients_for(user),
             per_meal=per_meal,
+            meal_protein=meal_protein,
+            high_meals=high_meals,
+            high_foods={r["id"] for r in results if is_high_protein(r["protein"], r["calories"])},
+            high_bar=HIGH_PROTEIN_PER_100KCAL,
             target=target_for(user),
         )
 

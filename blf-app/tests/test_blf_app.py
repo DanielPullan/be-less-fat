@@ -173,7 +173,7 @@ def test_remove_food_entry(client):
     client.post("/track-food", data={"food": "Tea", "calories": "40"})
     client.post("/delete-food/1")
     history = client.get("/food-history").data.decode()
-    row = 'text-slate-900">{}</td>'
+    row = 'text-slate-900">{}</span>'
     assert row.format("Custard") not in history and row.format("Tea") in history
 
 
@@ -296,18 +296,24 @@ def test_long_history_shows_latest_50_with_show_all(client):
     assert "Showing the latest" not in page
 
 
-def test_nutrient_targets():
+def test_nutrient_targets_follow_uk_guidance():
     from blf_app.app import nutrientTargets
-    t = nutrientTargets(80, 30, "male", 3)
-    assert t["protein"]["target"] == 96 and t["protein"]["per_kg"] == 1.2
-    assert t["fibre"]["target"] == 38
-    t = nutrientTargets(70, 70, "female", 1)
-    assert t["protein"]["per_kg"] == 1.0 and t["protein"]["older"]  # 65+ minimum
-    assert t["fibre"]["target"] == 21
-    t = nutrientTargets(80, None, None, None)
-    assert t["protein"]["target"] == 64 and t["protein"]["guessed_activity"]
-    assert t["fibre"] is None
-    assert nutrientTargets(None, 30, "male", 3)["protein"] is None
+    t = nutrientTargets(80, 3)
+    assert t["protein"]["target"] == 60 and t["protein"]["per_kg"] == 0.75
+    assert t["fibre"]["target"] == 30
+    assert nutrientTargets(80, 5)["protein"]["per_kg"] == 1.2
+    assert nutrientTargets(80, None)["protein"]["target"] == 60
+    assert nutrientTargets(None, 3)["protein"] is None
+    assert nutrientTargets(None, None)["fibre"]["target"] == 30
+
+
+def test_high_protein_rule():
+    from blf_app.app import is_high_protein
+    assert is_high_protein(31, 165)        # chicken breast: 18.8 g per 100 kcal
+    assert is_high_protein(10, 100)        # exactly the bar
+    assert not is_high_protein(9.9, 100)
+    assert not is_high_protein(None, 100)
+    assert not is_high_protein(5, 0)
 
 
 def test_protein_and_fibre_tracking(client):
@@ -319,10 +325,10 @@ def test_protein_and_fibre_tracking(client):
     client.post("/track-food", data={"food": "Tea", "calories": "20"})
 
     home = client.get("/").data.decode()
-    assert "50.5 g</strong> of 96 g" in home and "45.5 g to go" in home
-    assert "8 g</strong> of 38 g" in home
+    assert "50.5 g</strong> of 60 g" in home and "9.5 g to go" in home
+    assert "8 g</strong> of 30 g" in home
     assert "2 foods today have no fibre amount" in home
-    assert "1.2 g for each kg" in home
+    assert "0.75 g for each kg" in home and "NHS advises" in home
 
     history = client.get("/food-history").data.decode()
     assert "10.5 g" in history and "40 g" in history
@@ -335,3 +341,19 @@ def test_protein_goal_reached_and_bad_grams(client):
     assert "✓ reached" in client.get("/").data.decode()
     bad = client.post("/track-food", data={"food": "X", "calories": "1", "protein": "lots"}, follow_redirects=True)
     assert b"between 0 and 1000" in bad.data
+
+
+def test_high_protein_foods_and_meals_are_marked(client):
+    register(client)
+    client.post("/track-food", data={"food": "Chicken breast", "calories": "165", "protein": "31", "meal": "Lunch"})
+    client.post("/track-food", data={"food": "Rice", "calories": "200", "protein": "4", "meal": "Lunch"})
+    client.post("/track-food", data={"food": "Skyr", "calories": "100", "protein": "17", "meal": "Snack"})
+    flashed = client.post("/track-food", data={"food": "Tuna", "calories": "110", "protein": "25"}, follow_redirects=True).data.decode()
+    assert "High protein: 22.7 g per 100 kcal" in flashed
+
+    page = client.get("/food-history").data.decode()
+    assert page.count(">High protein</span>") == 1 + 4  # the explainer's sample + chicken, skyr, tuna + the snack meal
+    assert 'Chicken breast</span> <span' in page and 'Rice</span></td>' in page
+    # Lunch: 35 g over 365 kcal = 9.6 g per 100 kcal, so not a high-protein meal
+    lunch = page[page.index(">Lunch</h2>"):page.index(">Dinner</h2>")]
+    assert "35 g protein" in lunch and "High protein" not in lunch
