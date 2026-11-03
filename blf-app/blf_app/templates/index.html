@@ -19,9 +19,9 @@
             </tr>
 
             <tr>
-                <td>{{ weight }} kg</td>
-                <td>{{ height }} m</td>
-                <td>{{ bmi }}</td>
+                <td>{% if weight %}{{ weight }} kg{% else %}<a href="/track-weight">Add</a>{% endif %}</td>
+                <td>{% if height %}{{ height }} m{% else %}<a href="/settings">Add</a>{% endif %}</td>
+                <td>{{ bmi if bmi else "-" }}</td>
                 <td>{{ status }}</td>
 
             </tr>

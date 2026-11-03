@@ -22,7 +22,7 @@ body {
   font-family: var(--body_font);
   font-weight: 300;
   line-height: 1.8;
-  color: var(primary_colour);
+  color: var(--primary_colour);
   background: var(--background);
 }
 
@@ -305,3 +305,8 @@ td, th {
 .subnav:hover .subnav-content {
   display: block;
 } 
+.flash {
+  border-left: 4px solid var(--secondary_colour);
+  padding-left: 12px;
+  margin: 12px 0;
+}

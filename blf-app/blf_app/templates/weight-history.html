@@ -18,10 +18,12 @@
             {% for x in results %}
 
                 <tr>
-                    <td>{{ x[1] }}</td>
-                    <td>{{ x[2] }}</td>
+                    <td>{{ x["logdate"] }}</td>
+                    <td>{{ x["weight"] }} kg</td>
                 </tr>
             
+            {% else %}
+                <tr><td colspan="2">Nothing tracked yet. <a href="/track-weight">Track your weight</a>.</td></tr>
             {% endfor %}
 
         </table>

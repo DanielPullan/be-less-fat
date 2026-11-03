@@ -10,8 +10,8 @@
 <div class="row">
     <div class="col-12">
         <form method="POST">
-              Food <input list="common-food" type="text" name="food"><br>
-              Calories <input type="number" name="calories" pattern="[0-9]*" inputmode="numeric"><br>
+              Food <input list="common-food" type="text" name="food" required><br>
+              Calories <input type="number" name="calories" min="0" inputmode="numeric" required><br>
               Meal <input list="meal" type="text" name="meal"><br>
               <input type="submit" value="Submit"><br>
           </form>
@@ -24,10 +24,9 @@
             <option value="Cheeky Nandos">
         </datalist>
         <datalist id="meal">
-            <option value="Breakfast">
-            <option value="Lunch">
-            <option value="Dinner">
-            <option value="Snack">
+            {% for meal in meals %}
+            <option value="{{ meal }}">
+            {% endfor %}
         </datalist>
 
     </div>

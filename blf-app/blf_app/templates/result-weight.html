@@ -8,9 +8,13 @@
 </div>
 
 <div class="row">
-    <p>You've just tracked your weight as {{ weight }}.</p>
+    <div class="col-12">
+    <p>You've just tracked your weight as {{ weight }} kg.</p>
     <p><a href="/track-weight">Track again</a>.</p>
-    <p><a href="/delete-last-weight">Undo</a>.</p>
+    <form method="POST" action="/delete-last-weight">
+        <input type="submit" value="Undo">
+    </form>
+    </div>
 </div>
 
 

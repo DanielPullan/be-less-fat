@@ -19,15 +19,20 @@
             {% for x in results%}
 
                 <tr>
-                    <td>{{ x[1] }}</td>
-                    <td>{{ x[2] }}</td>
-                    <td>{{ x[3] }}</td>
+                    <td>{{ x["food"] }}</td>
+                    <td>{{ x["calories"] }}</td>
+                    <td>{{ x["meal"] or "-" }}</td>
                 </tr>
             
+            {% else %}
+                <tr><td colspan="3">Nothing tracked for this day. <a href="/track-food">Track some food</a>.</td></tr>
             {% endfor %}
 
         </table>
-        Total calories consumed in past day: {{ totalcalories }} <br>
+        <form method="GET">
+            Day <input type="date" name="date" value="{{ logdate }}"> <input type="submit" value="Show">
+        </form>
+        Total calories consumed on {{ logdate }}: {{ totalcalories }} <br>
         
         Breakfast: {{ breakfast }} <br>
         

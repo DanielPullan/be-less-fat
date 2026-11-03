@@ -12,3 +12,6 @@ blf-app/blf_app/config.py
 blf-app/blf_app/test.py
 blf-app/blf_app/test2.py
 blf-app/blf_app/test3.py
+
+# Local database
+blf-app/blf_app/*.sqlite3

@@ -8,9 +8,19 @@
 </div>
 
 <div class="row">
+    <div class="col-12">
+    {% if weight %}
     <p>Your latest weight is {{ weight }} kg.</p>
-    <p>Your goal weight is {{ goalweight }} kg. </p>
-    <p>You've consumed {{ food }} calories today.</p>
+    {% else %}
+    <p>You haven't tracked your weight yet. <a href="/track-weight">Track it now</a>.</p>
+    {% endif %}
+    {% if goalweight %}
+    <p>Your goal weight is {{ goalweight }} kg.{% if weight %} That's {{ "%.1f"|format((weight - goalweight)|abs) }} kg {{ "to go" if weight > goalweight else "past your goal" }}.{% endif %}</p>
+    {% else %}
+    <p>You haven't set a goal weight yet. <a href="/settings">Set one</a>.</p>
+    {% endif %}
+    <p>You've consumed {{ food }} calories today. <a href="/food-history">See what</a>.</p>
+    </div>
 </div>
 
 

@@ -15,7 +15,7 @@
 <div class="row">
     <div class="col-12">
     <div class="navbar">
-      <a href="#home">BLF</a>
+      <a href="/">BLF</a>
       <div class="subnav">
         <button class="subnavbtn">About</button>
         <div class="subnav-content">
@@ -27,6 +27,7 @@
         <button class="subnavbtn">Me</button>
         <div class="subnav-content">
           <a href="/me">Me Profile Bono</a>
+          <a href="/settings">Settings</a>
           <a href="/weight-history">Weight History</a>
           <a href="/food-history">Food History</a>
         </div>
@@ -40,13 +41,13 @@
       </div>
       {% if username == "Guest" %}
       <a href="/login">Login</a>
-      {% endif %}
-      {% if username != "Guest" %}
+      <a href="/register">Register</a>
+      {% else %}
       <a href="/logout">Logout</a>
       {% endif %}
     </div>
 
-            {% if username != "dan" %}
+            {% if username == "Guest" %}
             <div class="warning">
                 <p style="text-align: center;"><strong>Be-Less-Fat is NOT for under 18's, the elderly or pregnant women.</strong></p> 
 
@@ -54,6 +55,14 @@
                 <p>Logging in will remove this notice, by logging in, you agree not to use actual real data.</p>
             </div> 
             {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <div class="flash">
+        {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
 
     </div>
 </div>

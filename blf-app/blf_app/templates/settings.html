@@ -1,0 +1,20 @@
+{% include 'header.html' %}
+
+<div class="row">
+    <div class="col-12">
+        <h1>{{ title }}</h1>
+        <p>Your height is used to work out your BMI. Your goal weight is what you're aiming for.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <form method="POST">
+              Height (m) <input type="number" name="height" step="0.01" min="0" value="{{ height or '' }}" required><br>
+              Goal weight (kg) <input type="number" name="goalweight" step="0.1" min="0" value="{{ goalweight or '' }}" required><br>
+              <input type="submit" value="Save"><br>
+          </form>
+    </div>
+</div>
+
+{% include 'footer.html' %}
