@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from '_macros.html' import card, field, csrf, calorie_bar, food_form, badge, nutrient_panel, high_protein_badge with context %}
+{% from '_macros.html' import card, field, csrf, calorie_bar, food_form, badge, nutrient_panel, high_protein_badge, high_fibre_badge with context %}
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
@@ -33,6 +33,7 @@
             {% if meal_protein[meal] is not none %}
             <p class="mt-1 text-sm text-slate-600 tabular-nums">{{ meal_protein[meal]|round(1)|replace('.0', '') }} g protein{% if meal in high_meals %} {{ high_protein_badge(meal_protein[meal], per_meal[meal]) }}{% endif %}</p>
             {% endif %}
+            {% if meal in high_fibre_meals %}<p class="mt-1">{{ high_fibre_badge(*meal_fibre[meal]) }}</p>{% endif %}
         </section>
         {% endfor %}
     </div>
@@ -55,7 +56,7 @@
             <tbody class="divide-y divide-slate-100">
                 {% for x in results %}
                 <tr>
-                    <td class="px-3 sm:px-6 py-3"><span class="font-semibold text-slate-900">{{ x.food }}</span>{% if x.id in high_foods %} {{ high_protein_badge(x.protein, x.calories) }}{% endif %}</td>
+                    <td class="px-3 sm:px-6 py-3"><span class="font-semibold text-slate-900">{{ x.food }}</span>{% if x.portion %} <span class="text-xs text-slate-500 whitespace-nowrap">{{ x.portion|round(1)|replace('.0', '') }} g</span>{% endif %}{% if x.id in high_foods %} {{ high_protein_badge(x.protein, x.calories) }}{% endif %}{% if x.id in high_fibre_foods %} {{ high_fibre_badge(x.fibre, x.portion) }}{% endif %}</td>
                     <td class="hidden sm:table-cell px-3 sm:px-6 py-3">{% if x.meal %}{{ badge(x.meal) }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
                     <td class="px-3 sm:px-6 py-3 text-right tabular-nums">{{ x.calories }}</td>
                     {% for v in (x.protein, x.fibre) %}<td class="px-3 sm:px-6 py-3 text-right tabular-nums">{% if v is not none %}{{ v|round(1)|replace('.0', '') }} g{% else %}<span class="text-slate-400">—</span>{% endif %}</td>{% endfor %}

@@ -52,6 +52,8 @@ PROTEIN_PER_KG = {1: 0.75, 2: 0.75, 3: 0.75, 4: 1.2, 5: 1.2}
 FIBRE_PER_DAY = 30
 # "High protein": 10 g of protein or more per 100 kcal, a rule of thumb many people use
 HIGH_PROTEIN_PER_100KCAL = 10
+# "High fibre": 6 g of fibre or more per 100 g of the food (NHS), so it needs the portion's weight
+HIGH_FIBRE_PER_100G = 6
 
 # Same policy as SecureMy.School: only our own scripts; Google Fonts only for the optional fonts
 CSP = (
@@ -92,7 +94,8 @@ CREATE TABLE IF NOT EXISTS calories (
     calories INTEGER NOT NULL,
     meal     TEXT,                   -- Breakfast / Lunch / Dinner / Snack / NULL
     protein  REAL,                   -- grams, optional
-    fibre    REAL                    -- grams, optional
+    fibre    REAL,                   -- grams, optional
+    portion  REAL                    -- the food's weight in grams, optional (for the high-fibre rule)
 );
 """
 
@@ -152,7 +155,7 @@ def init_db():
         if column not in existing:
             db.execute(f"ALTER TABLE users ADD COLUMN {column} {kind}")
     food_columns = {row["name"] for row in db.execute("PRAGMA table_info(calories)")}
-    for column in ("protein", "fibre"):
+    for column in ("protein", "fibre", "portion"):
         if column not in food_columns:
             db.execute(f"ALTER TABLE calories ADD COLUMN {column} REAL")
     if "import_id" not in {row["name"] for row in db.execute("PRAGMA table_info(weight)")}:
@@ -263,6 +266,18 @@ def is_high_protein(protein, calories):
     return ratio is not None and ratio >= HIGH_PROTEIN_PER_100KCAL
 
 
+def fibre_per_100g(fibre, portion):
+    """Grams of fibre per 100 g of the food, or None if we can't say."""
+    if fibre is None or not portion:
+        return None
+    return fibre / portion * 100
+
+
+def is_high_fibre(fibre, portion):
+    ratio = fibre_per_100g(fibre, portion)
+    return ratio is not None and ratio >= HIGH_FIBRE_PER_100G
+
+
 def nutrients_for(user):
     return nutrientTargets(getcurrent("weight"), user["activity"])
 
@@ -334,7 +349,7 @@ def getcurrent(item):
 
 def calories_for(user_id, logdate):
     return get_db().execute(
-        "SELECT id, food, calories, meal, protein, fibre FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
+        "SELECT id, food, calories, meal, protein, fibre, portion FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
         (user_id, logdate),
     ).fetchall()
 
@@ -347,7 +362,7 @@ def parse_positive_float(value):
     return number if number > 0 else None
 
 
-def parse_grams(value):
+def parse_grams(value, limit=1000):
     """An optional amount in grams: None if blank, False if it isn't a sensible number."""
     if value is None or str(value).strip() == "":
         return None
@@ -355,7 +370,7 @@ def parse_grams(value):
         number = float(str(value).replace(",", "."))
     except ValueError:
         return False
-    return round(number, 1) if 0 <= number <= 1000 else False
+    return round(number, 1) if 0 <= number <= limit else False
 
 
 def parse_non_negative_int(value):
@@ -437,6 +452,7 @@ def register_routes(app):
 
     app.template_filter("ukdate")(ukdate)
     app.jinja_env.globals["protein_per_100kcal"] = protein_per_100kcal
+    app.jinja_env.globals["fibre_per_100g"] = fibre_per_100g
 
     @app.template_filter("shortdate")
     def shortdate(value):
@@ -634,21 +650,32 @@ def register_routes(app):
 
         protein = parse_grams(request.form.get("protein"))
         fibre = parse_grams(request.form.get("fibre"))
+        portion = parse_grams(request.form.get("portion"), limit=5000)
 
         if not food or calories is None:
             flash("Enter a food and a whole number of calories.", "error")
         elif protein is False or fibre is False:
             flash("Protein and fibre need to be grams between 0 and 1000, or left blank.", "error")
+        elif portion is False or portion == 0:
+            flash("Portion needs to be grams between 1 and 5000, or left blank.", "error")
+        elif portion is not None and any(v is not None and v > portion for v in (protein, fibre)):
+            flash("Protein and fibre can't weigh more than the whole portion.", "error")
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO calories (user_id, logdate, food, calories, meal, protein, fibre) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (current_user()["id"], today(), food, calories, meal, protein, fibre),
+                "INSERT INTO calories (user_id, logdate, food, calories, meal, protein, fibre, portion)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (current_user()["id"], today(), food, calories, meal, protein, fibre, portion),
             )
             db.commit()
             extras = "".join(f", {v:g} g {k}" for k, v in (("protein", protein), ("fibre", fibre)) if v is not None)
-            high = " High protein: {:.1f} g per 100 kcal.".format(protein_per_100kcal(protein, calories)) if is_high_protein(protein, calories) else ""
-            flash(f"{food} ({calories} kcal{extras}) tracked.{high}", "success")
+            portion_text = f"{portion:g} g of " if portion else ""
+            high = ""
+            if is_high_protein(protein, calories):
+                high += " High protein: {:.1f} g per 100 kcal.".format(protein_per_100kcal(protein, calories))
+            if is_high_fibre(fibre, portion):
+                high += " High fibre: {:.1f} g per 100 g.".format(fibre_per_100g(fibre, portion))
+            flash(f"{portion_text}{food} ({calories} kcal{extras}) tracked.{high}", "success")
         return redirect(safe_next() or url_for("foodhistory"))
 
     @app.route("/delete-food/<int:entry_id>", methods=["POST"])
@@ -848,9 +875,14 @@ def register_routes(app):
                 per_meal[row["meal"]] += row["calories"]
                 if row["protein"] is not None:
                     meal_protein[row["meal"]] = (meal_protein[row["meal"]] or 0) + row["protein"]
-        # A meal counts as high protein only if every food in it has a protein amount
-        complete = {meal: all(r["protein"] is not None for r in results if r["meal"] == meal) for meal in MEALS}
-        high_meals = {meal for meal in MEALS if complete[meal] and is_high_protein(meal_protein[meal], per_meal[meal])}
+        # A meal counts as high protein (or fibre) only if every food in it has the amounts needed
+        in_meal = {meal: [r for r in results if r["meal"] == meal] for meal in MEALS}
+        high_meals = {meal for meal, rows in in_meal.items()
+                      if rows and all(r["protein"] is not None for r in rows)
+                      and is_high_protein(meal_protein[meal], per_meal[meal])}
+        high_fibre_meals = {meal for meal, rows in in_meal.items()
+                            if rows and all(r["fibre"] is not None and r["portion"] for r in rows)
+                            and is_high_fibre(sum(r["fibre"] for r in rows), sum(r["portion"] for r in rows))}
 
         return render_template(
             "food-history.html",
@@ -867,6 +899,10 @@ def register_routes(app):
             meal_protein=meal_protein,
             high_meals=high_meals,
             high_foods={r["id"] for r in results if is_high_protein(r["protein"], r["calories"])},
+            high_fibre_foods={r["id"] for r in results if is_high_fibre(r["fibre"], r["portion"])},
+            high_fibre_meals=high_fibre_meals,
+            meal_fibre={meal: (sum(r["fibre"] for r in rows), sum(r["portion"] for r in rows)) for meal, rows in in_meal.items()
+                        if meal in high_fibre_meals},
             high_bar=HIGH_PROTEIN_PER_100KCAL,
             target=target_for(user),
         )

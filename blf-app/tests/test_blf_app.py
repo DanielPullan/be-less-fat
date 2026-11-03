@@ -357,3 +357,35 @@ def test_high_protein_foods_and_meals_are_marked(client):
     # Lunch: 35 g over 365 kcal = 9.6 g per 100 kcal, so not a high-protein meal
     lunch = page[page.index(">Lunch</h2>"):page.index(">Dinner</h2>")]
     assert "35 g protein" in lunch and "High protein" not in lunch
+
+
+def test_high_fibre_rule():
+    from blf_app.app import is_high_fibre
+    assert is_high_fibre(3.8, 37)       # Weetabix: 10.3 g per 100 g
+    assert is_high_fibre(6, 100)        # exactly the NHS bar
+    assert not is_high_fibre(8.5, 250)  # a big bowl of porridge: 3.4 g per 100 g
+    assert not is_high_fibre(5, None)   # no portion, can't say
+    assert not is_high_fibre(None, 100)
+
+
+def test_high_fibre_foods_and_meals_are_marked(client):
+    register(client)
+    flashed = client.post("/track-food", data={"food": "Weetabix", "calories": "136", "fibre": "3.8", "portion": "37", "meal": "Breakfast"},
+                          follow_redirects=True).data.decode()
+    assert "37 g of Weetabix" in flashed and "High fibre: 10.3 g per 100 g" in flashed
+    client.post("/track-food", data={"food": "Porridge", "calories": "320", "fibre": "8.5", "portion": "250", "meal": "Lunch"})
+    client.post("/track-food", data={"food": "Lentils", "calories": "230", "fibre": "16", "meal": "Dinner"})  # no portion
+
+    page = client.get("/food-history").data.decode()
+    assert 'Weetabix</span> <span class="text-xs text-slate-500 whitespace-nowrap">37 g</span> <span' in page
+    assert page.count(">High fibre</span>") == 1 + 2   # explainer sample + Weetabix + the breakfast meal
+    dinner = page[page.index(">Dinner</h2>"):page.index(">Snack</h2>")]
+    assert "High fibre" not in dinner
+
+
+def test_portion_checks(client):
+    register(client)
+    bad = client.post("/track-food", data={"food": "X", "calories": "10", "fibre": "50", "portion": "20"}, follow_redirects=True)
+    assert b"weigh more than the whole portion" in bad.data
+    bad = client.post("/track-food", data={"food": "X", "calories": "10", "portion": "0"}, follow_redirects=True)
+    assert b"Portion needs to be grams" in bad.data

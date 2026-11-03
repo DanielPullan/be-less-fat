@@ -59,24 +59,28 @@
 
 {#- Add food form; next = the page to come back to -#}
 {% macro food_form(next) -%}
-<form method="POST" action="{{ url_for('trackfood') }}" class="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-[1fr_6.5rem_6.5rem_6.5rem_8.5rem_auto] items-end">
+<form method="POST" action="{{ url_for('trackfood') }}" class="grid gap-3 grid-cols-2 sm:grid-cols-5 lg:grid-cols-[1fr_5.75rem_5.75rem_5.75rem_5.75rem_7.5rem_auto] items-end">
     {{ csrf() }}
     <input type="hidden" name="next" value="{{ next }}">
-    <div class="col-span-2 sm:col-span-4 lg:col-span-1">
+    <div class="col-span-2 sm:col-span-5 lg:col-span-1">
         <label for="food" class="{{ label_class }}">Food</label>
         <input id="food" list="common-food" type="text" name="food" required class="{{ field }}" placeholder="e.g. Apple crumble">
+    </div>
+    <div>
+        <label for="portion" class="{{ label_class }}">Portion</label>
+        <input id="portion" type="number" name="portion" min="1" max="5000" step="1" inputmode="decimal" class="{{ field }}" placeholder="g">
     </div>
     <div>
         <label for="calories" class="{{ label_class }}">Calories</label>
         <input id="calories" type="number" name="calories" min="0" inputmode="numeric" required class="{{ field }}" placeholder="kcal">
     </div>
     <div>
-        <label for="protein" class="{{ label_class }}">Protein <span class="text-slate-400 font-normal">(g)</span></label>
-        <input id="protein" type="number" name="protein" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="optional">
+        <label for="protein" class="{{ label_class }}">Protein</label>
+        <input id="protein" type="number" name="protein" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="g">
     </div>
     <div>
-        <label for="fibre" class="{{ label_class }}">Fibre <span class="text-slate-400 font-normal">(g)</span></label>
-        <input id="fibre" type="number" name="fibre" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="optional">
+        <label for="fibre" class="{{ label_class }}">Fibre</label>
+        <input id="fibre" type="number" name="fibre" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="g">
     </div>
     <div>
         <label for="meal" class="{{ label_class }}">Meal</label>
@@ -85,7 +89,8 @@
             {% for meal in meals %}<option value="{{ meal }}">{{ meal }}</option>{% endfor %}
         </select>
     </div>
-    <button type="submit" class="{{ btn_primary }} col-span-1 sm:col-span-4 lg:col-span-1">Add</button>
+    <button type="submit" class="{{ btn_primary }} col-span-2 sm:col-span-5 lg:col-span-1">Add</button>
+    <p class="col-span-2 sm:col-span-5 lg:col-span-7 -mt-1 text-xs text-slate-500">Portion, protein and fibre are optional, in grams. Add the portion's weight to see which foods are high fibre.</p>
     <datalist id="common-food">
         {% for f in ['Tea', 'Coffee', 'Apple Crumble', 'Custard', 'Cheeky Nandos'] %}<option value="{{ f }}">{% endfor %}
     </datalist>
@@ -150,6 +155,7 @@
         {% endif %}
         <li><strong class="text-slate-900">Fibre: {{ nutrients.fibre.target }} g</strong> is what the NHS advises for every adult.</li>
         <li><span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold bg-forest-100 text-forest-800 align-middle">High protein</span> marks foods and meals with at least 10 g of protein per 100 kcal.</li>
+        <li><span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold bg-amber-100 text-amber-800 align-middle">High fibre</span> marks foods and meals with at least 6 g of fibre per 100 g, as the NHS defines it. It needs the portion's weight, so add the Portion (g) too.</li>
         <li>Both are amounts to reach each day, not limits.</li>
     </ul>
 </details>
@@ -159,4 +165,10 @@
 {#- Marks a food or meal with 10 g+ protein per 100 kcal -#}
 {% macro high_protein_badge(protein, calories) -%}
 <span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold whitespace-nowrap bg-forest-100 text-forest-800 align-middle" title="{{ '%.1f'|format(protein_per_100kcal(protein, calories)) }} g protein per 100 kcal">High protein</span>
+{%- endmacro %}
+
+
+{#- Marks a food or meal with 6 g+ fibre per 100 g (NHS) -#}
+{% macro high_fibre_badge(fibre, portion) -%}
+<span class="inline-block px-1.5 py-px rounded text-[0.7rem] font-bold whitespace-nowrap bg-amber-100 text-amber-800 align-middle" title="{{ '%.1f'|format(fibre_per_100g(fibre, portion)) }} g fibre per 100 g">High fibre</span>
 {%- endmacro %}
