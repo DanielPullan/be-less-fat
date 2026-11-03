@@ -211,3 +211,86 @@ def test_food_form_lists_meals(client):
         html = client.get(page).data.decode()
         for meal in ("Breakfast", "Lunch", "Dinner", "Snack"):
             assert f'<option value="{meal}">' in html, (page, meal)
+
+
+def test_weigh_in_for_a_past_date(client):
+    register(client)
+    client.post("/track-weight", data={"weight": "84", "logdate": "2026-01-05"})
+    assert "5 January 2026" in client.get("/weight-history?range=all").data.decode()
+    future = client.post("/track-weight", data={"weight": "84", "logdate": "2999-01-01"}, follow_redirects=True)
+    assert b"today or earlier" in future.data
+
+
+def test_import_preview_then_save_then_undo(client):
+    import io
+    import json
+    register(client)
+    client.post("/track-weight", data={"weight": "90", "logdate": "2026-01-02"})
+    csv_file = (io.BytesIO(b"Date,Weight (kg)\n2026-01-01,91.0\n2026-01-02,90.5\n2026-01-03,90.1\n"), "export.csv")
+    preview = client.post("/import-weights", data={"step": "preview", "file": csv_file, "unit": "kg", "order": "dmy"},
+                          content_type="multipart/form-data").data.decode()
+    assert "Found 3 weigh-ins" in preview
+    assert "already has a weigh-in here" in preview
+    # Nothing saved yet
+    assert client.get("/").data.decode().count("Imported") == 0
+
+    rows = json.dumps([{"date": "2026-01-01", "kg": 91.0}, {"date": "2026-01-02", "kg": 90.5}, {"date": "2026-01-03", "kg": 90.1}])
+    saved = client.post("/import-weights", data={"step": "save", "rows": rows, "existing": "skip"})
+    location = saved.headers["Location"]
+    assert "imported=1" in location
+    page = client.get(location).data.decode()
+    assert "Imported 2 weigh-ins, skipped 1 day" in page
+    assert "Undo this import" in page
+    assert "90.0 kg" in page  # kept the one already tracked
+
+    client.post("/undo-import/1")
+    page = client.get("/weight-history?range=all").data.decode()
+    assert "91.0 kg" not in page and "90.0 kg" in page
+
+
+def test_import_replace_existing_day(client):
+    import json
+    register(client)
+    client.post("/track-weight", data={"weight": "90", "logdate": "2026-01-02"})
+    rows = json.dumps([{"date": "2026-01-02", "kg": 90.5}])
+    client.post("/import-weights", data={"step": "save", "rows": rows, "existing": "replace"})
+    page = client.get("/weight-history?range=all").data.decode()
+    assert "90.5 kg" in page and "90.0 kg" not in page
+
+
+def test_import_save_rejects_bad_rows(client):
+    import json
+    register(client)
+    rows = json.dumps([{"date": "2999-01-01", "kg": 80}, {"date": "2026-01-01", "kg": 5000}, {"oops": 1}])
+    resp = client.post("/import-weights", data={"step": "save", "rows": rows}, follow_redirects=True)
+    assert b"nothing to import" in resp.data
+
+
+def test_import_from_pasted_text_in_pounds(client):
+    register(client)
+    page = client.post("/import-weights", data={"step": "preview", "text": "2026-01-01 200\n2026-01-08 199", "unit": "lb"}).data.decode()
+    assert "Found 2 weigh-ins" in page and "90.7 kg" in page
+
+
+def test_remove_one_weigh_in_and_not_someone_elses(client):
+    register(client, "lea")
+    client.post("/track-weight", data={"weight": "70", "logdate": "2026-01-01"})
+    client.post("/logout")
+    register(client, "dan")
+    assert client.post("/delete-weight/1").status_code == 404
+    client.post("/track-weight", data={"weight": "80", "logdate": "2026-01-01"})
+    client.post("/delete-weight/2")
+    assert "80.0 kg" not in client.get("/weight-history?range=all").data.decode()
+
+
+def test_long_history_shows_latest_50_with_show_all(client):
+    import json
+    from datetime import date, timedelta
+    register(client)
+    start = date(2025, 1, 1)
+    rows = json.dumps([{"date": (start + timedelta(days=i)).isoformat(), "kg": 90 - i / 100} for i in range(80)])
+    client.post("/import-weights", data={"step": "save", "rows": rows})
+    page = client.get("/weight-history?range=all").data.decode()
+    assert "Showing the latest 50 of 80" in page and "rows=all" in page
+    page = client.get("/weight-history?range=all&rows=all").data.decode()
+    assert "Showing the latest" not in page

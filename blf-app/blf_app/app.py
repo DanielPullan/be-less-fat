@@ -2,6 +2,7 @@
 ## Another test flask app for Be Less Fat.
 ## First attempted 29/07/2019, current attempt 14/02/2022. Third attempt 21/02/24 (seriously)
 
+import json
 import os
 import sqlite3
 from datetime import date, timedelta
@@ -20,7 +21,10 @@ from flask import (
     url_for,
 )
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from . import importer
 
 BASE_DIR = Path(__file__).resolve().parent
 MEALS = ("Breakfast", "Lunch", "Dinner", "Snack")
@@ -66,7 +70,8 @@ CREATE TABLE IF NOT EXISTS weight (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     logdate TEXT    NOT NULL,        -- YYYY-MM-DD
-    weight  REAL    NOT NULL         -- kg
+    weight  REAL    NOT NULL,        -- kg
+    import_id INTEGER                -- set on weigh-ins brought in from another app, so an import can be undone
 );
 
 CREATE TABLE IF NOT EXISTS calories (
@@ -85,6 +90,7 @@ def create_app(test_config=None):
     app.config.update(
         SECRET_KEY=os.environ.get("BLF_SECRET_KEY", "dev-only-change-me"),
         DATABASE=os.environ.get("BLF_DATABASE", str(BASE_DIR / "blf.sqlite3")),
+        MAX_CONTENT_LENGTH=5 * 1024 * 1024,  # imported files
     )
     if test_config:
         app.config.update(test_config)
@@ -133,6 +139,8 @@ def init_db():
     for column, kind in (("birthdate", "TEXT"), ("sex", "TEXT"), ("activity", "INTEGER")):
         if column not in existing:
             db.execute(f"ALTER TABLE users ADD COLUMN {column} {kind}")
+    if "import_id" not in {row["name"] for row in db.execute("PRAGMA table_info(weight)")}:
+        db.execute("ALTER TABLE weight ADD COLUMN import_id INTEGER")
     db.commit()
 
 
@@ -291,10 +299,15 @@ def parse_non_negative_int(value):
 
 
 def weight_chart(rows, goalweight=None, width=640, height=220):
-    """Inline SVG line chart data for a run of weigh-ins (oldest first). None if fewer than 2."""
+    """Inline SVG line chart data for a run of weigh-ins (oldest first). None if fewer than 2.
+
+    Points are spaced by date, so gaps between weigh-ins show as gaps in time.
+    """
     if len(rows) < 2:
         return None
     pad_l, pad_r, pad_t, pad_b = 44, 16, 16, 28
+    days = [date.fromisoformat(r["logdate"]) for r in rows]
+    span = max((days[-1] - days[0]).days, 1)
     weights = [r["weight"] for r in rows]
     values = weights + ([goalweight] if goalweight else [])
     lo, hi = min(values), max(values)
@@ -302,14 +315,14 @@ def weight_chart(rows, goalweight=None, width=640, height=220):
         lo, hi = lo - 1, hi + 1
     lo, hi = lo - (hi - lo) * 0.1, hi + (hi - lo) * 0.1
 
-    def x(i):
-        return pad_l + i * (width - pad_l - pad_r) / (len(rows) - 1)
+    def x(d):
+        return pad_l + (d - days[0]).days * (width - pad_l - pad_r) / span
 
     def y(v):
         return pad_t + (hi - v) * (height - pad_t - pad_b) / (hi - lo)
 
-    points = [{"x": round(x(i), 1), "y": round(y(r["weight"]), 1), "weight": r["weight"], "date": r["logdate"]}
-              for i, r in enumerate(rows)]
+    points = [{"x": round(x(d), 1), "y": round(y(r["weight"]), 1), "weight": r["weight"], "date": r["logdate"]}
+              for d, r in zip(days, rows)]
     ticks = [round(lo + (hi - lo) * k / 4, 1) for k in range(5)]
     return {
         "width": width,
@@ -318,6 +331,7 @@ def weight_chart(rows, goalweight=None, width=640, height=220):
         "right": width - pad_r,
         "bottom": height - pad_b,
         "points": points,
+        "dots": len(points) <= 60,
         "path": " ".join(f"{'M' if i == 0 else 'L'}{p['x']},{p['y']}" for i, p in enumerate(points)),
         "area": f"M{points[0]['x']},{height - pad_b} "
                 + " ".join(f"L{p['x']},{p['y']}" for p in points)
@@ -327,6 +341,14 @@ def weight_chart(rows, goalweight=None, width=640, height=220):
         "first": rows[0]["logdate"],
         "last": rows[-1]["logdate"],
     }
+
+
+WEIGHT_RANGES = {"3m": ("3 months", 91), "1y": ("1 year", 365), "all": ("All", None)}
+
+
+def ukdate(value):
+    d = date.fromisoformat(value) if isinstance(value, str) else value
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 def safe_next():
@@ -345,10 +367,7 @@ def profile_complete(user):
 
 def register_routes(app):
 
-    @app.template_filter("ukdate")
-    def ukdate(value):
-        d = date.fromisoformat(value) if isinstance(value, str) else value
-        return f"{d.day} {d.strftime('%B %Y')}"
+    app.template_filter("ukdate")(ukdate)
 
     @app.template_filter("shortdate")
     def shortdate(value):
@@ -357,7 +376,7 @@ def register_routes(app):
 
     @app.context_processor
     def inject_user():
-        return {"user": current_user(), "meals": MEALS}
+        return {"user": current_user(), "meals": MEALS, "today_iso": today}
 
     @app.route("/")
     def home():
@@ -508,16 +527,24 @@ def register_routes(app):
         if request.method == "GET":
             return redirect(url_for("weighthistory"))
         weight = parse_positive_float(request.form.get("weight"))
+        logdate = request.form.get("logdate") or today()
+        try:
+            day = date.fromisoformat(logdate)
+        except ValueError:
+            day = None
         if weight is None:
             flash("Weight needs to be a positive number (kg).", "error")
+        elif day is None or day > date.today() or day.year < 1900:
+            flash("The date needs to be today or earlier.", "error")
         else:
             db = get_db()
             db.execute(
                 "INSERT INTO weight (user_id, logdate, weight) VALUES (?, ?, ?)",
-                (current_user()["id"], today(), weight),
+                (current_user()["id"], day.isoformat(), weight),
             )
             db.commit()
-            flash(f"Weight of {weight:g} kg tracked.", "success")
+            when = "" if day == date.today() else f" for {ukdate(day)}"
+            flash(f"Weight of {weight:g} kg tracked{when}.", "success")
         return redirect(safe_next() or url_for("weighthistory"))
 
     @app.route("/track-food", methods=["GET", "POST"])
@@ -572,20 +599,157 @@ def register_routes(app):
         flash("Last weight entry removed.", "success")
         return redirect(url_for("weighthistory"))
 
+    @app.route("/delete-weight/<int:entry_id>", methods=["POST"])
+    @login_required
+    def deleteweight(entry_id):
+        db = get_db()
+        cur = db.execute("DELETE FROM weight WHERE id = ? AND user_id = ?", (entry_id, current_user()["id"]))
+        db.commit()
+        if cur.rowcount == 0:
+            abort(404)
+        flash("Weigh-in removed.", "success")
+        return redirect(safe_next() or url_for("weighthistory"))
+
     @app.route("/weight-history")
     @login_required
     def weighthistory():
         user = current_user()
-        results = get_db().execute(
-            "SELECT logdate, weight FROM weight WHERE user_id = ? ORDER BY logdate DESC, id DESC LIMIT 90",
-            (user["id"],),
+        db = get_db()
+        wanted = request.args.get("range")
+        days = None
+        if wanted not in WEIGHT_RANGES:
+            # Default to 3 months, unless that would leave too little to draw (e.g. only old, imported data)
+            recent = db.execute(
+                "SELECT COUNT(*) FROM weight WHERE user_id = ? AND logdate >= ?",
+                (user["id"], (date.today() - timedelta(days=91)).isoformat()),
+            ).fetchone()[0]
+            wanted = "3m" if recent >= 2 else "all"
+        days = WEIGHT_RANGES[wanted][1]
+        since = (date.today() - timedelta(days=days)).isoformat() if days else "0000-00-00"
+        results = db.execute(
+            "SELECT id, logdate, weight, import_id FROM weight WHERE user_id = ? AND logdate >= ?"
+            " ORDER BY logdate DESC, id DESC",
+            (user["id"], since),
         ).fetchall()
+        total = db.execute("SELECT COUNT(*) FROM weight WHERE user_id = ?", (user["id"],)).fetchone()[0]
+
+        imported = None
+        import_id = request.args.get("imported", type=int)
+        if import_id:
+            count = db.execute(
+                "SELECT COUNT(*) FROM weight WHERE user_id = ? AND import_id = ?", (user["id"], import_id)
+            ).fetchone()[0]
+            imported = {"id": import_id, "count": count} if count else None
+
         return render_template(
             "weight-history.html",
             title="Weight",
-            results=results,
+            results=results[:(500 if request.args.get("rows") == "all" else 50)],
+            show_all_url=url_for("weighthistory", range=wanted, rows="all") if len(results) > 50 and request.args.get("rows") != "all" else None,
+            in_range=len(results),
+            total=total,
+            ranges=WEIGHT_RANGES,
+            current_range=wanted,
             chart=weight_chart(list(reversed(results)), user["goalweight"]),
+            imported=imported,
         )
+
+    @app.route("/import-weights", methods=["GET", "POST"])
+    @login_required
+    def importweights():
+        user = current_user()
+        unit = request.form.get("unit", "kg") if request.form.get("unit") in importer.UNITS else "kg"
+        order = request.form.get("order", "dmy") if request.form.get("order") in importer.DATE_ORDERS else "dmy"
+        options = {"units": importer.UNITS, "orders": importer.DATE_ORDERS, "unit": unit, "order": order}
+
+        if request.method == "GET":
+            return render_template("import-weights.html", title="Import weights", **options)
+
+        db = get_db()
+        if request.form.get("step") == "save":
+            try:
+                rows = json.loads(request.form.get("rows", "[]"))
+            except ValueError:
+                rows = []
+            existing_mode = request.form.get("existing", "skip")
+            clean = []
+            for r in rows if isinstance(rows, list) else []:
+                try:
+                    day = date.fromisoformat(r["date"])
+                    kg = float(r["kg"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if day <= date.today() and importer.MIN_KG <= kg <= importer.MAX_KG:
+                    clean.append((day.isoformat(), round(kg, 1)))
+            if not clean:
+                flash("There was nothing to import.", "error")
+                return redirect(url_for("importweights"))
+
+            have = {r["logdate"] for r in db.execute("SELECT DISTINCT logdate FROM weight WHERE user_id = ?", (user["id"],))}
+            import_id = (db.execute("SELECT MAX(import_id) FROM weight WHERE user_id = ?", (user["id"],)).fetchone()[0] or 0) + 1
+            added = replaced = skipped = 0
+            for logdate, kg in clean:
+                if logdate in have:
+                    if existing_mode == "skip":
+                        skipped += 1
+                        continue
+                    db.execute("DELETE FROM weight WHERE user_id = ? AND logdate = ?", (user["id"], logdate))
+                    replaced += 1
+                db.execute(
+                    "INSERT INTO weight (user_id, logdate, weight, import_id) VALUES (?, ?, ?, ?)",
+                    (user["id"], logdate, kg, import_id),
+                )
+                added += 1
+            db.commit()
+            parts = [f"Imported {added} weigh-in{'s' if added != 1 else ''}"]
+            if replaced:
+                parts.append(f"replacing {replaced} you already had")
+            if skipped:
+                parts.append(f"skipped {skipped} day{'s' if skipped != 1 else ''} you'd already tracked")
+            flash(", ".join(parts) + ".", "success")
+            return redirect(url_for("weighthistory", range="all", imported=import_id if added else None))
+
+        # Preview
+        text = request.form.get("text", "")
+        upload = request.files.get("file")
+        if upload and upload.filename:
+            raw = upload.read()
+            try:
+                text = raw.decode("utf-8-sig")
+            except UnicodeDecodeError:
+                text = raw.decode("latin-1")
+        if not text.strip():
+            flash("Choose a file or paste some rows first.", "error")
+            return render_template("import-weights.html", title="Import weights", **options)
+
+        result = importer.read_weights(text, unit=unit, order=order)
+        have = {r["logdate"]: r["weight"] for r in db.execute(
+            "SELECT logdate, weight FROM weight WHERE user_id = ? ORDER BY id", (user["id"],))}
+        preview = [dict(r, existing=have.get(r["date"].isoformat())) for r in result.rows]
+        return render_template(
+            "import-weights.html",
+            title="Import weights",
+            result=result,
+            preview=preview,
+            clashes=sum(1 for r in preview if r["existing"] is not None),
+            rows_json=json.dumps([{"date": r["date"].isoformat(), "kg": r["kg"]} for r in result.rows]),
+            text=text if not (upload and upload.filename) else "",
+            **options,
+        )
+
+    @app.route("/undo-import/<int:import_id>", methods=["POST"])
+    @login_required
+    def undoimport(import_id):
+        db = get_db()
+        cur = db.execute("DELETE FROM weight WHERE user_id = ? AND import_id = ?", (current_user()["id"], import_id))
+        db.commit()
+        flash(f"Import undone: {cur.rowcount} weigh-in{'s' if cur.rowcount != 1 else ''} removed.", "success")
+        return redirect(url_for("weighthistory"))
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def too_large(_e):
+        flash("That file is too big: the limit is 5 MB.", "error")
+        return redirect(url_for("importweights"))
 
     @app.route("/food-history")
     @login_required

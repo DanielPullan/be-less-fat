@@ -86,12 +86,17 @@
 
 {#- Add weight form -#}
 {% macro weight_form(next) -%}
-<form method="POST" action="{{ url_for('trackweight') }}" class="flex gap-3 items-end">
+{% set today_iso = today_iso() %}
+<form method="POST" action="{{ url_for('trackweight') }}" class="grid gap-3 sm:grid-cols-[1fr_11rem_auto] sm:items-end">
     {{ csrf() }}
     <input type="hidden" name="next" value="{{ next }}">
-    <div class="flex-1">
-        <label for="weight" class="{{ label_class }}">Today's weight (kg)</label>
+    <div>
+        <label for="weight" class="{{ label_class }}">Weight (kg)</label>
         <input id="weight" type="number" name="weight" step="0.1" min="0" inputmode="decimal" required class="{{ field }}" placeholder="e.g. 82.4">
+    </div>
+    <div>
+        <label for="logdate" class="{{ label_class }}">Date</label>
+        <input id="logdate" type="date" name="logdate" value="{{ today_iso }}" max="{{ today_iso }}" required class="{{ field }}">
     </div>
     <button type="submit" class="{{ btn_primary }}">Save</button>
 </form>
