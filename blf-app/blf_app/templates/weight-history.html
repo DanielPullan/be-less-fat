@@ -70,32 +70,34 @@
             {% endif %}
         </div>
         {% if results %}
+        <div class="relative overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
-                <tr><th scope="col" class="px-6 py-3">Date</th><th scope="col" class="px-6 py-3 text-right">Weight</th><th scope="col" class="px-6 py-3 text-right">Change</th><th scope="col" class="px-6 py-3"><span class="sr-only">Remove</span></th></tr>
+                <tr><th scope="col" class="px-3 sm:px-6 py-3">Date</th><th scope="col" class="px-3 sm:px-6 py-3 text-right">Weight</th><th scope="col" class="px-3 sm:px-6 py-3 text-right">Change</th><th scope="col" class="px-3 sm:px-6 py-3"><span class="sr-only">Remove</span></th></tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 {% for x in results %}
                 {% set prev = results[loop.index] if not loop.last else none %}
                 <tr>
-                    <td class="px-6 py-3 text-slate-700">{{ x.logdate|ukdate }}{% if x.import_id %} <span class="ml-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600">Imported</span>{% endif %}</td>
-                    <td class="px-6 py-3 text-right font-semibold text-slate-900 tabular-nums">{{ x.weight }} kg</td>
-                    <td class="px-6 py-3 text-right tabular-nums">
+                    <td class="px-3 sm:px-6 py-3 text-slate-700">{{ x.logdate|ukdate }}{% if x.import_id %} <span class="ml-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600">Imported</span>{% endif %}</td>
+                    <td class="px-3 sm:px-6 py-3 text-right font-semibold text-slate-900 tabular-nums">{{ x.weight }} kg</td>
+                    <td class="px-3 sm:px-6 py-3 text-right tabular-nums">
                         {% if prev %}{% set d = (x.weight - prev.weight)|round(1) %}
                         {% if d < 0 %}<span class="text-forest-700 font-semibold">▼ {{ d|abs }}</span>{% elif d > 0 %}<span class="text-red-700 font-semibold">▲ {{ d }}</span>{% else %}<span class="text-slate-400">—</span>{% endif %}
                         {% else %}<span class="text-slate-400">—</span>{% endif %}
                     </td>
-                    <td class="px-6 py-3 text-right">
+                    <td class="px-3 sm:px-6 py-3 text-right">
                         <form method="POST" action="{{ url_for('deleteweight', entry_id=x.id) }}">
                             {{ csrf() }}
                             <input type="hidden" name="next" value="{{ request.full_path }}">
-                            <button type="submit" class="text-sm font-medium text-red-600 hover:underline" data-confirm="Remove the weigh-in from {{ x.logdate|ukdate }}?">Remove<span class="sr-only"> {{ x.logdate|ukdate }}</span></button>
+                            <button type="submit" class="text-sm font-medium text-red-600 hover:underline" data-confirm="Remove the weigh-in from {{ x.logdate|ukdate }}?" title="Remove"><span class="sm:hidden text-base leading-none" aria-hidden="true">✕</span><span class="hidden sm:inline">Remove</span><span class="sr-only"> {{ x.logdate|ukdate }}</span></button>
                         </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% if results|length < in_range %}
         <p class="px-6 py-4 text-sm text-slate-500 border-t border-slate-100">Showing the latest {{ results|length }} of {{ in_range }}; the chart includes them all.{% if show_all_url %} <a href="{{ show_all_url }}" class="font-semibold text-forest-700 hover:underline">Show all</a>{% endif %}</p>
         {% endif %}

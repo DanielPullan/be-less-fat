@@ -59,10 +59,10 @@
 
 {#- Add food form; next = the page to come back to -#}
 {% macro food_form(next) -%}
-<form method="POST" action="{{ url_for('trackfood') }}" class="grid gap-3 sm:grid-cols-[1fr_8rem_9rem_auto] sm:items-end">
+<form method="POST" action="{{ url_for('trackfood') }}" class="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-[1fr_6.5rem_6.5rem_6.5rem_8.5rem_auto] items-end">
     {{ csrf() }}
     <input type="hidden" name="next" value="{{ next }}">
-    <div>
+    <div class="col-span-2 sm:col-span-4 lg:col-span-1">
         <label for="food" class="{{ label_class }}">Food</label>
         <input id="food" list="common-food" type="text" name="food" required class="{{ field }}" placeholder="e.g. Apple crumble">
     </div>
@@ -71,13 +71,21 @@
         <input id="calories" type="number" name="calories" min="0" inputmode="numeric" required class="{{ field }}" placeholder="kcal">
     </div>
     <div>
+        <label for="protein" class="{{ label_class }}">Protein <span class="text-slate-400 font-normal">(g)</span></label>
+        <input id="protein" type="number" name="protein" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="optional">
+    </div>
+    <div>
+        <label for="fibre" class="{{ label_class }}">Fibre <span class="text-slate-400 font-normal">(g)</span></label>
+        <input id="fibre" type="number" name="fibre" min="0" max="1000" step="0.1" inputmode="decimal" class="{{ field }}" placeholder="optional">
+    </div>
+    <div>
         <label for="meal" class="{{ label_class }}">Meal</label>
         <select id="meal" name="meal" class="{{ field }}">
             <option value="">-</option>
             {% for meal in meals %}<option value="{{ meal }}">{{ meal }}</option>{% endfor %}
         </select>
     </div>
-    <button type="submit" class="{{ btn_primary }}">Add</button>
+    <button type="submit" class="{{ btn_primary }} col-span-1 sm:col-span-4 lg:col-span-1">Add</button>
     <datalist id="common-food">
         {% for f in ['Tea', 'Coffee', 'Apple Crumble', 'Custard', 'Cheeky Nandos'] %}<option value="{{ f }}">{% endfor %}
     </datalist>
@@ -100,4 +108,54 @@
     </div>
     <button type="submit" class="{{ btn_primary }}">Save</button>
 </form>
+{%- endmacro %}
+
+
+{#- A daily minimum to reach (protein, fibre): green bar, a tick when reached -#}
+{% macro goal_bar(label, got, goal, missing=0) -%}
+<div class="space-y-1.5">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+        <h3 class="text-sm font-bold text-slate-900">{{ label }}</h3>
+        <p class="text-sm text-slate-600 tabular-nums">
+            {% if goal %}<strong class="text-slate-900">{{ got|round(1)|replace('.0', '') }} g</strong> of {{ goal.target }} g
+            {% if got >= goal.target %}<span class="ml-1 font-semibold text-forest-700">✓ reached</span>{% else %}<span class="ml-1">· {{ (goal.target - got)|round(1)|replace('.0', '') }} g to go</span>{% endif %}
+            {% else %}<strong class="text-slate-900">{{ got|round(1)|replace('.0', '') }} g</strong>{% endif %}
+        </p>
+    </div>
+    {% if goal %}
+    {% set pct = [100, (got / goal.target * 100)|round|int]|min if goal.target else 0 %}
+    <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-label="{{ label }} today" aria-valuemin="0" aria-valuemax="{{ goal.target }}" aria-valuenow="{{ got }}">
+        <div class="h-full rounded-full bg-forest-600" style="width: {{ pct }}%"></div>
+    </div>
+    {% endif %}
+    {% if missing %}<p class="text-xs text-slate-500">{{ missing }} food{{ 's' if missing != 1 }} today {{ 'have' if missing != 1 else 'has' }} no {{ label|lower }} amount, so this may be low.</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{#- Protein and fibre for the day, with how the goals were worked out -#}
+{% macro nutrient_panel(totals, nutrients) -%}
+<div class="grid gap-5 sm:grid-cols-2">
+    {{ goal_bar('Protein', totals.protein, nutrients.protein, totals.missing_protein) }}
+    {{ goal_bar('Fibre', totals.fibre, nutrients.fibre, totals.missing_fibre) }}
+</div>
+<details class="text-sm text-slate-600">
+    <summary class="cursor-pointer font-semibold text-forest-700">How these goals are set</summary>
+    <ul class="mt-2 space-y-1.5 list-disc pl-5">
+        {% if nutrients.protein %}
+        <li><strong class="text-slate-900">Protein: {{ nutrients.protein.target }} g</strong> is {{ nutrients.protein.per_kg }} g for each kg of your current weight ({{ nutrients.protein.weight }} kg).
+            {% if nutrients.protein.older %}From 65, at least 1.0 g per kg is advised to keep muscle.
+            {% elif nutrients.protein.guessed_activity %}That's the usual adult amount; <a href="{{ url_for('settings') }}" class="font-semibold underline">add your activity level</a> and it goes up if you're active.
+            {% else %}It rises with activity level, from 0.8 g per kg (the usual adult amount) to 1.6 g per kg for very active people.{% endif %}
+            It updates when you weigh in.</li>
+        {% else %}
+        <li><strong class="text-slate-900">Protein:</strong> <a href="{{ url_for('weighthistory') }}" class="font-semibold underline">track your weight</a> to get a goal.</li>
+        {% endif %}
+        {% if nutrients.fibre %}
+        <li><strong class="text-slate-900">Fibre: {{ nutrients.fibre.target }} g</strong> is the advised daily intake for {{ 'men' if nutrients.fibre.sex == 'male' else 'women' }} {{ 'under 51' if nutrients.fibre.group == 'under51' else 'aged 51 and over' }} (US Institute of Medicine). The NHS suggests 30 g for every adult.</li>
+        {% else %}
+        <li><strong class="text-slate-900">Fibre:</strong> <a href="{{ url_for('settings') }}" class="font-semibold underline">add your date of birth and sex</a> to get a goal.</li>
+        {% endif %}
+        <li>Both are amounts to reach each day, not limits.</li>
+    </ul>
+</details>
 {%- endmacro %}

@@ -294,3 +294,44 @@ def test_long_history_shows_latest_50_with_show_all(client):
     assert "Showing the latest 50 of 80" in page and "rows=all" in page
     page = client.get("/weight-history?range=all&rows=all").data.decode()
     assert "Showing the latest" not in page
+
+
+def test_nutrient_targets():
+    from blf_app.app import nutrientTargets
+    t = nutrientTargets(80, 30, "male", 3)
+    assert t["protein"]["target"] == 96 and t["protein"]["per_kg"] == 1.2
+    assert t["fibre"]["target"] == 38
+    t = nutrientTargets(70, 70, "female", 1)
+    assert t["protein"]["per_kg"] == 1.0 and t["protein"]["older"]  # 65+ minimum
+    assert t["fibre"]["target"] == 21
+    t = nutrientTargets(80, None, None, None)
+    assert t["protein"]["target"] == 64 and t["protein"]["guessed_activity"]
+    assert t["fibre"] is None
+    assert nutrientTargets(None, 30, "male", 3)["protein"] is None
+
+
+def test_protein_and_fibre_tracking(client):
+    register(client)
+    client.post("/settings", data={"height": "1.8", "goalweight": "75", "birthdate": "1990-01-01", "sex": "male", "activity": "3"})
+    client.post("/track-weight", data={"weight": "80"})
+    client.post("/track-food", data={"food": "Porridge", "calories": "300", "protein": "10.5", "fibre": "8"})
+    client.post("/track-food", data={"food": "Chicken", "calories": "250", "protein": "40"})
+    client.post("/track-food", data={"food": "Tea", "calories": "20"})
+
+    home = client.get("/").data.decode()
+    assert "50.5 g</strong> of 96 g" in home and "45.5 g to go" in home
+    assert "8 g</strong> of 38 g" in home
+    assert "2 foods today have no fibre amount" in home
+    assert "1.2 g for each kg" in home
+
+    history = client.get("/food-history").data.decode()
+    assert "10.5 g" in history and "40 g" in history
+
+
+def test_protein_goal_reached_and_bad_grams(client):
+    register(client)
+    client.post("/track-weight", data={"weight": "50"})
+    client.post("/track-food", data={"food": "Steak", "calories": "600", "protein": "45"})
+    assert "✓ reached" in client.get("/").data.decode()
+    bad = client.post("/track-food", data={"food": "X", "calories": "1", "protein": "lots"}, follow_redirects=True)
+    assert b"between 0 and 1000" in bad.data

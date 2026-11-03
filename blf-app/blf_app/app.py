@@ -43,6 +43,15 @@ DAILY_DEFICIT = 500                              # kcal/day, roughly 0.5 kg a we
 MINIMUM_CALORIES = {"male": 1500, "female": 1200}  # never recommend going below this
 KCAL_PER_KG = 7700                               # approx energy in 1 kg of body fat
 
+# Protein, in grams per kg of body weight, by activity level. 0.8 g/kg is the usual adult reference
+# intake (UK RNI 0.75, EFSA 0.83); people who exercise regularly are advised 1.2-2.0 g/kg
+# (International Society of Sports Nutrition), rising with how much they train.
+PROTEIN_PER_KG = {1: 0.8, 2: 1.0, 3: 1.2, 4: 1.4, 5: 1.6}
+PROTEIN_PER_KG_OVER_65 = 1.0   # at least this from 65 (PROT-AGE / ESPEN advice for older adults)
+# Fibre, grams a day: the US Institute of Medicine adequate intakes, by sex and age.
+# (The UK's SACN advises 30 g a day for every adult.)
+FIBRE_PER_DAY = {("male", "under51"): 38, ("male", "51plus"): 30, ("female", "under51"): 25, ("female", "51plus"): 21}
+
 # Same policy as SecureMy.School: only our own scripts; Google Fonts only for the optional fonts
 CSP = (
     "default-src 'self'; script-src 'self'; "
@@ -80,7 +89,9 @@ CREATE TABLE IF NOT EXISTS calories (
     logdate  TEXT    NOT NULL,       -- YYYY-MM-DD
     food     TEXT    NOT NULL,
     calories INTEGER NOT NULL,
-    meal     TEXT                    -- Breakfast / Lunch / Dinner / Snack / NULL
+    meal     TEXT,                   -- Breakfast / Lunch / Dinner / Snack / NULL
+    protein  REAL,                   -- grams, optional
+    fibre    REAL                    -- grams, optional
 );
 """
 
@@ -139,6 +150,10 @@ def init_db():
     for column, kind in (("birthdate", "TEXT"), ("sex", "TEXT"), ("activity", "INTEGER")):
         if column not in existing:
             db.execute(f"ALTER TABLE users ADD COLUMN {column} {kind}")
+    food_columns = {row["name"] for row in db.execute("PRAGMA table_info(calories)")}
+    for column in ("protein", "fibre"):
+        if column not in food_columns:
+            db.execute(f"ALTER TABLE calories ADD COLUMN {column} REAL")
     if "import_id" not in {row["name"] for row in db.execute("PRAGMA table_info(weight)")}:
         db.execute("ALTER TABLE weight ADD COLUMN import_id INTEGER")
     db.commit()
@@ -221,6 +236,53 @@ def calorieTarget(weight, height, goalweight, age, sex, activity, on=None):
     }
 
 
+def nutrientTargets(weight, age, sex, activity):
+    """Daily protein and fibre goals (grams). Either can be None if we don't know enough yet.
+
+    Protein comes from current weight, activity level and age; fibre from sex and age.
+    """
+    protein = None
+    if weight:
+        per_kg = PROTEIN_PER_KG.get(activity, PROTEIN_PER_KG[1])
+        older = age is not None and age >= 65
+        if older:
+            per_kg = max(per_kg, PROTEIN_PER_KG_OVER_65)
+        protein = {
+            "target": int(round(weight * per_kg)),
+            "per_kg": per_kg,
+            "weight": weight,
+            "older": older,
+            "guessed_activity": activity not in PROTEIN_PER_KG,
+        }
+    fibre = None
+    if sex in SEXES and age is not None:
+        group = "under51" if age < 51 else "51plus"
+        fibre = {"target": FIBRE_PER_DAY[(sex, group)], "sex": sex, "group": group}
+    return {"protein": protein, "fibre": fibre}
+
+
+def user_age(user):
+    try:
+        return ageFrom(user["birthdate"]) if user["birthdate"] else None
+    except ValueError:
+        return None
+
+
+def nutrients_for(user):
+    return nutrientTargets(getcurrent("weight"), user_age(user), user["sex"], user["activity"])
+
+
+def day_totals(rows):
+    """Calories, protein and fibre for a day's food. Protein/fibre count only the foods that have them."""
+    return {
+        "calories": sum(r["calories"] for r in rows),
+        "protein": round(sum(r["protein"] or 0 for r in rows), 1),
+        "fibre": round(sum(r["fibre"] or 0 for r in rows), 1),
+        "missing_protein": sum(1 for r in rows if r["protein"] is None),
+        "missing_fibre": sum(1 for r in rows if r["fibre"] is None),
+    }
+
+
 def target_for(user):
     """calorieTarget() for a user row, using their latest weight."""
     try:
@@ -277,7 +339,7 @@ def getcurrent(item):
 
 def calories_for(user_id, logdate):
     return get_db().execute(
-        "SELECT id, food, calories, meal FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
+        "SELECT id, food, calories, meal, protein, fibre FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
         (user_id, logdate),
     ).fetchall()
 
@@ -288,6 +350,17 @@ def parse_positive_float(value):
     except (TypeError, ValueError):
         return None
     return number if number > 0 else None
+
+
+def parse_grams(value):
+    """An optional amount in grams: None if blank, False if it isn't a sensible number."""
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        number = float(str(value).replace(",", "."))
+    except ValueError:
+        return False
+    return round(number, 1) if 0 <= number <= 1000 else False
 
 
 def parse_non_negative_int(value):
@@ -402,6 +475,8 @@ def register_routes(app):
             status=bmiCategory(raw_bmi),
             target=target_for(user),
             eaten=sum(r["calories"] for r in rows),
+            totals=day_totals(rows),
+            nutrients=nutrients_for(user),
             rows=rows,
             profile_complete=profile_complete(user),
         )
@@ -560,16 +635,22 @@ def register_routes(app):
         if meal not in MEALS:
             meal = None
 
+        protein = parse_grams(request.form.get("protein"))
+        fibre = parse_grams(request.form.get("fibre"))
+
         if not food or calories is None:
             flash("Enter a food and a whole number of calories.", "error")
+        elif protein is False or fibre is False:
+            flash("Protein and fibre need to be grams between 0 and 1000, or left blank.", "error")
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO calories (user_id, logdate, food, calories, meal) VALUES (?, ?, ?, ?, ?)",
-                (current_user()["id"], today(), food, calories, meal),
+                "INSERT INTO calories (user_id, logdate, food, calories, meal, protein, fibre) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (current_user()["id"], today(), food, calories, meal, protein, fibre),
             )
             db.commit()
-            flash(f"{food} ({calories} kcal) tracked.", "success")
+            extras = "".join(f", {v:g} g {k}" for k, v in (("protein", protein), ("fibre", fibre)) if v is not None)
+            flash(f"{food} ({calories} kcal{extras}) tracked.", "success")
         return redirect(safe_next() or url_for("foodhistory"))
 
     @app.route("/delete-food/<int:entry_id>", methods=["POST"])
@@ -776,6 +857,8 @@ def register_routes(app):
             next_day=(day + timedelta(days=1)).isoformat() if logdate < today() else None,
             results=results,
             totalcalories=sum(r["calories"] for r in results),
+            totals=day_totals(results),
+            nutrients=nutrients_for(user),
             per_meal=per_meal,
             target=target_for(user),
         )

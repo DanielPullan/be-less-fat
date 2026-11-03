@@ -13,6 +13,10 @@ Needs `uv <https://docs.astral.sh/uv/>`_. It installs the right Python and depen
     cd blf-app
     uv run blf                                       # http://127.0.0.1:5050
 
+If ``uv run blf`` says ``No module named 'blf_app'``, run ``uv run python -m blf_app`` instead (from the
+``blf-app`` folder). It does the same thing, and doesn't depend on the ``.pth`` file in ``.venv`` that
+some macOS setups skip.
+
 Then go to ``/register`` to create an account, and ``/settings`` to add your height and goal weight.
 
 Configuration (environment variables)
