@@ -4,7 +4,7 @@
 
 import os
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 from functools import wraps
 from pathlib import Path
 
@@ -24,6 +24,20 @@ from werkzeug.security import check_password_hash, generate_password_hash
 BASE_DIR = Path(__file__).resolve().parent
 MEALS = ("Breakfast", "Lunch", "Dinner", "Snack")
 
+# Activity multipliers for Mifflin-St Jeor (from archive/mifflin.py). 1 = potato, 5 = PT instructor.
+ACTIVITY_LEVELS = {
+    1: (1.2, "Sedentary (little or no exercise)"),
+    2: (1.375, "Lightly active (exercise 1-3 days a week)"),
+    3: (1.55, "Moderately active (exercise 3-5 days a week)"),
+    4: (1.725, "Very active (hard exercise 6-7 days a week)"),
+    5: (1.9, "Extremely active (physical job or training twice a day)"),
+}
+SEXES = ("male", "female")
+
+DAILY_DEFICIT = 500                              # kcal/day, roughly 0.5 kg a week
+MINIMUM_CALORIES = {"male": 1500, "female": 1200}  # never recommend going below this
+KCAL_PER_KG = 7700                               # approx energy in 1 kg of body fat
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +45,10 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT    NOT NULL,
     pin_hash      TEXT    NOT NULL,
     height        REAL,              -- metres
-    goalweight    REAL               -- kg
+    goalweight    REAL,              -- kg
+    birthdate     TEXT,              -- YYYY-MM-DD
+    sex           TEXT,              -- male / female (used for Mifflin-St Jeor)
+    activity      INTEGER            -- 1-5, see ACTIVITY_LEVELS
 );
 
 CREATE TABLE IF NOT EXISTS weight (
@@ -90,6 +107,11 @@ def close_db(_exc=None):
 def init_db():
     db = get_db()
     db.executescript(SCHEMA)
+    # Add columns that didn't exist in older databases
+    existing = {row["name"] for row in db.execute("PRAGMA table_info(users)")}
+    for column, kind in (("birthdate", "TEXT"), ("sex", "TEXT"), ("activity", "INTEGER")):
+        if column not in existing:
+            db.execute(f"ALTER TABLE users ADD COLUMN {column} {kind}")
     db.commit()
 
 
@@ -116,6 +138,69 @@ def bmiCategory(bmi):
     if bmi < 30:
         return "Overweight"
     return "Obese"
+
+
+def ageFrom(birthdate, on=None):
+    on = on or date.today()
+    born = date.fromisoformat(birthdate)
+    return on.year - born.year - ((on.month, on.day) < (born.month, born.day))
+
+
+def mifflin(height, weight, age, sex):
+    """Basal metabolic rate (kcal/day). Height in metres, weight in kg."""
+    bmr = (10 * weight) + (6.25 * height * 100) - (5 * age)
+    return bmr + 5 if sex == "male" else bmr - 161
+
+
+def calorieTarget(weight, height, goalweight, age, sex, activity, on=None):
+    """Work out a daily calorie target and an estimate of when the goal will be reached.
+
+    Returns None if we don't have enough info. Safeguards:
+    - never recommends fewer than MINIMUM_CALORIES for the user's sex
+    - if already at/below goal weight, the target is maintenance
+    """
+    if not all((weight, height, age, sex in SEXES, activity in ACTIVITY_LEVELS)):
+        return None
+
+    bmr = mifflin(height, weight, age, sex)
+    maintenance = bmr * ACTIVITY_LEVELS[activity][0]
+    floor = MINIMUM_CALORIES[sex]
+    to_lose = (weight - goalweight) if goalweight else 0
+
+    if to_lose > 0:
+        target = max(maintenance - DAILY_DEFICIT, floor)
+        capped = target == floor and maintenance - DAILY_DEFICIT < floor
+    else:
+        target = maintenance
+        capped = False
+
+    deficit = maintenance - target
+    goal_date = None
+    if to_lose > 0 and deficit > 0:
+        days = (to_lose * KCAL_PER_KG) / deficit
+        goal_date = (on or date.today()) + timedelta(days=round(days))
+
+    return {
+        "bmr": round(bmr),
+        "maintenance": round(maintenance),
+        "target": round(target),
+        "minimum": floor,
+        "capped": capped,
+        "to_lose": round(to_lose, 1),
+        "goal_date": goal_date,
+        "weekly_loss": round(deficit * 7 / KCAL_PER_KG, 2),
+    }
+
+
+def target_for(user):
+    """calorieTarget() for a user row, using their latest weight."""
+    try:
+        age = ageFrom(user["birthdate"]) if user["birthdate"] else None
+    except ValueError:
+        age = None
+    return calorieTarget(
+        getcurrent("weight"), user["height"], user["goalweight"], age, user["sex"], user["activity"]
+    )
 
 
 def current_user():
@@ -196,15 +281,21 @@ def register_routes(app):
 
     @app.route("/")
     def home():
-        weight = height = bmi = None
+        weight = height = bmi = target = None
+        eaten = 0
         status = "u ain't logged in"
-        if current_user():
+        user = current_user()
+        if user:
+            target = target_for(user)
+            eaten = sum(r["calories"] for r in calories_for(user["id"], today()))
             weight = getcurrent("weight")
             height = getcurrent("height")
             raw_bmi = bmiCalc(weight, height)
             bmi = round(raw_bmi, 1) if raw_bmi else None
             status = bmiCategory(raw_bmi)
-        return render_template("index.html", weight=weight, height=height, bmi=bmi, status=status)
+        return render_template(
+            "index.html", weight=weight, height=height, bmi=bmi, status=status, target=target, eaten=eaten
+        )
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -280,6 +371,7 @@ def register_routes(app):
             height=getcurrent("height"),
             goalweight=getcurrent("goalweight"),
             food=totalcalories,
+            target=target_for(user),
         )
 
     @app.route("/settings", methods=["GET", "POST"])
@@ -289,24 +381,49 @@ def register_routes(app):
         if request.method == "POST":
             height = parse_positive_float(request.form.get("height"))
             goalweight = parse_positive_float(request.form.get("goalweight"))
+            birthdate = request.form.get("birthdate", "").strip() or None
+            sex = request.form.get("sex") or None
+            activity = parse_non_negative_int(request.form.get("activity"))
 
             # Be forgiving: people will type 180 meaning cm
             if height is not None and height > 3:
                 height = height / 100
 
+            error = None
             if height is None or goalweight is None:
-                flash("Height and goal weight need to be positive numbers.")
+                error = "Height and goal weight need to be positive numbers."
+            elif sex is not None and sex not in SEXES:
+                error = "Pick a sex from the list."
+            elif activity is not None and activity not in ACTIVITY_LEVELS:
+                error = "Pick an activity level from the list."
+            elif birthdate is not None:
+                try:
+                    age = ageFrom(birthdate)
+                except ValueError:
+                    error = "Date of birth needs to be a valid date."
+                else:
+                    if age < 18:
+                        error = "Be Less Fat is not for under 18s."
+                    elif age > 120:
+                        error = "Date of birth doesn't look right."
+
+            if error:
+                flash(error)
             else:
+                if bmiCalc(goalweight, height) < 18.5:
+                    flash("Heads up: that goal weight would put you in the underweight BMI range.")
                 db = get_db()
                 db.execute(
-                    "UPDATE users SET height = ?, goalweight = ? WHERE id = ?",
-                    (height, goalweight, user["id"]),
+                    "UPDATE users SET height = ?, goalweight = ?, birthdate = ?, sex = ?, activity = ? WHERE id = ?",
+                    (height, goalweight, birthdate, sex, activity, user["id"]),
                 )
                 db.commit()
                 flash("Saved.")
                 return redirect(url_for("me"))
 
-        return render_template("settings.html", title="Settings", height=user["height"], goalweight=user["goalweight"])
+        return render_template(
+            "settings.html", title="Settings", user=user, sexes=SEXES, activity_levels=ACTIVITY_LEVELS
+        )
 
     @app.route("/track-weight", methods=["GET", "POST"])
     @login_required

@@ -20,6 +20,7 @@
     <p>You haven't set a goal weight yet. <a href="/settings">Set one</a>.</p>
     {% endif %}
     <p>You've consumed {{ food }} calories today. <a href="/food-history">See what</a>.</p>
+    {% with eaten = food %}{% include 'calorie-target.html' %}{% endwith %}
     </div>
 </div>
 

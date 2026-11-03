@@ -1,7 +1,9 @@
 import pytest
 
 from blf_app import __version__
-from blf_app.app import bmiCalc, bmiCategory, create_app
+from datetime import date
+
+from blf_app.app import ageFrom, bmiCalc, bmiCategory, calorieTarget, create_app, mifflin
 
 
 @pytest.fixture
@@ -98,3 +100,62 @@ def test_users_cant_see_each_others_data(client):
     client.get("/logout")
     register(client, "dan")
     assert b"Secret Cake" not in client.get("/food-history").data
+
+
+def test_mifflin_and_age():
+    assert mifflin(1.8, 80, 30, "male") == 1780
+    assert mifflin(1.6, 55, 60, "female") == 1089
+    assert ageFrom("1990-06-15", on=date(2026, 6, 14)) == 35
+    assert ageFrom("1990-06-15", on=date(2026, 6, 15)) == 36
+
+
+def test_calorie_target_deficit_and_estimate():
+    t = calorieTarget(80, 1.8, 75, 30, "male", 1, on=date(2026, 1, 1))
+    assert t["maintenance"] == 2136
+    assert t["target"] == 1636
+    assert not t["capped"]
+    assert t["to_lose"] == 5
+    assert t["goal_date"] == date(2026, 3, 19)  # 5kg * 7700 / 500 = 77 days
+
+
+def test_calorie_target_never_below_minimum():
+    t = calorieTarget(55, 1.6, 50, 60, "female", 1)
+    assert t["target"] == 1200
+    assert t["capped"]
+
+
+def test_calorie_target_at_goal_is_maintenance():
+    t = calorieTarget(70, 1.8, 75, 30, "male", 3)
+    assert t["target"] == t["maintenance"]
+    assert t["goal_date"] is None
+
+
+def test_calorie_target_needs_profile():
+    assert calorieTarget(80, 1.8, 75, None, "male", 1) is None
+    assert calorieTarget(80, 1.8, 75, 30, None, 1) is None
+    assert calorieTarget(None, 1.8, 75, 30, "male", 1) is None
+
+
+def test_calorie_target_on_pages(client):
+    register(client)
+    assert b"to get a daily calorie target" in client.get("/me").data
+
+    client.post("/settings", data={
+        "height": "1.8", "goalweight": "75", "birthdate": "1990-01-01", "sex": "male", "activity": "1",
+    })
+    client.post("/track-weight", data={"weight": "80"})
+    client.post("/track-food", data={"food": "Tea", "calories": "36"})
+
+    age = ageFrom("1990-01-01")
+    target = round(calorieTarget(80, 1.8, 75, age, "male", 1)["target"])
+    for page in ("/", "/me"):
+        body = client.get(page).data.decode()
+        assert f"{target} kcal" in body
+        assert f"{target - 36} kcal left today" in body
+
+
+def test_settings_rejects_under_18(client):
+    register(client)
+    young = date.today().replace(year=date.today().year - 16).isoformat()
+    resp = client.post("/settings", data={"height": "1.8", "goalweight": "75", "birthdate": young, "sex": "male"})
+    assert b"not for under 18s" in resp.data

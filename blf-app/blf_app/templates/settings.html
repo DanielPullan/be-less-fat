@@ -3,15 +3,30 @@
 <div class="row">
     <div class="col-12">
         <h1>{{ title }}</h1>
-        <p>Your height is used to work out your BMI. Your goal weight is what you're aiming for.</p>
+        <p>Your height is used to work out your BMI. Your goal weight is what you're aiming for. Date of birth, sex and activity level are used to estimate how many calories you burn a day (Mifflin-St Jeor), so we can suggest a daily calorie target.</p>
     </div>
 </div>
 
 <div class="row">
     <div class="col-12">
         <form method="POST">
-              Height (m) <input type="number" name="height" step="0.01" min="0" value="{{ height or '' }}" required><br>
-              Goal weight (kg) <input type="number" name="goalweight" step="0.1" min="0" value="{{ goalweight or '' }}" required><br>
+              Height (m) <input type="number" name="height" step="0.01" min="0" value="{{ user.height or '' }}" required><br>
+              Goal weight (kg) <input type="number" name="goalweight" step="0.1" min="0" value="{{ user.goalweight or '' }}" required><br>
+              Date of birth <input type="date" name="birthdate" value="{{ user.birthdate or '' }}"><br>
+              Sex
+              <select name="sex">
+                  <option value="">-</option>
+                  {% for sex in sexes %}
+                  <option value="{{ sex }}" {% if user.sex == sex %}selected{% endif %}>{{ sex|capitalize }}</option>
+                  {% endfor %}
+              </select><br>
+              Activity level
+              <select name="activity">
+                  <option value="">-</option>
+                  {% for level, (multiplier, label) in activity_levels.items() %}
+                  <option value="{{ level }}" {% if user.activity == level %}selected{% endif %}>{{ level }}: {{ label }}</option>
+                  {% endfor %}
+              </select><br>
               <input type="submit" value="Save"><br>
           </form>
     </div>
