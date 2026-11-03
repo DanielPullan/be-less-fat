@@ -524,6 +524,15 @@ def register_routes(app):
         return render_template("notice.html", title="Notice")
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for `uv run blf`."""
     app = create_app()
-    app.run(host="0.0.0.0", debug=os.environ.get("BLF_DEBUG") == "1")
+    app.run(
+        host=os.environ.get("BLF_HOST", "127.0.0.1"),
+        port=int(os.environ.get("BLF_PORT", "5050")),  # 5000 is taken by AirPlay on macOS
+        debug=os.environ.get("BLF_DEBUG") == "1",
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -15,3 +15,4 @@ blf-app/blf_app/test3.py
 
 # Local database
 blf-app/blf_app/*.sqlite3
+blf-app/.venv/
