@@ -27,6 +27,17 @@ Configuration (environment variables)
 ``BLF_DEBUG``
     Set to ``1`` for Flask debug mode (auto-reload and error pages).
 
+Styles
+------
+
+The pages use Tailwind CSS, built into ``blf_app/static/css/app.css`` (no CDN). After changing classes in a
+template, rebuild it (needs Node.js)::
+
+    npx tailwindcss@3.4.17 -i blf_app/static/css/tailwind.src.css -o blf_app/static/css/app.css --minify
+
+Dark and high-contrast themes live in ``blf_app/static/css/themes.css``. They remap Tailwind's light colour
+classes, so if a template starts using a new colour class, add it there too.
+
 Tests
 -----
 

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from '_macros.html' import card, stat, badge, bmi_style, calorie_bar, target_explainer, food_form, weight_form with context %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Hello, {{ user.username|capitalize }}</h1>
+        <p class="text-sm text-slate-500">{{ today_date.strftime('%A') }} {{ today_date|ukdate }}</p>
+    </div>
+
+    {% if not profile_complete %}
+    <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl px-5 py-4 text-sm flex flex-wrap items-center justify-between gap-3">
+        <p>Add your height, goal weight, date of birth, sex and activity level to get a daily calorie target.</p>
+        <a href="{{ url_for('settings') }}" class="font-semibold underline">Go to settings</a>
+    </div>
+    {% endif %}
+
+    {# Today's calories #}
+    <section class="{{ card }} p-6 space-y-4" aria-labelledby="today">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="today" class="text-lg font-bold text-slate-900">Today's calories</h2>
+            <a href="{{ url_for('foodhistory') }}" class="text-sm font-semibold text-forest-700 hover:underline">See what you've eaten <span aria-hidden="true">→</span></a>
+        </div>
+        {% if target %}
+        <div class="flex flex-wrap items-end justify-between gap-2">
+            <p class="text-4xl font-extrabold text-slate-900 tabular-nums">{{ eaten }} <span class="text-lg font-semibold text-slate-500">of {{ target.target }} kcal</span></p>
+            <p class="text-sm font-semibold {{ 'text-red-700' if eaten > target.target else 'text-forest-700' }}">
+                {% if eaten < target.target %}{{ target.target - eaten }} kcal left{% elif eaten == target.target %}Right on target{% else %}{{ eaten - target.target }} kcal over{% endif %}
+            </p>
+        </div>
+        {{ calorie_bar(eaten, target.target) }}
+        {{ target_explainer(target) }}
+        {% else %}
+        <p class="text-4xl font-extrabold text-slate-900 tabular-nums">{{ eaten }} <span class="text-lg font-semibold text-slate-500">kcal</span></p>
+        <p class="text-sm text-slate-500">Fill in your settings and track your weight to see a target here.</p>
+        {% endif %}
+        <div class="pt-4 border-t border-slate-100">
+            {{ food_form(url_for('home')) }}
+        </div>
+    </section>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+        {% set change_note %}{% if change is not none %}{% if change < 0 %}<span class="text-forest-700 font-semibold">▼ {{ change|abs }} kg</span> since your last weigh-in{% elif change > 0 %}<span class="text-red-700 font-semibold">▲ {{ change }} kg</span> since your last weigh-in{% else %}Same as your last weigh-in{% endif %}{% elif weight %}Your first weigh-in{% else %}Not tracked yet{% endif %}{% endset %}
+        {{ stat('Weight', weight if weight else '—', 'kg' if weight else '', change_note, url_for('weighthistory'), 'Weight history') }}
+
+        {% set goal_note %}{% if user.goalweight and weight %}{% if weight > user.goalweight %}{{ '%.1f'|format(weight - user.goalweight) }} kg to go{% else %}Goal reached{% endif %}{% elif not user.goalweight %}Not set yet{% endif %}{% endset %}
+        {{ stat('Goal', user.goalweight if user.goalweight else '—', 'kg' if user.goalweight else '', goal_note, url_for('settings'), 'Change goal') }}
+
+        {% set bmi_note %}{% if bmi %}{{ badge(status, bmi_style.get(status)) }}{% else %}{{ status }}{% endif %}{% endset %}
+        {{ stat('BMI', bmi if bmi else '—', '', bmi_note) }}
+    </div>
+
+    <section class="{{ card }} p-6 space-y-3" aria-labelledby="weigh-in">
+        <h2 id="weigh-in" class="text-lg font-bold text-slate-900">Weigh in</h2>
+        {{ weight_form(url_for('home')) }}
+    </section>
+</div>
+{% endblock %}

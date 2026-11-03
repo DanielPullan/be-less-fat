@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Be Less Fat: a white trend line heading down, on brand green -->
+  <rect width="64" height="64" rx="14" fill="#15803d"/>
+  <path d="M13 20 26 31l9-6 16 17" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M40 43h12V31" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

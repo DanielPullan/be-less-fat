@@ -1,23 +1,26 @@
-{% include 'header.html' %}
-
-<div class="row">
-    <div class="col-12">
-        <h1>{{ title }}</h1>
-        <p>This is a work in progress. Please treat this as a test environment. Only use dummy data.</p>
+{% extends "base.html" %}
+{% from '_macros.html' import card, field, label_class, btn_primary, csrf with context %}
+{% block content %}
+<div class="max-w-md mx-auto px-6 py-16 sm:py-20">
+    <div class="{{ card }} p-8">
+        <h1 class="text-2xl font-bold text-slate-900 mb-6 text-center">Log in</h1>
+        <form method="POST" class="space-y-4">
+            {{ csrf() }}
+            <div>
+                <label for="username" class="{{ label_class }}">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus class="{{ field }}">
+            </div>
+            <div>
+                <label for="password" class="{{ label_class }}">Password</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required class="{{ field }}">
+            </div>
+            <div>
+                <label for="pin" class="{{ label_class }}">Pin</label>
+                <input type="password" id="pin" name="pin" inputmode="numeric" pattern="[0-9]*" required class="{{ field }}">
+            </div>
+            <button type="submit" class="{{ btn_primary }} w-full">Log in</button>
+        </form>
+        <p class="mt-6 text-center text-sm text-slate-600">No account? <a href="{{ url_for('register') }}" class="font-semibold text-forest-700 hover:underline">Create one</a></p>
     </div>
 </div>
-
-<div class="row">
-    <div class="col-12">
-        <form method="POST">
-              Username: <input type="text" name="username"><br>
-              Password: <input type="password" name="password"><br>
-              Pin: <input type="password" name="pin" pattern="[0-9]*" inputmode="numeric"><br>
-              <input type="submit" value="Submit"><br>
-          </form>
-        <p>No account? <a href="/register">Register</a>.</p>
-    </div>
-</div>
-
-
-{% include 'footer.html' %}
+{% endblock %}

@@ -1,14 +1,14 @@
-{% include 'header.html' %}
-
-<div class="row">
-    <div class="col-12">
-        <h1>{{ title }}</h1>
-        <p>This is a work in progress. Please treat this as a test environment. You may only use dummy data.</p>
-
-        <p>Be Less Fat (BLF) is not in a production ready state. It is not approved by any organisation (medical or otherwise) for medical, sport or dietary advice. Always follow the advice of a qualified professional.</p>
-
-        <p>Data stored by Be Less Fat (BLF) is stored on hardware inside the United Kingdom. Please do not store any actual data as currently we're in a very early state. Data is not currently being properly secured. Dummy data not linked to any person living or otherwise should be fine and will be regularly wiped.</p>
-    </div>
+{% extends "base.html" %}
+{% from '_macros.html' import card with context %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <h1 class="text-3xl font-extrabold text-slate-900">About and disclaimer</h1>
+    <section class="{{ card }} p-6 sm:p-8 space-y-4 text-slate-700">
+        <p>This is a work in progress. Please treat it as a test environment: you may only use dummy data.</p>
+        <p>Be Less Fat (BLF) is not production ready. It is not approved by any organisation, medical or otherwise, for medical, sport or dietary advice. Always follow the advice of a qualified professional.</p>
+        <p>Be Less Fat is not for under 18s, the elderly or pregnant women.</p>
+        <p>Data stored by Be Less Fat is stored on hardware inside the United Kingdom. Please don't store any real data: dummy data not linked to any person, living or otherwise, is fine and will be regularly wiped.</p>
+        <p>Made by <a href="https://danielpullan.co.uk" class="font-semibold text-forest-700 hover:underline">Daniel Pullan</a>. <a href="https://github.com/danielpullan/be-less-fat" class="font-semibold text-forest-700 hover:underline">Source on GitHub</a>.</p>
+    </section>
 </div>
-
-{% include 'footer.html' %}
+{% endblock %}

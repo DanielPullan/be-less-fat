@@ -19,6 +19,7 @@ from flask import (
     session,
     url_for,
 )
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -37,6 +38,16 @@ SEXES = ("male", "female")
 DAILY_DEFICIT = 500                              # kcal/day, roughly 0.5 kg a week
 MINIMUM_CALORIES = {"male": 1500, "female": 1200}  # never recommend going below this
 KCAL_PER_KG = 7700                               # approx energy in 1 kg of body fat
+
+# Same policy as SecureMy.School: only our own scripts; Google Fonts only for the optional fonts
+CSP = (
+    "default-src 'self'; script-src 'self'; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; "
+    "form-action 'self'; frame-ancestors 'none'"
+)
+
+csrf = CSRFProtect()
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -77,6 +88,16 @@ def create_app(test_config=None):
     )
     if test_config:
         app.config.update(test_config)
+
+    csrf.init_app(app)
+
+    @app.after_request
+    def security_headers(response):
+        response.headers.setdefault("Content-Security-Policy", CSP)
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "same-origin")
+        return response
 
     app.teardown_appcontext(close_db)
     with app.app_context():
@@ -248,7 +269,7 @@ def getcurrent(item):
 
 def calories_for(user_id, logdate):
     return get_db().execute(
-        "SELECT food, calories, meal FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
+        "SELECT id, food, calories, meal FROM calories WHERE user_id = ? AND logdate = ? ORDER BY id",
         (user_id, logdate),
     ).fetchall()
 
@@ -269,32 +290,101 @@ def parse_non_negative_int(value):
     return number if number >= 0 else None
 
 
+def weight_chart(rows, goalweight=None, width=640, height=220):
+    """Inline SVG line chart data for a run of weigh-ins (oldest first). None if fewer than 2."""
+    if len(rows) < 2:
+        return None
+    pad_l, pad_r, pad_t, pad_b = 44, 16, 16, 28
+    weights = [r["weight"] for r in rows]
+    values = weights + ([goalweight] if goalweight else [])
+    lo, hi = min(values), max(values)
+    if hi - lo < 2:
+        lo, hi = lo - 1, hi + 1
+    lo, hi = lo - (hi - lo) * 0.1, hi + (hi - lo) * 0.1
+
+    def x(i):
+        return pad_l + i * (width - pad_l - pad_r) / (len(rows) - 1)
+
+    def y(v):
+        return pad_t + (hi - v) * (height - pad_t - pad_b) / (hi - lo)
+
+    points = [{"x": round(x(i), 1), "y": round(y(r["weight"]), 1), "weight": r["weight"], "date": r["logdate"]}
+              for i, r in enumerate(rows)]
+    ticks = [round(lo + (hi - lo) * k / 4, 1) for k in range(5)]
+    return {
+        "width": width,
+        "height": height,
+        "left": pad_l,
+        "right": width - pad_r,
+        "bottom": height - pad_b,
+        "points": points,
+        "path": " ".join(f"{'M' if i == 0 else 'L'}{p['x']},{p['y']}" for i, p in enumerate(points)),
+        "area": f"M{points[0]['x']},{height - pad_b} "
+                + " ".join(f"L{p['x']},{p['y']}" for p in points)
+                + f" L{points[-1]['x']},{height - pad_b} Z",
+        "ticks": [{"value": t, "y": round(y(t), 1)} for t in ticks],
+        "goal_y": round(y(goalweight), 1) if goalweight else None,
+        "first": rows[0]["logdate"],
+        "last": rows[-1]["logdate"],
+    }
+
+
+def safe_next():
+    """The form's `next` page, if it's a page on this site (never an outside address)."""
+    target = request.form.get("next", "")
+    if target.startswith("/") and not target.startswith("//") and "\\" not in target:
+        return target
+    return None
+
+
+def profile_complete(user):
+    return all(user[k] for k in ("height", "goalweight", "birthdate", "sex", "activity"))
+
+
 ## Routes and stuff yo
 
 def register_routes(app):
 
+    @app.template_filter("ukdate")
+    def ukdate(value):
+        d = date.fromisoformat(value) if isinstance(value, str) else value
+        return f"{d.day} {d.strftime('%B %Y')}"
+
+    @app.template_filter("shortdate")
+    def shortdate(value):
+        d = date.fromisoformat(value) if isinstance(value, str) else value
+        return f"{d.day} {d.strftime('%b')}"
+
     @app.context_processor
-    def inject_username():
-        # header.html uses `username` to decide which menu items / warning to show
-        user = current_user()
-        return {"username": user["username"] if user else "Guest"}
+    def inject_user():
+        return {"user": current_user(), "meals": MEALS}
 
     @app.route("/")
     def home():
-        weight = height = bmi = target = None
-        eaten = 0
-        status = "u ain't logged in"
         user = current_user()
-        if user:
-            target = target_for(user)
-            eaten = sum(r["calories"] for r in calories_for(user["id"], today()))
-            weight = getcurrent("weight")
-            height = getcurrent("height")
-            raw_bmi = bmiCalc(weight, height)
-            bmi = round(raw_bmi, 1) if raw_bmi else None
-            status = bmiCategory(raw_bmi)
+        if not user:
+            return render_template("index.html", title="Be Less Fat")
+
+        weight = getcurrent("weight")
+        raw_bmi = bmiCalc(weight, user["height"])
+        rows = calories_for(user["id"], today())
+        recent = get_db().execute(
+            "SELECT logdate, weight FROM weight WHERE user_id = ? ORDER BY logdate DESC, id DESC LIMIT 2",
+            (user["id"],),
+        ).fetchall()
+        change = round(recent[0]["weight"] - recent[1]["weight"], 1) if len(recent) == 2 else None
         return render_template(
-            "index.html", weight=weight, height=height, bmi=bmi, status=status, target=target, eaten=eaten
+            "dashboard.html",
+            title="Today",
+            today_date=date.today(),
+            weight=weight,
+            change=change,
+            bmi=round(raw_bmi, 1) if raw_bmi else None,
+            status=bmiCategory(raw_bmi),
+            target=target_for(user),
+            eaten=sum(r["calories"] for r in rows),
+            rows=rows,
+            profile_complete=profile_complete(user),
         )
 
     @app.route("/register", methods=["GET", "POST"])
@@ -325,11 +415,11 @@ def register_routes(app):
                 else:
                     session.clear()
                     session["user_id"] = cur.lastrowid
-                    flash("Account created. Add your height and goal weight to get started.")
+                    flash("Account created. Add your details to get a daily calorie target.", "success")
                     return redirect(url_for("settings"))
-            flash(error)
+            flash(error, "error")
 
-        return render_template("register.html", title="Register")
+        return render_template("register.html", title="Create an account")
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -346,33 +436,20 @@ def register_routes(app):
             ):
                 session.clear()
                 session["user_id"] = user["id"]
-                return redirect(url_for("me"))
+                return redirect(url_for("home"))
 
-            flash("Login failed. Check your username, password and pin.")
+            flash("Login failed. Check your username, password and pin.", "error")
 
-        return render_template("login.html", title="Login")
+        return render_template("login.html", title="Log in")
 
-    @app.route("/logout", methods=["GET", "POST"])
+    @app.route("/logout", methods=["POST"])
     def logout():
         session.clear()
         return redirect(url_for("home"))
 
     @app.route("/me")
-    @login_required
     def me():
-        user = current_user()
-        rows = calories_for(user["id"], today())
-        totalcalories = sum(r["calories"] for r in rows)
-        return render_template(
-            "me.html",
-            title="Me",
-            user=user["username"],
-            weight=getcurrent("weight"),
-            height=getcurrent("height"),
-            goalweight=getcurrent("goalweight"),
-            food=totalcalories,
-            target=target_for(user),
-        )
+        return redirect(url_for("home"))
 
     @app.route("/settings", methods=["GET", "POST"])
     @login_required
@@ -408,67 +485,79 @@ def register_routes(app):
                         error = "Date of birth doesn't look right."
 
             if error:
-                flash(error)
+                flash(error, "error")
             else:
                 if bmiCalc(goalweight, height) < 18.5:
-                    flash("Heads up: that goal weight would put you in the underweight BMI range.")
+                    flash("Heads up: that goal weight would put you in the underweight BMI range.", "warning")
                 db = get_db()
                 db.execute(
                     "UPDATE users SET height = ?, goalweight = ?, birthdate = ?, sex = ?, activity = ? WHERE id = ?",
                     (height, goalweight, birthdate, sex, activity, user["id"]),
                 )
                 db.commit()
-                flash("Saved.")
-                return redirect(url_for("me"))
+                flash("Settings saved.", "success")
+                return redirect(url_for("home"))
 
         return render_template(
-            "settings.html", title="Settings", user=user, sexes=SEXES, activity_levels=ACTIVITY_LEVELS
+            "settings.html", title="Settings", sexes=SEXES, activity_levels=ACTIVITY_LEVELS
         )
 
     @app.route("/track-weight", methods=["GET", "POST"])
     @login_required
     def trackweight():
-        if request.method == "POST":
-            weight = parse_positive_float(request.form.get("weight"))
-            if weight is None:
-                flash("Weight needs to be a positive number (kg).")
-                return render_template("track-weight.html", title="Track Weight")
-
+        if request.method == "GET":
+            return redirect(url_for("weighthistory"))
+        weight = parse_positive_float(request.form.get("weight"))
+        if weight is None:
+            flash("Weight needs to be a positive number (kg).", "error")
+        else:
             db = get_db()
             db.execute(
                 "INSERT INTO weight (user_id, logdate, weight) VALUES (?, ?, ?)",
                 (current_user()["id"], today(), weight),
             )
             db.commit()
-            return render_template("result-weight.html", title="Result", weight=weight)
-
-        return render_template("track-weight.html", title="Track Weight")
+            flash(f"Weight of {weight:g} kg tracked.", "success")
+        return redirect(safe_next() or url_for("weighthistory"))
 
     @app.route("/track-food", methods=["GET", "POST"])
     @login_required
     def trackfood():
-        if request.method == "POST":
-            food = request.form.get("food", "").strip()
-            calories = parse_non_negative_int(request.form.get("calories"))
-            meal = request.form.get("meal", "").strip().capitalize()
-            if meal == "Snacks":
-                meal = "Snack"
-            if meal not in MEALS:
-                meal = None
+        if request.method == "GET":
+            return redirect(url_for("foodhistory"))
+        food = request.form.get("food", "").strip()
+        calories = parse_non_negative_int(request.form.get("calories"))
+        meal = request.form.get("meal", "").strip().capitalize()
+        if meal == "Snacks":
+            meal = "Snack"
+        if meal not in MEALS:
+            meal = None
 
-            if not food or calories is None:
-                flash("Enter a food and a whole number of calories.")
-                return render_template("track-food.html", title="Track Food", meals=MEALS)
-
+        if not food or calories is None:
+            flash("Enter a food and a whole number of calories.", "error")
+        else:
             db = get_db()
             db.execute(
                 "INSERT INTO calories (user_id, logdate, food, calories, meal) VALUES (?, ?, ?, ?, ?)",
                 (current_user()["id"], today(), food, calories, meal),
             )
             db.commit()
-            return render_template("result-food.html", title="Result", food=food, calories=calories)
+            flash(f"{food} ({calories} kcal) tracked.", "success")
+        return redirect(safe_next() or url_for("foodhistory"))
 
-        return render_template("track-food.html", title="Track Food", meals=MEALS)
+    @app.route("/delete-food/<int:entry_id>", methods=["POST"])
+    @login_required
+    def deletefood(entry_id):
+        db = get_db()
+        row = db.execute(
+            "SELECT logdate FROM calories WHERE id = ? AND user_id = ?", (entry_id, current_user()["id"])
+        ).fetchone()
+        if row is None:
+            abort(404)
+        db.execute("DELETE FROM calories WHERE id = ?", (entry_id,))
+        db.commit()
+        flash("Food entry removed.", "success")
+        return redirect(safe_next() or url_for("foodhistory", date=row["logdate"]))
 
     @app.route("/delete-last-weight", methods=["POST"])
     @login_required
@@ -480,28 +569,35 @@ def register_routes(app):
             (current_user()["id"],),
         )
         db.commit()
-        flash("Last weight entry removed.")
-        return redirect(url_for("me"))
+        flash("Last weight entry removed.", "success")
+        return redirect(url_for("weighthistory"))
 
     @app.route("/weight-history")
     @login_required
     def weighthistory():
+        user = current_user()
         results = get_db().execute(
-            "SELECT logdate, weight FROM weight WHERE user_id = ? ORDER BY logdate DESC, id DESC LIMIT 30",
-            (current_user()["id"],),
+            "SELECT logdate, weight FROM weight WHERE user_id = ? ORDER BY logdate DESC, id DESC LIMIT 90",
+            (user["id"],),
         ).fetchall()
-        return render_template("weight-history.html", title="Weight History", results=results)
+        return render_template(
+            "weight-history.html",
+            title="Weight",
+            results=results,
+            chart=weight_chart(list(reversed(results)), user["goalweight"]),
+        )
 
     @app.route("/food-history")
     @login_required
     def foodhistory():
         logdate = request.args.get("date") or today()
         try:
-            date.fromisoformat(logdate)
+            day = date.fromisoformat(logdate)
         except ValueError:
             abort(400)
 
-        results = calories_for(current_user()["id"], logdate)
+        user = current_user()
+        results = calories_for(user["id"], logdate)
         per_meal = {meal: 0 for meal in MEALS}
         for row in results:
             if row["meal"] in per_meal:
@@ -509,19 +605,20 @@ def register_routes(app):
 
         return render_template(
             "food-history.html",
-            title="Food History",
+            title="Food",
             logdate=logdate,
+            is_today=logdate == today(),
+            prev_day=(day - timedelta(days=1)).isoformat(),
+            next_day=(day + timedelta(days=1)).isoformat() if logdate < today() else None,
             results=results,
             totalcalories=sum(r["calories"] for r in results),
-            breakfast=per_meal["Breakfast"],
-            lunch=per_meal["Lunch"],
-            dinner=per_meal["Dinner"],
-            snacks=per_meal["Snack"],
+            per_meal=per_meal,
+            target=target_for(user),
         )
 
     @app.route("/notice")
     def notice():
-        return render_template("notice.html", title="Notice")
+        return render_template("notice.html", title="About and disclaimer")
 
 
 def main():

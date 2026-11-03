@@ -1,0 +1,200 @@
+/*
+ * Display settings: themes, text size, fonts and reduced motion.
+ * Adapted from SecureMy.School. Set as attributes on <html> by static/js/display.js.
+ *
+ * The templates use Tailwind's light colour classes directly, so the dark and high-contrast
+ * themes remap those classes here rather than adding dark: variants to every template.
+ * If a template starts using a new colour class, add it to the theme blocks below.
+ */
+/* ---------- Text size (Tailwind sizes are in rem, so the whole UI scales) ---------- */
+html[data-text="large"] { font-size: 112.5%; }
+html[data-text="larger"] { font-size: 125%; }
+
+/* ---------- Readable font ---------- */
+html[data-font="readable"] body {
+    font-family: "Atkinson Hyperlegible", system-ui, sans-serif !important;
+    letter-spacing: 0.02em;
+    word-spacing: 0.08em;
+}
+
+/* ---------- Fira Sans, with Fira Code for codes and other monospaced text ---------- */
+html[data-font="fira"] body { font-family: "Fira Sans", system-ui, sans-serif !important; }
+html[data-font="fira"] :is(.font-mono, code, pre, kbd, samp) { font-family: "Fira Code", ui-monospace, monospace !important; }
+
+/* ---------- Reduced motion ---------- */
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* ---------- Windows high contrast (forced colours): keep chart marks visible ---------- */
+@media (forced-colors: active) {
+    [style*="background"] { forced-color-adjust: none; }
+}
+
+@media screen {
+/* ---------- Dark ---------- */
+html[data-theme="dark"] {
+    --bg: #0b1220; --fg: #e2e8f0;
+    --surface: #151e2e; --surface-50: #1b2638; --surface-100: #243045; --surface-200: #2f3b52; --surface-300: #3a4760; --hover-50: #1f2b40;
+    --t900: #f1f5f9; --t800: #e2e8f0; --t700: #cbd5e1; --t600: #b4c0d1; --t500: #97a5ba; --t400: #7f8ea5; --t300: #56647d;
+    --t-hover: #ffffff; --placeholder: #6b7a92;
+    --b100: #212d42; --b200: #2a3750; --b300: #3a4862; --b400: #56647d;
+    --selected: #e2e8f0; --on-selected: #0f172a; --selected-muted: #475569;
+    --pass: #16a34a; --pass-border: #22c55e; --fail: #dc2626; --fail-border: #ef4444; --na: #64748b; --na-border: #94a3b8; --on-fill: #ffffff;
+    --brand: #6ee7a0; --brand-strong: #a7f3c4; --brand-rgb: 34, 197, 94;
+    --red: #fca5a5; --red-rgb: 239, 68, 68; --amber: #fcd34d; --amber-rgb: 245, 158, 11;
+    --violet: #c4b5fd; --violet-rgb: 139, 92, 246; --violet-border: #a78bfa;
+    --blue: #93c5fd; --blue-rgb: 59, 130, 246; --orange: #fdba74; --orange-rgb: 249, 115, 22;
+}
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="dark"] body { background-color: var(--bg) !important; color: var(--fg) !important; }
+/* Surfaces */
+html[data-theme="dark"] .bg-white { background-color: var(--surface) !important; }
+html[data-theme="dark"] .bg-slate-50 { background-color: var(--surface-50) !important; }
+html[data-theme="dark"] .bg-slate-100 { background-color: var(--surface-100) !important; }
+html[data-theme="dark"] .bg-slate-300 { background-color: var(--surface-300) !important; }
+html[data-theme="dark"] .bg-slate-200 { background-color: var(--surface-200) !important; }
+html[data-theme="dark"] .hover\:bg-slate-50:hover { background-color: var(--hover-50) !important; }
+html[data-theme="dark"] .from-white { --tw-gradient-from: var(--bg) var(--tw-gradient-from-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+html[data-theme="dark"] .to-forest-50\/50 { --tw-gradient-to: rgba(var(--brand-rgb), .08) var(--tw-gradient-to-position) !important; }
+/* Text */
+html[data-theme="dark"] .text-slate-900 { color: var(--t900) !important; }
+html[data-theme="dark"] .text-slate-800 { color: var(--t800) !important; }
+html[data-theme="dark"] .text-slate-700 { color: var(--t700) !important; }
+html[data-theme="dark"] .text-slate-600 { color: var(--t600) !important; }
+html[data-theme="dark"] .text-slate-500 { color: var(--t500) !important; }
+html[data-theme="dark"] .text-slate-400 { color: var(--t400) !important; }
+html[data-theme="dark"] .text-slate-300 { color: var(--t300) !important; }
+html[data-theme="dark"] .hover\:text-slate-900:hover,
+html[data-theme="dark"] .hover\:text-slate-800:hover { color: var(--t-hover) !important; }
+html[data-theme="dark"] ::placeholder { color: var(--placeholder) !important; }
+/* Borders and dividers */
+html[data-theme="dark"] .border-slate-100,
+html[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--b100) !important; }
+html[data-theme="dark"] .border-slate-200 { border-color: var(--b200) !important; }
+html[data-theme="dark"] .border-slate-300 { border-color: var(--b300) !important; }
+html[data-theme="dark"] .hover\:border-slate-400:hover { border-color: var(--b400) !important; }
+/* Selected tabs and pills (dark-on-light in the light theme): flip to light-on-dark */
+html[data-theme="dark"] .bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html[data-theme="dark"] .border-slate-900 { border-color: var(--selected) !important; }
+html[data-theme="dark"] .bg-slate-900 .text-slate-300 { color: var(--selected-muted) !important; }
+html[data-theme="dark"] #viz-tip { background-color: var(--t900) !important; color: var(--on-selected) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: var(--selected) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: var(--surface-300) !important; color: var(--t800) !important; }
+/* Checked chips keep their fill (the dark surface override would otherwise win) */
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: var(--pass) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:border-forest-600 { border-color: var(--pass-border) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-red-600 { background-color: var(--fail) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:border-red-600 { border-color: var(--fail-border) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-slate-500 { background-color: var(--na) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:border-slate-500 { border-color: var(--na-border) !important; }
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:border-slate-300 { border-color: var(--t300) !important; }
+/* Checked chips with a solid fill (Pass / Fail / N/A, framework choices) keep their light-on-fill text */
+html[data-theme="dark"] .peer:checked ~ .peer-checked\:text-white:not(.peer-checked\:bg-slate-900) { color: #ffffff !important; }
+/* Brand colour */
+html[data-theme="dark"] .text-forest-600,
+html[data-theme="dark"] .text-forest-700,
+html[data-theme="dark"] .hover\:text-forest-700:hover,
+html[data-theme="dark"] .file\:text-forest-700::file-selector-button { color: var(--brand) !important; }
+html[data-theme="dark"] .text-forest-800,
+html[data-theme="dark"] .text-forest-900 { color: var(--brand-strong) !important; }
+html[data-theme="dark"] .bg-forest-50,
+html[data-theme="dark"] .bg-forest-50\/50,
+html[data-theme="dark"] .hover\:bg-forest-50:hover,
+html[data-theme="dark"] .file\:bg-forest-50::file-selector-button { background-color: rgba(var(--brand-rgb), .12) !important; }
+html[data-theme="dark"] .bg-forest-100,
+html[data-theme="dark"] .hover\:bg-forest-100:hover,
+html[data-theme="dark"] .hover\:file\:bg-forest-100::file-selector-button:hover { background-color: rgba(var(--brand-rgb), .22) !important; }
+html[data-theme="dark"] .border-forest-100,
+html[data-theme="dark"] .border-forest-200 { border-color: rgba(var(--brand-rgb), .28) !important; }
+html[data-theme="dark"] .border-forest-300 { border-color: rgba(var(--brand-rgb), .45) !important; }
+/* Status tints */
+html[data-theme="dark"] .bg-red-50,
+html[data-theme="dark"] .bg-red-50\/50 { background-color: rgba(var(--red-rgb), .12) !important; }
+html[data-theme="dark"] .bg-red-100 { background-color: rgba(var(--red-rgb), .22) !important; }
+html[data-theme="dark"] .text-red-600,
+html[data-theme="dark"] .text-red-700,
+html[data-theme="dark"] .text-red-800 { color: var(--red) !important; }
+html[data-theme="dark"] .border-red-100,
+html[data-theme="dark"] .border-red-200 { border-color: rgba(var(--red-rgb), .4) !important; }
+html[data-theme="dark"] .bg-amber-50 { background-color: rgba(var(--amber-rgb), .12) !important; }
+html[data-theme="dark"] .bg-amber-100 { background-color: rgba(var(--amber-rgb), .22) !important; }
+html[data-theme="dark"] .text-amber-800,
+html[data-theme="dark"] .text-amber-900 { color: var(--amber) !important; }
+html[data-theme="dark"] .border-amber-200 { border-color: rgba(var(--amber-rgb), .4) !important; }
+html[data-theme="dark"] .bg-violet-50,
+html[data-theme="dark"] .hover\:bg-violet-50:hover { background-color: rgba(var(--violet-rgb), .14) !important; }
+html[data-theme="dark"] .bg-violet-100 { background-color: rgba(var(--violet-rgb), .26) !important; }
+html[data-theme="dark"] .text-violet-800 { color: var(--violet) !important; }
+html[data-theme="dark"] .border-violet-100 { border-color: rgba(var(--violet-rgb), .35) !important; }
+html[data-theme="dark"] .border-violet-500 { border-color: var(--violet-border) !important; }
+html[data-theme="dark"] .bg-blue-50 { background-color: rgba(var(--blue-rgb), .12) !important; }
+html[data-theme="dark"] .bg-blue-100 { background-color: rgba(var(--blue-rgb), .24) !important; }
+html[data-theme="dark"] .text-blue-800 { color: var(--blue) !important; }
+html[data-theme="dark"] .border-blue-200 { border-color: rgba(var(--blue-rgb), .4) !important; }
+html[data-theme="dark"] .bg-orange-100 { background-color: rgba(var(--orange-rgb), .22) !important; }
+html[data-theme="dark"] .text-orange-800 { color: var(--orange) !important; }
+/* Charts drawn with inline SVG colours (school score trends) */
+html[data-theme="dark"] svg line[stroke="#e2e8f0"] { stroke: var(--b200); }
+html[data-theme="dark"] svg text[fill="#64748b"] { fill: var(--t500); }
+html[data-theme="dark"] svg circle[stroke="#ffffff"] { stroke: var(--surface); }
+/* Neutral "Low" / "N/A" marks drawn in light grey stay readable; nothing to change */
+
+/* =====================================================================
+   High contrast (light background, black text, strong borders and focus)
+   ===================================================================== */
+html[data-theme="contrast"] body { background-color: #ffffff !important; color: #000000 !important; }
+html[data-theme="contrast"] .bg-slate-50,
+html[data-theme="contrast"] .bg-slate-100 { background-color: #f0f0f0 !important; }
+html[data-theme="contrast"] .text-slate-900,
+html[data-theme="contrast"] .text-slate-800,
+html[data-theme="contrast"] .text-slate-700,
+html[data-theme="contrast"] .text-slate-600,
+html[data-theme="contrast"] .text-slate-500,
+html[data-theme="contrast"] .text-slate-400 { color: #000000 !important; }
+html[data-theme="contrast"] .text-slate-300 { color: #444444 !important; }
+/* Checked chips (filled black, green or red) keep white text */
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:text-white { color: #ffffff !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-500,
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #000000 !important; border-color: #000000 !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: #00501a !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-red-600 { background-color: #8a0000 !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: #d0d0d0 !important; color: #000 !important; }
+html[data-theme="contrast"] ::placeholder { color: #505050 !important; }
+html[data-theme="contrast"] .border-slate-100,
+html[data-theme="contrast"] .border-slate-200,
+html[data-theme="contrast"] .border-slate-300,
+html[data-theme="contrast"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #000000 !important; }
+html[data-theme="contrast"] .shadow-sm { box-shadow: none !important; }
+html[data-theme="contrast"] .text-forest-600,
+html[data-theme="contrast"] .text-forest-700,
+html[data-theme="contrast"] .text-forest-800,
+html[data-theme="contrast"] .text-forest-900 { color: #00501a !important; }
+html[data-theme="contrast"] .bg-forest-700,
+html[data-theme="contrast"] .bg-forest-600 { background-color: #00501a !important; }
+html[data-theme="contrast"] .text-red-600,
+html[data-theme="contrast"] .text-red-700,
+html[data-theme="contrast"] .text-red-800 { color: #8a0000 !important; }
+html[data-theme="contrast"] .text-amber-800 { color: #5c3600 !important; }
+html[data-theme="contrast"] .text-violet-800 { color: #3b0a8f !important; }
+html[data-theme="contrast"] .text-blue-800 { color: #002f7a !important; }
+html[data-theme="contrast"] .text-orange-800 { color: #6b2a00 !important; }
+/* Tinted badges and panels get a solid outline so they don't rely on a pale fill */
+html[data-theme="contrast"] [class*="bg-red-"],
+html[data-theme="contrast"] [class*="bg-amber-"],
+html[data-theme="contrast"] [class*="bg-violet-"],
+html[data-theme="contrast"] [class*="bg-blue-"],
+html[data-theme="contrast"] [class*="bg-orange-"],
+html[data-theme="contrast"] .bg-forest-50,
+html[data-theme="contrast"] .bg-forest-100 { outline: 1px solid currentColor; }
+/* Links are underlined (buttons styled as links keep their fill instead) */
+html[data-theme="contrast"] a:not([class*="bg-"]):not([class*="rounded-lg"]):not([class*="rounded-xl"]) { text-decoration: underline; text-underline-offset: 2px; }
+html[data-theme="contrast"] :focus-visible { outline: 3px solid #000 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px #ffd400 !important; }
+
+} /* end @media screen */

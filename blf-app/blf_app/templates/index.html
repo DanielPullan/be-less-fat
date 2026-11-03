@@ -1,37 +1,35 @@
-{% include 'header.html' %}
-
-
-<div class="row">
-    <div class="col-12">
-        <h2 class="homeTitle">Welcome {{username|capitalize}}</h2>
+{% extends "base.html" %}
+{% from '_macros.html' import card, btn_primary, btn_secondary with context %}
+{% block content %}
+<div class="bg-gradient-to-b from-white to-forest-50/50 border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900">Know what you eat.<br><span class="text-forest-600">See where it's heading.</span></h1>
+        <p class="mt-5 max-w-2xl mx-auto text-lg text-slate-600">Be Less Fat tracks your food and weight, works out a daily calorie target from your details, and estimates when you'll reach your goal.</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <a href="{{ url_for('register') }}" class="{{ btn_primary }}">Create an account</a>
+            <a href="{{ url_for('login') }}" class="{{ btn_secondary }}">Log in</a>
+        </div>
     </div>
 </div>
 
-{% if username != "Guest" %}
-<div class="row">
-    <div class="col-12">
-        <table>
-            <tr>
-                <th>Weight</th>
-                <th>Height</th>
-                <th>BMI</th>
-                <th>Status</th>
-            </tr>
-
-            <tr>
-                <td>{% if weight %}{{ weight }} kg{% else %}<a href="/track-weight">Add</a>{% endif %}</td>
-                <td>{% if height %}{{ height }} m{% else %}<a href="/settings">Add</a>{% endif %}</td>
-                <td>{{ bmi if bmi else "-" }}</td>
-                <td>{{ status }}</td>
-
-            </tr>
-
-
-        </table>
-        {% include 'calorie-target.html' %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    <div class="grid gap-4 sm:grid-cols-3">
+        {% for icon, heading, text in [
+            ('🍽', 'Track food', 'Log what you eat by meal, and see how it adds up against your target for the day.'),
+            ('⚖', 'Track weight', 'Weigh in whenever you like and watch the trend on a chart, with your goal marked.'),
+            ('🎯', 'A safe target', 'A daily calorie target from the Mifflin-St Jeor formula, never below a safe minimum.'),
+        ] %}
+        <section class="{{ card }} p-6">
+            <p class="text-2xl" aria-hidden="true">{{ icon }}</p>
+            <h2 class="mt-3 text-lg font-bold text-slate-900">{{ heading }}</h2>
+            <p class="mt-1 text-sm text-slate-600">{{ text }}</p>
+        </section>
+        {% endfor %}
     </div>
+
+    <section class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-900 space-y-2" aria-labelledby="warning">
+        <h2 id="warning" class="font-bold">Be Less Fat is not for under 18s, the elderly or pregnant women.</h2>
+        <p>Don't rely on it for medical, diet or exercise advice: talk to medical professionals and people with relevant qualifications. It hasn't been audited, so please only use dummy data. <a href="{{ url_for('notice') }}" class="font-semibold underline">Read the full disclaimer</a>.</p>
+    </section>
 </div>
-{% endif %}
-
-
-{% include 'footer.html' %}
+{% endblock %}

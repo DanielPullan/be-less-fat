@@ -1,47 +1,72 @@
-{% include 'header.html' %}
-
-<div class="row">
-    <div class="col-12">
-        <h1>{{ title }}</h1>
-        <p>This is a work in progress. Please treat this as a test environment. Only use dummy data.</p>
+{% extends "base.html" %}
+{% from '_macros.html' import card, field, csrf, calorie_bar, food_form, badge with context %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Food</h1>
+            <p class="text-sm text-slate-500">{{ 'Today, ' if is_today }}{{ logdate|ukdate }}</p>
+        </div>
+        <nav aria-label="Day" class="flex items-center gap-2">
+            <a href="{{ url_for('foodhistory', date=prev_day) }}" class="text-sm font-semibold text-slate-700 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50"><span aria-hidden="true">←</span> {{ prev_day|shortdate }}</a>
+            <form method="GET" class="flex items-center gap-2">
+                <label for="date" class="sr-only">Pick a day</label>
+                <input type="date" id="date" name="date" value="{{ logdate }}" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-900">
+                <button type="submit" class="text-sm font-semibold text-slate-700 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">Go</button>
+            </form>
+            {% if next_day %}<a href="{{ url_for('foodhistory', date=next_day) }}" class="text-sm font-semibold text-slate-700 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">{{ next_day|shortdate }} <span aria-hidden="true">→</span></a>{% endif %}
+        </nav>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <table>
-            <tr>
-                <th>Food</th>
-                <th>Calories</th>
-                <th>Meal</th>
-            </tr>
+    {% if is_today %}
+    <section class="{{ card }} p-6 space-y-3" aria-labelledby="add">
+        <h2 id="add" class="text-lg font-bold text-slate-900">Add food</h2>
+        {{ food_form(url_for('foodhistory')) }}
+    </section>
+    {% endif %}
 
-            {% for x in results%}
+    <div class="grid gap-4 sm:grid-cols-4">
+        {% for meal in meals %}
+        <section class="{{ card }} p-4">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ meal }}</h2>
+            <p class="text-2xl font-extrabold text-slate-900 tabular-nums">{{ per_meal[meal] }} <span class="text-sm font-semibold text-slate-500">kcal</span></p>
+        </section>
+        {% endfor %}
+    </div>
 
+    <section class="{{ card }} overflow-hidden" aria-labelledby="eaten">
+        <div class="px-6 pt-6 pb-4 space-y-3">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="eaten" class="text-lg font-bold text-slate-900">What you ate</h2>
+                <p class="text-sm text-slate-600"><strong class="text-slate-900 tabular-nums">{{ totalcalories }} kcal</strong>{% if target %} of {{ target.target }}{% endif %}</p>
+            </div>
+            {% if target %}{{ calorie_bar(totalcalories, target.target) }}{% endif %}
+        </div>
+        {% if results %}
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                <tr><th scope="col" class="px-6 py-3">Food</th><th scope="col" class="px-6 py-3">Meal</th><th scope="col" class="px-6 py-3 text-right">Calories</th><th scope="col" class="px-6 py-3"><span class="sr-only">Remove</span></th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for x in results %}
                 <tr>
-                    <td>{{ x["food"] }}</td>
-                    <td>{{ x["calories"] }}</td>
-                    <td>{{ x["meal"] or "-" }}</td>
+                    <td class="px-6 py-3 font-semibold text-slate-900">{{ x.food }}</td>
+                    <td class="px-6 py-3">{% if x.meal %}{{ badge(x.meal) }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+                    <td class="px-6 py-3 text-right tabular-nums">{{ x.calories }}</td>
+                    <td class="px-6 py-3 text-right">
+                        <form method="POST" action="{{ url_for('deletefood', entry_id=x.id) }}">
+                            {{ csrf() }}
+                            <input type="hidden" name="next" value="{{ url_for('foodhistory', date=logdate) }}">
+                            <button type="submit" class="text-sm font-medium text-red-600 hover:underline" data-confirm="Remove {{ x.food }}?">Remove<span class="sr-only"> {{ x.food }}</span></button>
+                        </form>
+                    </td>
                 </tr>
-            
-            {% else %}
-                <tr><td colspan="3">Nothing tracked for this day. <a href="/track-food">Track some food</a>.</td></tr>
-            {% endfor %}
-
+                {% endfor %}
+            </tbody>
         </table>
-        <form method="GET">
-            Day <input type="date" name="date" value="{{ logdate }}"> <input type="submit" value="Show">
-        </form>
-        Total calories consumed on {{ logdate }}: {{ totalcalories }} <br>
-        
-        Breakfast: {{ breakfast }} <br>
-        
-        Lunch: {{ lunch }} <br>
-        
-        Dinner: {{ dinner }} <br>
-        
-        Snacks: {{ snacks }} <br>
-    </div>
+        {% else %}
+        <p class="px-6 pb-6 text-sm text-slate-400">Nothing tracked for this day.</p>
+        {% endif %}
+    </section>
 </div>
-
-{% include 'footer.html' %}
+{% endblock %}
