@@ -24,7 +24,7 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import importer
+from . import importer, seasons
 
 BASE_DIR = Path(__file__).resolve().parent
 MEALS = ("Breakfast", "Lunch", "Dinner", "Snack")
@@ -449,7 +449,8 @@ def register_routes(app):
 
     @app.context_processor
     def inject_user():
-        return {"user": current_user(), "meals": MEALS, "today_iso": today}
+        return {"user": current_user(), "meals": MEALS, "today_iso": today,
+                "theme_options": seasons.theme_options(), "season": seasons.season()}
 
     @app.route("/")
     def home():
@@ -865,7 +866,21 @@ def register_routes(app):
 
     @app.route("/notice")
     def notice():
-        return render_template("notice.html", title="About and disclaimer")
+        today_uk = seasons.today_uk()
+        coming = []
+        for year in (today_uk.year, today_uk.year + 1):
+            for occasion, day in seasons.occasion_days(year):
+                if day >= today_uk and occasion not in [c[0] for c in coming]:
+                    coming.append((occasion, day))
+        return render_template(
+            "notice.html",
+            title="About and disclaimer",
+            celebrations=seasons.CELEBRATIONS,
+            all_year=[(t, seasons.THEME_LABELS[t]) for t in seasons.ALL_YEAR_THEMES],
+            monthly=[(seasons.THEME_LABELS[t], m) for t, m in seasons.SEASONAL_THEMES.items()],
+            coming=sorted(coming, key=lambda c: c[1]),
+            labels=seasons.THEME_LABELS,
+        )
 
 
 def main():

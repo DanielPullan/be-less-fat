@@ -1,10 +1,13 @@
-// Display settings (theme, text size, font, motion), saved in this browser.
+// Display settings (theme, text size, font, motion, celebrations), saved in this browser.
 // Adapted from SecureMy.School. Loaded in <head> without defer so the saved theme
 // applies before the page is drawn.
 (function () {
     const KEY = 'blf-display';
-    const DEFAULTS = { theme: 'system', text: 'default', font: 'standard', motion: 'system' };
-    const THEMES = ['system', 'light', 'dark', 'contrast'];
+    const DEFAULTS = { theme: 'system', text: 'default', font: 'standard', motion: 'system', celebrations: 'on' };
+    // Seasonal and occasion themes are only offered at their time of year (blf_app/seasons.py); a saved one that
+    // isn't offered today falls back to Match my device
+    const extra = document.querySelector('meta[name="blf-extra-themes"]');
+    const THEMES = ['system', 'light', 'dark', 'contrast'].concat(extra ? extra.content.split(' ').filter(Boolean) : []);
     const FONT_URLS = {
         readable: 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap',
         fira: 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap',
@@ -32,6 +35,7 @@
         root.dataset.text = prefs.text;
         root.dataset.font = prefs.font;
         root.dataset.motion = prefs.motion === 'reduce' || matches('(prefers-reduced-motion: reduce)') ? 'reduce' : 'system';
+        root.dataset.celebrations = prefs.celebrations === 'off' ? 'off' : 'on';
         if (FONT_URLS[prefs.font] && !document.getElementById(prefs.font + '-font')) {
             const link = document.createElement('link');
             link.id = prefs.font + '-font';
@@ -43,6 +47,17 @@
 
     let prefs = load();
     apply(prefs);
+    // For the easter eggs (konami.js): change one setting as if picked in the menu
+    window.blfDisplay = {
+        set: function (name, value) {
+            prefs = Object.assign({}, prefs, { [name]: value });
+            save(prefs);
+            apply(prefs);
+            document.querySelectorAll('[data-display-options] input[data-pref]').forEach(function (input) {
+                input.checked = prefs[input.dataset.pref] === input.value;
+            });
+        },
+    };
 
     // Follow the device when set to "Match my device"
     ['(prefers-color-scheme: dark)', '(prefers-contrast: more)', '(prefers-reduced-motion: reduce)'].forEach(function (q) {

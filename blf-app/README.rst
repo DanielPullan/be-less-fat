@@ -28,6 +28,8 @@ Configuration (environment variables)
     Path to the SQLite database file (default ``blf_app/blf.sqlite3``). Tables are created automatically.
 ``BLF_PORT`` / ``BLF_HOST``
     Where ``uv run blf`` listens (default ``127.0.0.1:5050``; 5000 clashes with AirPlay on macOS).
+``BLF_SEASON_DATE``
+    Pretend it's another day (e.g. ``2026-12-25``) to try the seasonal themes and celebrations.
 ``BLF_DEBUG``
     Set to ``1`` for Flask debug mode (auto-reload and error pages).
 
@@ -39,7 +41,10 @@ template, rebuild it (needs Node.js)::
 
     npx tailwindcss@3.4.17 -i blf_app/static/css/tailwind.src.css -o blf_app/static/css/app.css --minify
 
-Dark and high-contrast themes live in ``blf_app/static/css/themes.css``. They remap Tailwind's light colour
+Themes (from SecureMy.School) live in ``blf_app/static/css/themes.css``; which are offered when is in
+``blf_app/seasons.py``, and the celebrations are ``static/js/seasonal.js`` and ``static/js/konami.js``.
+The About page lists them all and can play each celebration.
+Themes They remap Tailwind's light colour
 classes, so if a template starts using a new colour class, add it there too.
 
 Tests
