@@ -44,10 +44,11 @@ MINIMUM_CALORIES = {"male": 1500, "female": 1200}  # never recommend going below
 KCAL_PER_KG = 7700                               # approx energy in 1 kg of body fat
 
 # UK guidance only (NHS and the British Nutrition Foundation):
-# Protein: the UK Reference Nutrient Intake for adults is 0.75 g per kg of body weight a day. People doing hard
-# exercise most days (activity levels 4 and 5) get 1.2 g/kg, the bottom of the 1.2-2 g/kg UK sources give for
-# resistance exercise.
-PROTEIN_PER_KG = {1: 0.75, 2: 0.75, 3: 0.75, 4: 1.2, 5: 1.2}
+# Protein, grams per kg of current weight, by activity level:
+#   1 (sedentary): 0.75 g/kg, the UK Reference Nutrient Intake for adults
+#   2-3 (lightly to moderately active): 1.0 g/kg, a step up chosen for Be Less Fat
+#   4-5 (hard exercise most days): 1.2 g/kg, the bottom of the 1.2-2 g/kg UK sources give for resistance exercise
+PROTEIN_PER_KG = {1: 0.75, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.2}
 # Fibre: the NHS advises 30 g a day for every adult.
 FIBRE_PER_DAY = 30
 # "High protein": 10 g of protein or more per 100 kcal, a rule of thumb many people use
@@ -249,7 +250,7 @@ def nutrientTargets(weight, activity):
             "target": int(round(weight * per_kg)),
             "per_kg": per_kg,
             "weight": weight,
-            "active": per_kg > PROTEIN_PER_KG[1],
+            "activity": activity if activity in PROTEIN_PER_KG else None,
         }
     return {"protein": protein, "fibre": {"target": FIBRE_PER_DAY}}
 

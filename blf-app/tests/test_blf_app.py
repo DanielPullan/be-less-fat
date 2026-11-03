@@ -298,8 +298,10 @@ def test_long_history_shows_latest_50_with_show_all(client):
 
 def test_nutrient_targets_follow_uk_guidance():
     from blf_app.app import nutrientTargets
-    t = nutrientTargets(80, 3)
+    t = nutrientTargets(80, 1)
     assert t["protein"]["target"] == 60 and t["protein"]["per_kg"] == 0.75
+    assert nutrientTargets(80, 2)["protein"]["target"] == 80
+    assert nutrientTargets(80, 3)["protein"]["per_kg"] == 1.0
     assert t["fibre"]["target"] == 30
     assert nutrientTargets(80, 5)["protein"]["per_kg"] == 1.2
     assert nutrientTargets(80, None)["protein"]["target"] == 60
@@ -325,10 +327,10 @@ def test_protein_and_fibre_tracking(client):
     client.post("/track-food", data={"food": "Tea", "calories": "20"})
 
     home = client.get("/").data.decode()
-    assert "50.5 g</strong> of 60 g" in home and "9.5 g to go" in home
+    assert "50.5 g</strong> of 80 g" in home and "29.5 g to go" in home
     assert "8 g</strong> of 30 g" in home
     assert "2 foods today have no fibre amount" in home
-    assert "0.75 g for each kg" in home and "NHS advises" in home
+    assert "1.0 g for each kg" in home and "on level 3" in home and "NHS advises" in home
 
     history = client.get("/food-history").data.decode()
     assert "10.5 g" in history and "40 g" in history
