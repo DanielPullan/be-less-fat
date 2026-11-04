@@ -77,7 +77,7 @@ def test_weight_tracking_and_bmi(client):
     history = client.get("/weight-history").data.decode()
     assert "<svg" in history and "Goal 75.0 kg" in history
 
-    client.post("/delete-last-weight")
+    client.post("/delete-last-weight", data={"confirmed": "1"})
     assert "81.0" in client.get("/today").data.decode()
 
 
@@ -169,7 +169,7 @@ def test_remove_food_entry(client):
     register(client)
     client.post("/track-food", data={"food": "Custard", "calories": "150"})
     client.post("/track-food", data={"food": "Tea", "calories": "40"})
-    client.post("/delete-food/1")
+    client.post("/delete-food/1", data={"confirmed": "1"})
     history = client.get("/food-history").data.decode()
     row = 'text-slate-900">{}</span>'
     assert row.format("Custard") not in history and row.format("Tea") in history
@@ -180,7 +180,7 @@ def test_cant_remove_someone_elses_food(client):
     client.post("/track-food", data={"food": "Secret Cake", "calories": "500"})
     client.post("/logout")
     register(client, "dan")
-    assert client.post("/delete-food/1").status_code == 404
+    assert client.post("/delete-food/1", data={"confirmed": "1"}).status_code == 404
 
 
 def test_next_only_goes_to_this_site(client):
@@ -241,7 +241,7 @@ def test_import_preview_then_save_then_undo(client):
     assert "Undo this import" in page
     assert "90.0 kg" in page  # kept the one already tracked
 
-    client.post("/undo-import/1")
+    client.post("/undo-import/1", data={"confirmed": "1"})
     page = client.get("/weight-history?range=all").data.decode()
     assert "91.0 kg" not in page and "90.0 kg" in page
 
@@ -275,9 +275,9 @@ def test_remove_one_weigh_in_and_not_someone_elses(client):
     client.post("/track-weight", data={"weight": "70", "logdate": "2026-01-01"})
     client.post("/logout")
     register(client, "dan")
-    assert client.post("/delete-weight/1").status_code == 404
+    assert client.post("/delete-weight/1", data={"confirmed": "1"}).status_code == 404
     client.post("/track-weight", data={"weight": "80", "logdate": "2026-01-01"})
-    client.post("/delete-weight/2")
+    client.post("/delete-weight/2", data={"confirmed": "1"})
     assert "80.0 kg" not in client.get("/weight-history?range=all").data.decode()
 
 
@@ -435,3 +435,17 @@ def test_import_old_database(kanto_app, tmp_path):
     assert FoodEntry.query.filter_by(user_id=user.id).one().portion == 250
     client = kanto_app.test_client()
     assert client.post("/login", data={"username": "dan", "password": "old-password"}).headers["Location"] == "/today"
+
+
+def test_without_javascript_removing_asks_first(client):
+    from models import FoodEntry
+    register(client)
+    client.post("/track-food", data={"food": "Porridge", "calories": "320"})
+    entry = FoodEntry.query.one()
+    page = text(client.post(f"/delete-food/{entry.id}"))
+    assert "Are you sure?" in page and "Remove Porridge from" in page and "Yes, remove it" in page
+    assert FoodEntry.query.count() == 1
+    client.post(f"/delete-food/{entry.id}", data={"confirmed": "1"})
+    assert FoodEntry.query.count() == 0
+    client.post("/track-weight", data={"weight": "80", "logdate": "2026-01-02"})
+    assert "Remove the weigh-in from 2 January 2026 (80 kg)?" in text(client.post("/delete-weight/1"))

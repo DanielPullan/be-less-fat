@@ -4,8 +4,9 @@ app as another user (global admins)."""
 import os
 import secrets
 import time
+from functools import wraps
 
-from flask import abort, flash, g, redirect, request, session, url_for
+from flask import abort, flash, g, redirect, render_template, request, session, url_for
 from flask_login import current_user, logout_user
 
 from . import (MAX_UPLOAD_MB, REQUIRE_MFA, REQUIRE_PASSKEY, SECURE_COOKIES, SESSION_MAX_HOURS, STAGING, app, db,
@@ -76,6 +77,31 @@ def security_headers(response):
 def too_large(e):
     flash(f'That upload is too big. Each save can include up to {MAX_UPLOAD_MB} MB.', 'error')
     return redirect(local_referrer() or url_for('home'))
+
+
+# ---------------------------------------------------------------------------
+# "Are you sure?" for actions that remove or reset something
+# ---------------------------------------------------------------------------
+
+def confirm_first(message, yes='Yes, go ahead'):
+    """Ask before doing a POST action. With JavaScript, the form's data-confirm pop-up asks and adds confirmed=1
+    (kanto/static/js/app.js). Without it (a script blocked or failed to load), the action isn't done: an
+    "Are you sure?" page asks instead, then sends the same form again with confirmed=1.
+
+    MESSAGE is the question, or a function taking the view's arguments (e.g. entry_id) that returns it.
+    Not for file uploads: a file can't be sent on again from the confirm page."""
+    def decorate(view):
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            if request.method == 'POST' and request.form.get('confirmed') != '1':
+                question = message(**kwargs) if callable(message) else message
+                fields = [(k, v) for k, v in request.form.items(multi=True) if k not in ('csrf_token', 'confirmed')]
+                back = local_referrer() or url_for('home')
+                return render_template('kanto/confirm.html', question=question, yes=yes, action=request.full_path.rstrip('?'),
+                                       fields=fields, back=back)
+            return view(*args, **kwargs)
+        return wrapped
+    return decorate
 
 
 # ---------------------------------------------------------------------------

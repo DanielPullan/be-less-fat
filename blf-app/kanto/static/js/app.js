@@ -15,15 +15,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Forms and buttons that need a confirmation first
 document.addEventListener('DOMContentLoaded', function () {
-    // Buttons that need a confirmation first (data-confirm="message")
+    // Forms and buttons that ask first (data-confirm="message"). Saying yes adds confirmed=1, so the server
+    // (confirm_first in kanto/security.py) doesn't ask again; without JavaScript the server asks on its own page.
+    function markConfirmed(form) {
+        if (!form || form.querySelector('input[name="confirmed"]')) return;
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = 'confirmed'; input.value = '1';
+        form.appendChild(input);
+    }
     document.querySelectorAll('form[data-confirm]').forEach(function (form) {
         form.addEventListener('submit', function (e) {
-            if (!window.confirm(form.dataset.confirm)) e.preventDefault();
+            if (window.confirm(form.dataset.confirm)) markConfirmed(form); else e.preventDefault();
         });
     });
     document.querySelectorAll('button[data-confirm]').forEach(function (button) {
         button.addEventListener('click', function (e) {
-            if (!window.confirm(button.dataset.confirm)) e.preventDefault();
+            if (window.confirm(button.dataset.confirm)) markConfirmed(button.form); else e.preventDefault();
         });
     });
 

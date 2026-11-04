@@ -8,6 +8,7 @@ from flask_login import current_user, login_required
 
 import importer
 from kanto import app, db, is_local_url, log_action
+from kanto.security import confirm_first
 from models import BodyDetails, FoodEntry, WeighIn
 from nutrition import (ACTIVITY_LEVELS, HIGH_PROTEIN_PER_100KCAL, MEALS, SEXES, WEIGHT_RANGES, bmiCalc, bmiCategory,
                        calorieTarget, day_totals, fibre_per_100g, is_high_fibre, is_high_protein, nutrientTargets,
@@ -229,8 +230,24 @@ def trackfood():
     return redirect(safe_next() or url_for('foodhistory'))
 
 
+def _food_question(entry_id):
+    entry = FoodEntry.query.filter_by(id=entry_id, user_id=current_user.id).first()
+    return f'Remove {entry.food} from {longdate(entry.logdate)}?' if entry else 'Remove this food?'
+
+
+def _weigh_in_question(entry_id):
+    entry = WeighIn.query.filter_by(id=entry_id, user_id=current_user.id).first()
+    return f'Remove the weigh-in from {longdate(entry.logdate)} ({entry.weight:g} kg)?' if entry else 'Remove this weigh-in?'
+
+
+def _import_question(import_id):
+    count = WeighIn.query.filter_by(user_id=current_user.id, import_id=import_id).count()
+    return f'Remove the {count} weigh-in{"s" if count != 1 else ""} from this import?'
+
+
 @app.route('/delete-food/<int:entry_id>', methods=['POST'])
 @login_required
+@confirm_first(_food_question, 'Yes, remove it')
 def deletefood(entry_id):
     entry = FoodEntry.query.filter_by(id=entry_id, user_id=current_user.id).first_or_404()
     logdate = entry.logdate
@@ -242,6 +259,7 @@ def deletefood(entry_id):
 
 @app.route('/delete-last-weight', methods=['POST'])
 @login_required
+@confirm_first('Remove the weigh-in you added most recently?', 'Yes, remove it')
 def deletelastweight():
     last = WeighIn.query.filter_by(user_id=current_user.id).order_by(WeighIn.id.desc()).first()
     if last:
@@ -253,6 +271,7 @@ def deletelastweight():
 
 @app.route('/delete-weight/<int:entry_id>', methods=['POST'])
 @login_required
+@confirm_first(_weigh_in_question, 'Yes, remove it')
 def deleteweight(entry_id):
     entry = WeighIn.query.filter_by(id=entry_id, user_id=current_user.id).first_or_404()
     db.session.delete(entry)
@@ -359,6 +378,7 @@ def importweights():
 
 @app.route('/undo-import/<int:import_id>', methods=['POST'])
 @login_required
+@confirm_first(_import_question, 'Yes, undo the import')
 def undoimport(import_id):
     removed = WeighIn.query.filter_by(user_id=current_user.id, import_id=import_id).delete()
     log_action('Weight import undone', detail=f'{removed} weigh-in{"s" if removed != 1 else ""} removed')

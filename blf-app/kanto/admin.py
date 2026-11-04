@@ -24,7 +24,7 @@ from .display import (CELEBRATION_BUTTONS, CELEBRATION_ODDS_FILE, CELEBRATIONS, 
                       celebration_odds, limited_themes, save_theme, season_date, season_date_shortcuts,
                       staging_season_date, themes_on)
 from .models import PROTECTED_ROLES, ROLE_DEFS, ActivityLog, Throttle, User
-from .security import needs_passkey_redirect, passkey_confirmed, view_as_refusal
+from .security import confirm_first, needs_passkey_redirect, passkey_confirmed, view_as_refusal
 
 SIGN_IN_ACTIONS = ['Logged in', 'Failed login', 'Failed verification code', 'Failed passkey sign-in',
                    'Sign-in blocked (too many attempts)', 'Sign-in refused (account disabled)']
@@ -284,6 +284,11 @@ USER_CSV_INFO = ['two_step', 'last_sign_in']  # in the download for reference; i
 IMPORT_MAX_ROWS = 500
 YES = {'yes', 'y', 'x', '1', 'true', '✓'}
 NO = {'no', 'n', '0', 'false'}
+
+
+def _username(user_id):
+    user = db.session.get(User, user_id)
+    return user.username if user else 'this user'
 
 
 def file_slug():
@@ -570,6 +575,8 @@ def admin_user(user_id):
 @app.route('/admin/users/<int:user_id>/password', methods=['POST'])
 @login_required
 @admin_required
+@confirm_first(lambda user_id: f'Reset {_username(user_id)}\'s password? They\'ll be signed out and need the '
+               'temporary password you\'re given.', 'Yes, reset it')
 def admin_reset_password(user_id):
     user = db.get_or_404(User, user_id)
     if blocked := guards_protected_account(user):
@@ -586,6 +593,8 @@ def admin_reset_password(user_id):
 @app.route('/admin/users/<int:user_id>/mfa', methods=['POST'])
 @login_required
 @admin_required
+@confirm_first(lambda user_id: f'Turn off two-step verification for {_username(user_id)}? Their authenticator app, '
+               'recovery codes and passkeys stop working and they\'ll be signed out.', 'Yes, turn it off')
 def admin_reset_mfa(user_id):
     user = db.get_or_404(User, user_id)
     if blocked := guards_protected_account(user):
@@ -624,6 +633,7 @@ def admin_unlock(user_id):
 @app.route('/admin/users/<int:user_id>/sign-out', methods=['POST'])
 @login_required
 @admin_required
+@confirm_first(lambda user_id: f'Sign {_username(user_id)} out everywhere?', 'Yes, sign them out')
 def admin_sign_out(user_id):
     user = db.get_or_404(User, user_id)
     user.end_other_sessions()
