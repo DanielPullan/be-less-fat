@@ -1,0 +1,25 @@
+# systemd service: runs Be Less Fat under gunicorn, listening only on this server (Apache faces the internet).
+# Port 8003: SecureMy.School uses 8000 (live) and 8001 (staging), and Johto 8002, on the same server.
+# Install:  sudo cp deploy/belessfat.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now belessfat
+# Change User and the paths if the app isn't in /home/dan/BeLessFat/blf-app.
+[Unit]
+Description=Be Less Fat
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+User=dan
+Group=dan
+WorkingDirectory=/home/dan/BeLessFat/blf-app
+# Database changes (migrations/) are applied before each start; nothing happens if it's already up to date
+ExecStartPre=/home/dan/BeLessFat/blf-app/.venv/bin/flask --app app db upgrade
+ExecStart=/home/dan/BeLessFat/blf-app/.venv/bin/gunicorn --bind 127.0.0.1:8003 --workers 2 --threads 4 --timeout 120 --access-logfile - app:app
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
