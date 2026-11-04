@@ -143,75 +143,75 @@ html[data-theme="eid"] {
     --violet: #d6c2ff; --violet-rgb: 168, 130, 240; --violet-border: #b9a0f5;
     --blue: #a9d0ff; --blue-rgb: 110, 160, 230; --orange: #ffb98a; --orange-rgb: 255, 160, 100;
 }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) { color-scheme: dark; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) body { background-color: var(--bg) !important; color: var(--fg) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) { color-scheme: dark; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) body { background-color: var(--bg) !important; color: var(--fg) !important; }
 
 /* Surfaces */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-white { background-color: var(--surface) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-50 { background-color: var(--surface-50) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-100 { background-color: var(--surface-100) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-300 { background-color: var(--surface-300) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-200 { background-color: var(--surface-200) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:bg-slate-50:hover { background-color: var(--hover-50) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .from-white { --tw-gradient-from: var(--bg) var(--tw-gradient-from-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .to-forest-50\/50 { --tw-gradient-to: rgba(var(--brand-rgb), .08) var(--tw-gradient-to-position) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-white { background-color: var(--surface) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-50 { background-color: var(--surface-50) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-100 { background-color: var(--surface-100) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-300 { background-color: var(--surface-300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-200 { background-color: var(--surface-200) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:bg-slate-50:hover { background-color: var(--hover-50) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .from-white { --tw-gradient-from: var(--bg) var(--tw-gradient-from-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .to-forest-50\/50 { --tw-gradient-to: rgba(var(--brand-rgb), .08) var(--tw-gradient-to-position) !important; }
 
 /* Text */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-900 { color: var(--t900) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-800 { color: var(--t800) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-700 { color: var(--t700) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-600 { color: var(--t600) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-500 { color: var(--t500) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-400 { color: var(--t400) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-slate-300 { color: var(--t300) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:text-slate-900:hover,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:text-slate-800:hover { color: var(--t-hover) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) ::placeholder { color: var(--placeholder) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-900 { color: var(--t900) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-800 { color: var(--t800) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-700 { color: var(--t700) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-600 { color: var(--t600) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-500 { color: var(--t500) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-400 { color: var(--t400) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-slate-300 { color: var(--t300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:text-slate-900:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:text-slate-800:hover { color: var(--t-hover) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) ::placeholder { color: var(--placeholder) !important; }
 
 /* Borders and dividers */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-slate-100,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--b100) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-slate-200 { border-color: var(--b200) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-slate-300 { border-color: var(--b300) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:border-slate-400:hover { border-color: var(--b400) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-slate-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--b100) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-slate-200 { border-color: var(--b200) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-slate-300 { border-color: var(--b300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:border-slate-400:hover { border-color: var(--b400) !important; }
 
 /* Selected tabs and pills (dark-on-light in the light theme): flip to light-on-dark */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-slate-900 { border-color: var(--selected) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-slate-900 .text-slate-300 { color: var(--selected-muted) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) #viz-tip { background-color: var(--t900) !important; color: var(--on-selected) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:border-slate-900 { border-color: var(--selected) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: var(--surface-300) !important; color: var(--t800) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-slate-900 { border-color: var(--selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-slate-900 .text-slate-300 { color: var(--selected-muted) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) #viz-tip { background-color: var(--t900) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:border-slate-900 { border-color: var(--selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: var(--surface-300) !important; color: var(--t800) !important; }
 /* Checked chips keep their fill (the dark surface override would otherwise win) */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: var(--pass) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:border-forest-600 { border-color: var(--pass-border) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-red-600 { background-color: var(--fail) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:border-red-600 { border-color: var(--fail-border) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-slate-500 { background-color: var(--na) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:border-slate-500 { border-color: var(--na-border) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:border-slate-300 { border-color: var(--t300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: var(--pass) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:border-forest-600 { border-color: var(--pass-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-red-600 { background-color: var(--fail) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:border-red-600 { border-color: var(--fail-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-slate-500 { background-color: var(--na) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:border-slate-500 { border-color: var(--na-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:border-slate-300 { border-color: var(--t300) !important; }
 /* Checked chips with a solid fill (Pass / Fail / N/A, framework choices) keep their light-on-fill text */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:text-white:not(.peer-checked\:bg-slate-900) { color: #ffffff !important; }
-html:is([data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .peer:checked ~ .peer-checked\:bg-forest-600.peer-checked\:text-white { color: var(--on-fill) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:text-white:not(.peer-checked\:bg-slate-900) { color: #ffffff !important; }
+html:is([data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .peer:checked ~ .peer-checked\:bg-forest-600.peer-checked\:text-white { color: var(--on-fill) !important; }
 
 /* Brand colour */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-forest-600,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-forest-700,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:text-forest-700:hover,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .file\:text-forest-700::file-selector-button { color: var(--brand) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-forest-800,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-forest-900 { color: var(--brand-strong) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-forest-50,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-forest-50\/50,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:bg-forest-50:hover,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .file\:bg-forest-50::file-selector-button { background-color: rgba(var(--brand-rgb), .12) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-forest-100,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:bg-forest-100:hover,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:file\:bg-forest-100::file-selector-button:hover { background-color: rgba(var(--brand-rgb), .22) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-forest-100,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-forest-200 { border-color: rgba(var(--brand-rgb), .28) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-forest-300 { border-color: rgba(var(--brand-rgb), .45) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-forest-600,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-forest-700,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:text-forest-700:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .file\:text-forest-700::file-selector-button { color: var(--brand) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-forest-800,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-forest-900 { color: var(--brand-strong) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-forest-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-forest-50\/50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:bg-forest-50:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .file\:bg-forest-50::file-selector-button { background-color: rgba(var(--brand-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-forest-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:bg-forest-100:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:file\:bg-forest-100::file-selector-button:hover { background-color: rgba(var(--brand-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-forest-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-forest-200 { border-color: rgba(var(--brand-rgb), .28) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-forest-300 { border-color: rgba(var(--brand-rgb), .45) !important; }
 /* Solid green buttons (bg-forest-700 + white text) already have enough contrast on dark. Nord makes them
    Frost blue with dark text, as Nord editors do */
 html[data-theme="nord"] .bg-forest-700,
@@ -239,7 +239,7 @@ html[data-theme="diwali"] .bg-forest-700, html[data-theme="diwali"] .bg-forest-6
 html[data-theme="diwali"] .hover\:bg-forest-800:hover { background-color: #ffb347 !important; color: #140f2e !important; }
 html[data-theme="eid"] .bg-forest-700, html[data-theme="eid"] .bg-forest-600 { background-color: #d4af37 !important; color: #08221c !important; }
 html[data-theme="eid"] .hover\:bg-forest-800:hover { background-color: #e8c766 !important; color: #08221c !important; }
-html:is([data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-red-600 { background-color: #b8405f !important; }
+html:is([data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-red-600 { background-color: #b8405f !important; }
 html[data-theme="space"] .bg-forest-700, html[data-theme="space"] .bg-forest-600 { background-color: #4cc3f5 !important; color: #05060f !important; box-shadow: 0 0 14px rgba(111, 211, 255, .45); }
 html[data-theme="space"] .hover\:bg-forest-800:hover { background-color: #6fd3ff !important; color: #05060f !important; }
 html[data-theme="space"] body {
@@ -269,36 +269,36 @@ html[data-theme="eid"] header > div > a:first-child .text-forest-600 { color: #e
 html[data-theme="eid"] header > div > a:first-child::before { content: "🌙"; margin-right: .35rem; font-size: .85em; }
 
 /* Status tints */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-red-50,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-red-50\/50 { background-color: rgba(var(--red-rgb), .12) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-red-100 { background-color: rgba(var(--red-rgb), .22) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-red-600,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-red-700,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-red-800 { color: var(--red) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-red-100,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-red-200 { border-color: rgba(var(--red-rgb), .4) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-amber-50 { background-color: rgba(var(--amber-rgb), .12) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-amber-100 { background-color: rgba(var(--amber-rgb), .22) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-amber-800,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-amber-900 { color: var(--amber) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-amber-200 { border-color: rgba(var(--amber-rgb), .4) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-violet-50,
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .hover\:bg-violet-50:hover { background-color: rgba(var(--violet-rgb), .14) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-violet-100 { background-color: rgba(var(--violet-rgb), .26) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-violet-800 { color: var(--violet) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-violet-100 { border-color: rgba(var(--violet-rgb), .35) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-violet-500 { border-color: var(--violet-border) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-blue-50 { background-color: rgba(var(--blue-rgb), .12) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-blue-100 { background-color: rgba(var(--blue-rgb), .24) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-blue-800 { color: var(--blue) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .border-blue-200 { border-color: rgba(var(--blue-rgb), .4) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .bg-orange-100 { background-color: rgba(var(--orange-rgb), .22) !important; }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) .text-orange-800 { color: var(--orange) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-red-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-red-50\/50 { background-color: rgba(var(--red-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-red-100 { background-color: rgba(var(--red-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-red-600,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-red-700,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-red-800 { color: var(--red) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-red-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-red-200 { border-color: rgba(var(--red-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-amber-50 { background-color: rgba(var(--amber-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-amber-100 { background-color: rgba(var(--amber-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-amber-800,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-amber-900 { color: var(--amber) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-amber-200 { border-color: rgba(var(--amber-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-violet-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .hover\:bg-violet-50:hover { background-color: rgba(var(--violet-rgb), .14) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-violet-100 { background-color: rgba(var(--violet-rgb), .26) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-violet-800 { color: var(--violet) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-violet-100 { border-color: rgba(var(--violet-rgb), .35) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-violet-500 { border-color: var(--violet-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-blue-50 { background-color: rgba(var(--blue-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-blue-100 { background-color: rgba(var(--blue-rgb), .24) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-blue-800 { color: var(--blue) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .border-blue-200 { border-color: rgba(var(--blue-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .bg-orange-100 { background-color: rgba(var(--orange-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) .text-orange-800 { color: var(--orange) !important; }
 
 /* Charts drawn with inline SVG colours (school score trends) */
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) svg line[stroke="#e2e8f0"] { stroke: var(--b200); }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) svg text[fill="#64748b"] { fill: var(--t500); }
-html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"]) svg circle[stroke="#ffffff"] { stroke: var(--surface); }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) svg line[stroke="#e2e8f0"] { stroke: var(--b200); }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) svg text[fill="#64748b"] { fill: var(--t500); }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"], [data-theme="piranha"], [data-theme="frog"]) svg circle[stroke="#ffffff"] { stroke: var(--surface); }
 /* Neutral "Low" / "N/A" marks drawn in light grey stay readable; nothing to change */
 
 /* =====================================================================
@@ -730,90 +730,111 @@ html[data-theme="festive"] header > div > a:first-child .text-forest-600 { color
 html[data-theme="festive"] header > div > a:first-child::before { content: "🎄"; margin-right: .35rem; font-size: .85em; }
 
 /* =====================================================================
-   Drinks themes, for everyone all year. Colours from the flavours: no logos or artwork.
+   Drinks themes, for everyone all year: colours and style from the tubs (no logos or artwork). Both are loud
+   and dark like the tubs, with sticker-style black outlines on the cards, chunky slanted headings and a pattern.
    ===================================================================== */
 
-/* Fruity Frog: mango, passionfruit and pineapple. Pineapple-pale paper with mango and passionfruit glows,
-   frog-green buttons, passionfruit purple for what's selected, and a 🐸 by the name */
+/* Fruity Frog: deep purple, red-orange psychedelic waves, acid-smiley yellow and a lavender frog */
+html[data-theme="frog"] {
+    --bg: #1f0a30; --fg: #f3ecfa;
+    --surface: #2e1046; --surface-50: #361450; --surface-100: #3f185c; --surface-200: #4b1f6b; --surface-300: #58277b; --hover-50: #3a1556;
+    --t900: #fff9e6; --t800: #f3ecfa; --t700: #e4d6f0; --t600: #d2bfe5; --t500: #b9a0d3; --t400: #a286c0; --t300: #74589a;
+    --t-hover: #ffffff; --placeholder: #9878b8;
+    --b100: #3e1a58; --b200: #4e2270; --b300: #5f2c86; --b400: #7d44a8;
+    --selected: #e4d200; --on-selected: #0a0a0a; --selected-muted: #58277b;
+    --pass: #e4d200; --pass-border: #e4d200; --fail: #e43000; --fail-border: #ff6a3d; --na: #58277b; --na-border: #a286c0; --on-fill: #0a0a0a;
+    --brand: #ffe94a; --brand-strong: #fff38a; --brand-rgb: 228, 210, 0;
+    --red: #ff7a4d; --red-rgb: 228, 48, 0; --amber: #ffc94a; --amber-rgb: 255, 190, 60;
+    --violet: #c9a6ec; --violet-rgb: 144, 96, 168; --violet-border: #b68ae0;
+    --blue: #a9c4ff; --blue-rgb: 110, 140, 230; --orange: #ff9a5c; --orange-rgb: 234, 78, 18;
+}
 html[data-theme="frog"] body {
-    background-color: #fffbea !important;
-    background-image: radial-gradient(circle at 0% 0%, rgba(255, 166, 43, .16), transparent 40%),
-                      radial-gradient(circle at 100% 100%, rgba(122, 48, 150, .10), transparent 45%) !important;
+    /* The tub's waves: red-orange and purple rings rippling out from a corner */
+    background-image: repeating-radial-gradient(circle at -10% 110%, transparent 0 46px, rgba(228, 48, 0, .16) 46px 78px, transparent 78px 110px, rgba(144, 96, 168, .14) 110px 136px) !important;
     background-attachment: fixed;
 }
-html[data-theme="frog"] .bg-slate-50 { background-color: #fff6d6 !important; }
-html[data-theme="frog"] .hover\:bg-slate-50:hover { background-color: #fff1c2 !important; }
-html[data-theme="frog"] .text-forest-600,
-html[data-theme="frog"] .text-forest-700,
-html[data-theme="frog"] .hover\:text-forest-700:hover { color: #1f7a2c !important; }
-html[data-theme="frog"] .text-forest-800,
-html[data-theme="frog"] .text-forest-900 { color: #17611f !important; }
-html[data-theme="frog"] .bg-forest-700,
-html[data-theme="frog"] .bg-forest-600 { background-color: #23802f !important; }
-html[data-theme="frog"] .hover\:bg-forest-800:hover { background-color: #1b6a25 !important; }
-html[data-theme="frog"] .bg-forest-50,
-html[data-theme="frog"] .hover\:bg-forest-50:hover { background-color: #eefbd9 !important; }
-html[data-theme="frog"] .bg-forest-100 { background-color: #def7b8 !important; }
-html[data-theme="frog"] .border-forest-100,
-html[data-theme="frog"] .border-forest-200,
-html[data-theme="frog"] .border-forest-300 { border-color: #c2e98a !important; }
-html[data-theme="frog"] .bg-slate-900,
-html[data-theme="frog"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #5e2a84 !important; color: #ffffff !important; }
-html[data-theme="frog"] .border-slate-900,
-html[data-theme="frog"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #5e2a84 !important; }
-html[data-theme="frog"] .border-slate-200 { border-color: #f1e2a8 !important; }
-/* A stripe of the three fruits (and the frog) along the top of each card */
-html[data-theme="frog"] .bg-white.rounded-2xl.shadow-sm {
-    background-image: linear-gradient(90deg, #ff9f1c, #ffd23f, #9b4dca, #5ac43c) !important;
-    background-size: 100% 4px; background-repeat: no-repeat;
+/* Buttons in the tub's red-orange; progress bars in smiley yellow */
+html[data-theme="frog"] .bg-forest-700 { background-color: #d42c00 !important; color: #ffffff !important; }
+html[data-theme="frog"] .hover\:bg-forest-800:hover { background-color: #b82600 !important; }
+html[data-theme="frog"] .bg-forest-600 { background-color: #e4d200 !important; }
+html[data-theme="frog"] .bg-red-600 { background-color: #ff7a4d !important; color: #0a0a0a !important; }
+html[data-theme="frog"] .bg-white.rounded-2xl.shadow-sm,
+html[data-theme="frog"] .bg-white.rounded-xl.shadow-lg { border: 2px solid #0a0a0a !important; box-shadow: 5px 5px 0 #0a0a0a !important; }
+html[data-theme="frog"] header { background-color: #2e1046 !important; border-bottom: 0 !important; }
+html[data-theme="frog"] header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px;
+    background: repeating-linear-gradient(90deg, #e43000 0 22px, #ea4e12 22px 30px, #4e1478 30px 44px);
+    border-bottom: 2px solid #0a0a0a;
 }
-html[data-theme="frog"] header { background-color: #fffdf3 !important; border-bottom: 3px solid #5ac43c !important; }
-html[data-theme="frog"] header > div > a:first-child .text-forest-600 {
-    background: linear-gradient(90deg, #e8790c, #9b4dca);
-    -webkit-background-clip: text; background-clip: text; color: transparent !important;
+html[data-theme="frog"] :is(h1, header > div > a:first-child) {
+    font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif; font-style: italic; letter-spacing: -.01em;
+    text-shadow: 3px 3px 0 #0a0a0a;
 }
-html[data-theme="frog"] header > div > a:first-child::before { content: "🐸"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="frog"] header > div > a:first-child .text-forest-600 { color: #e4d200 !important; }
+html[data-theme="frog"] header > div > a:first-child::before { content: "🐸"; margin-right: .35rem; font-size: .85em; text-shadow: none; }
+html[data-theme="frog"] header > div > a:first-child::after { content: "🙂"; margin-left: .3rem; font-size: .7em; text-shadow: none; }
 
-/* Pomegranate Piranha: a deep pomegranate night, ruby buttons, seed-pink highlights, teeth along the header
-   and a 🐟 by the name. Uses the dark theme rules above with its own colours. */
+/* Pomegranate Piranha: forest green and pomegranate red, an orange-jawed piranha, cream teeth and seeds */
 html[data-theme="piranha"] {
-    --bg: #170a10; --fg: #f5e4e8;
-    --surface: #23101a; --surface-50: #2b141f; --surface-100: #341925; --surface-200: #40202e; --surface-300: #4d2838; --hover-50: #2f1722;
-    --t900: #fdf0f3; --t800: #f5e4e8; --t700: #ebd0d7; --t600: #ddb9c3; --t500: #c79ca8; --t400: #b08591; --t300: #7d5864;
-    --t-hover: #ffffff; --placeholder: #9c7380;
-    --b100: #33182a; --b200: #42203a; --b300: #522a45; --b400: #6e3a5c;
-    --selected: #ffb3c4; --on-selected: #2a0a14; --selected-muted: #6e3a5c;
-    --pass: #6fd3b0; --pass-border: #6fd3b0; --fail: #e0294f; --fail-border: #ff5c7a; --na: #4d2838; --na-border: #b08591; --on-fill: #ffffff;
-    --brand: #ff7f9b; --brand-strong: #ffb3c4; --brand-rgb: 255, 92, 122;
-    /* Warnings in orange, so they never blur into the theme's own pomegranate pink */
-    --red: #ffad66; --red-rgb: 255, 140, 50; --amber: #f6c177; --amber-rgb: 246, 193, 119;
+    --bg: #18200f; --fg: #eef3e6;
+    --surface: #24301b; --surface-50: #2b3920; --surface-100: #334226; --surface-200: #3d4f2e; --surface-300: #485c36; --hover-50: #2f3d23;
+    --t900: #f7f7f2; --t800: #eef3e6; --t700: #dbe4cf; --t600: #c4d2b4; --t500: #a7b998; --t400: #8fa37f; --t300: #64775a;
+    --t-hover: #ffffff; --placeholder: #879a77;
+    --b100: #2e3b24; --b200: #39492c; --b300: #485c36; --b400: #5f7848;
+    --selected: #e84840; --on-selected: #ffffff; --selected-muted: #485c36;
+    --pass: #8fc46f; --pass-border: #8fc46f; --fail: #e84840; --fail-border: #ff6b5e; --na: #485c36; --na-border: #8fa37f; --on-fill: #ffffff;
+    /* Links and good news in the jaw's orange, warnings in pomegranate red, so they never blur together */
+    --brand: #ff8a3d; --brand-strong: #ffb27a; --brand-rgb: 240, 104, 40;
+    --red: #ff6b5e; --red-rgb: 232, 72, 64; --amber: #f6c177; --amber-rgb: 246, 193, 119;
     --violet: #e0b4ff; --violet-rgb: 180, 110, 240; --violet-border: #c48ff5;
     --blue: #8fd8e6; --blue-rgb: 62, 180, 200; --orange: #ffab80; --orange-rgb: 255, 140, 90;
 }
 html[data-theme="piranha"] .bg-forest-700,
-html[data-theme="piranha"] .bg-forest-600 { background-color: #c41e47 !important; }
-html[data-theme="piranha"] .hover\:bg-forest-800:hover { background-color: #a5173b !important; }
-html[data-theme="piranha"] .bg-red-600 { background-color: #8e1534 !important; }
+html[data-theme="piranha"] .bg-forest-600 { background-color: #d23a2f !important; }
+html[data-theme="piranha"] .hover\:bg-forest-800:hover { background-color: #b02e25 !important; }
+html[data-theme="piranha"] .bg-red-600 { background-color: #8e1c16 !important; }
 html[data-theme="piranha"] body {
-    background-image: radial-gradient(circle at 15% 110%, rgba(196, 30, 71, .22), transparent 45%),
-                      radial-gradient(circle at 90% -10%, rgba(62, 180, 200, .10), transparent 40%) !important;
+    /* Pomegranate seeds scattered over deep green: red with a pale glint */
+    background-image: radial-gradient(circle at 30% 30%, rgba(255, 220, 210, .5) 0 1.5px, rgba(200, 32, 16, .55) 2px 5px, transparent 5.5px),
+                      radial-gradient(circle at 30% 30%, rgba(255, 220, 210, .4) 0 1px, rgba(200, 32, 16, .45) 1.5px 4px, transparent 4.5px) !important;
+    background-size: 180px 160px, 130px 210px; background-position: 20px 40px, 95px 120px;
     background-attachment: fixed;
 }
-html[data-theme="piranha"] header { border-bottom-color: transparent !important; box-shadow: 0 6px 22px rgba(196, 30, 71, .25); }
-/* A row of teeth hanging under the header */
+html[data-theme="piranha"] .bg-white.rounded-2xl.shadow-sm,
+html[data-theme="piranha"] .bg-white.rounded-xl.shadow-lg { border: 2px solid #0a0a0a !important; box-shadow: 5px 5px 0 #0a0a0a !important; }
+/* The header in the tub's red, with a row of teeth hanging under it. Only the bar itself changes: its menus
+   (More, Aa, ☰) open in the theme's usual green. */
+html[data-theme="piranha"] header.bg-white { background-color: #e84840 !important; border-bottom: 2px solid #0a0a0a !important; }
+html[data-theme="piranha"] header nav[aria-label="Main"] > a.text-slate-600,
+html[data-theme="piranha"] header .lg\:flex > a,
+html[data-theme="piranha"] header details > summary { color: #1a0d08 !important; }
+html[data-theme="piranha"] header nav[aria-label="Main"] > a.text-forest-700,
+html[data-theme="piranha"] header nav[aria-label="Main"] > a:hover,
+html[data-theme="piranha"] header .lg\:flex > a:hover,
+html[data-theme="piranha"] header details > summary:hover,
+html[data-theme="piranha"] header .lg\:flex > form button { color: #ffffff !important; }
+html[data-theme="piranha"] header details > summary.border-slate-200 { border-color: #0a0a0a !important; }
+html[data-theme="piranha"] header > div > div > a { color: #1a0d08 !important; }
 html[data-theme="piranha"] header::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px;
-    background: linear-gradient(135deg, #f3e6e9 50%, transparent 50%) 0 0 / 16px 8px repeat-x,
-                linear-gradient(225deg, #f3e6e9 50%, transparent 50%) 0 0 / 16px 8px repeat-x;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
+    content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px;
+    background: linear-gradient(135deg, #f7f4ea 50%, transparent 50%) 0 0 / 16px 10px repeat-x,
+                linear-gradient(225deg, #f7f4ea 50%, transparent 50%) 0 0 / 16px 10px repeat-x;
+    filter: drop-shadow(0 2px 0 #0a0a0a);
 }
-html[data-theme="piranha"] header > div > a:first-child .text-forest-600 { color: #ff5c7a !important; }
-html[data-theme="piranha"] header > div > a:first-child::before { content: "🐟"; margin-right: .35rem; font-size: .85em; }
-/* Charts drawn in the brand green (inline SVG colours) turn pomegranate */
-html[data-theme="piranha"] svg :is(path, line)[stroke="#16a34a"] { stroke: #ff5c7a; }
-html[data-theme="piranha"] svg :is(path, circle)[fill="#16a34a"] { fill: #ff5c7a; }
-html[data-theme="piranha"] svg text[fill="#15803d"] { fill: #ff9db0; }
-html[data-theme="piranha"] .rounded-2xl.shadow-sm { box-shadow: 0 0 0 1px rgba(255, 127, 155, .08), 0 8px 24px rgba(10, 2, 6, .4) !important; }
+html[data-theme="piranha"] :is(h1, header > div > a:first-child) {
+    font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif; font-style: italic; letter-spacing: -.01em;
+}
+html[data-theme="piranha"] h1 { text-shadow: 3px 3px 0 #0a0a0a; }
+html[data-theme="piranha"] header > div > a:first-child { color: #ffffff !important; text-shadow: 2px 2px 0 #0a0a0a; }
+html[data-theme="piranha"] header > div > a:first-child .text-forest-600 { color: #ff9a3d !important; }
+html[data-theme="piranha"] header > div > a:first-child::before { content: "🐟"; margin-right: .35rem; font-size: .85em; text-shadow: none; }
+/* Charts drawn in the brand green turn the jaw's orange */
+html[data-theme="piranha"] svg :is(path, line)[stroke="#16a34a"] { stroke: #ff8a3d; }
+html[data-theme="piranha"] svg :is(path, circle)[fill="#16a34a"] { fill: #ff8a3d; }
+html[data-theme="piranha"] svg text[fill="#15803d"] { fill: #ffb27a; }
+html[data-theme="frog"] svg :is(path, line)[stroke="#16a34a"] { stroke: #e4d200; }
+html[data-theme="frog"] svg :is(path, circle)[fill="#16a34a"] { fill: #e4d200; }
+html[data-theme="frog"] svg text[fill="#15803d"] { fill: #fff38a; }
 
 /* =====================================================================
    High contrast (light background, black text, strong borders and focus)
