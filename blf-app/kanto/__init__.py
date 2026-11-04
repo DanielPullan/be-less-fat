@@ -65,7 +65,7 @@ if not app.config['SECRET_KEY']:
     raise RuntimeError('SECRET_KEY is not set. Add it to .env (or the environment). '
                        'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"')
 os.makedirs(app.instance_path, exist_ok=True)
-DATABASE_URL = os.environ.get('DATABASE_URL', '').strip() or 'sqlite:///app.db'
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip() or getattr(settings, 'DEFAULT_DATABASE', 'sqlite:///app.db')
 DATABASE_URL = re.sub(r'^postgres(?:ql)?://', 'postgresql+psycopg://', DATABASE_URL)  # the psycopg 3 driver
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 USING_SQLITE = DATABASE_URL.startswith('sqlite')
@@ -82,7 +82,7 @@ SECURE_COOKIES = env_flag('SECURE_COOKIES')
 # made for one domain don't work on another, so changing the domain means everyone adds theirs again.
 PASSKEY_RP_ID = os.environ.get('PASSKEY_RP_ID', '').strip()
 PASSKEY_ORIGIN = os.environ.get('PASSKEY_ORIGIN', '').strip().rstrip('/')
-MAX_UPLOAD_MB = int(os.environ.get('MAX_UPLOAD_MB', '20'))
+MAX_UPLOAD_MB = int(os.environ.get('MAX_UPLOAD_MB', str(getattr(settings, 'MAX_UPLOAD_MB', 20))))
 
 # CSRF tokens last as long as the login session rather than an hour, so a long form doesn't fail to save
 app.config['WTF_CSRF_TIME_LIMIT'] = None
@@ -244,9 +244,10 @@ def inject_basics():
             'csp_nonce': g.get('csp_nonce', '')}
 
 
-def log_action(action, detail=None, user=None, username=None, target=None):
+def log_action(action, detail=None, user=None, username=None, target=None, **fields):
     """Record an action in the activity log. Adds to the session; the caller commits.
-    target: the user account the action was done to, when that's someone else (admin changes)."""
+    target: the user account the action was done to, when that's someone else (admin changes).
+    fields: values for columns an app added to the log (ActivityLogExtras), e.g. audit_id=7."""
     from .models import ActivityLog
     if user is None and has_request_context() and current_user.is_authenticated:
         user = current_user
@@ -264,6 +265,7 @@ def log_action(action, detail=None, user=None, username=None, target=None):
         ip_address=request.remote_addr if has_request_context() else 'CLI',
         action=action,
         detail=detail,
+        **fields,
     ))
 
 

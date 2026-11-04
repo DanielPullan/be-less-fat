@@ -21,10 +21,14 @@ import settings
 from . import STAGING, SEASON_DATE, UK, app
 
 STANDARD_THEMES = ['system', 'light', 'dark', 'contrast']
-ALL_YEAR_THEMES = ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear']
+ALL_YEAR_THEMES = getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear'])
+# Themes only offered with a role ({theme: role}) or to one account ({theme: username}); an app sets these in settings
+ROLE_THEMES = getattr(settings, 'ROLE_THEMES', {})
+USER_THEMES = getattr(settings, 'USER_THEMES', {})
 # Themes unlocked by finding an easter egg (kanto/static/js/konami.js)
 EGG_THEMES = {'vista': 'emergency'}
-EASTER_EGGS = {'konami', 'emergency'}
+# Easter eggs a signed-in user can find (each a secret profile badge). An app adds its own in settings.EXTRA_EASTER_EGGS
+EASTER_EGGS = {'konami', 'emergency'} | set(getattr(settings, 'EXTRA_EASTER_EGGS', ()))
 # Seasonal themes, for everyone, only in their month
 SEASONAL_THEMES = {'pride': 6, 'heritage': 10, 'festive': 12}
 
@@ -55,6 +59,43 @@ THEME_LABELS = {'haunted': 'Haunted 👻', 'meme': 'Memes 😎', 'nord': 'Nord',
 DISPLAY_CHOICES = {'theme': set(STANDARD_THEMES) | set(THEME_LABELS), 'text': {'default', 'large', 'larger'},
                    'font': {'standard', 'readable', 'fira'}, 'motion': {'system', 'reduce'},
                    'celebrations': {'on', 'off'}}
+# Settings an app adds to the Display menu for signed-in users, drawn by the server (so changing one reloads the page),
+# e.g. SecureMy.School's Simple or Full detail view: {name: (legend, [(value, label)], default(user))}.
+# They're saved to the account only, never this browser, so someone else's choice on a shared device doesn't stick.
+EXTRA_DISPLAY = getattr(settings, 'EXTRA_DISPLAY', {})
+DISPLAY_CHOICES.update({name: {value for value, _ in options} for name, (_, options, _) in EXTRA_DISPLAY.items()})
+
+
+@app.template_global()
+def extra_display():
+    """The app's extra display settings for the signed-in user: {name: {legend, options, default}}."""
+    if not (has_request_context() and current_user.is_authenticated):
+        return {}
+    return {name: {'legend': legend, 'options': options, 'default': default(current_user)}
+            for name, (legend, options, default) in EXTRA_DISPLAY.items()}
+
+
+@app.template_global()
+def extra_display_rows():
+    """The extra display settings as Display menu rows: [(name, legend, options)]."""
+    return [(name, item['legend'], item['options']) for name, item in extra_display().items()]
+
+
+@app.template_global()
+def extra_display_defaults():
+    """{name: default} for the signed-in user's extra display settings, for display.js."""
+    return {name: item['default'] for name, item in extra_display().items()}
+
+
+@app.template_global()
+def display_pref(name):
+    """The signed-in user's choice for one display setting (an extra one falls back to its default)."""
+    prefs = json.loads(display_prefs_json() or '{}')
+    if name in prefs:
+        return prefs[name]
+    if name in EXTRA_DISPLAY and has_request_context() and current_user.is_authenticated:
+        return EXTRA_DISPLAY[name][2](current_user)
+    return DISPLAY_DEFAULTS.get(name)
 DISPLAY_DEFAULTS = {'theme': 'system', 'text': 'default', 'font': 'standard', 'motion': 'system', 'celebrations': 'on'}
 
 # Celebrations that may play by themselves on a page load, with their usual 1 in N odds. 0 turns one off.
@@ -187,7 +228,11 @@ def extra_themes():
     """The themes beyond the standard four that the current user can choose now."""
     signed_in = has_request_context() and current_user.is_authenticated
     eggs = current_user.found_easter_eggs if signed_in else []
-    themes = (ALL_YEAR_THEMES + [theme for theme, egg in EGG_THEMES.items() if egg in eggs]
+    roles = current_user.roles if signed_in else set()
+    themes = ([theme for theme, role in ROLE_THEMES.items() if role in roles]
+              + [theme for theme, user in USER_THEMES.items() if signed_in and user == current_user.username.lower()]
+              + [theme for theme, egg in EGG_THEMES.items() if egg in eggs]
+              + [t for t in ALL_YEAR_THEMES if t not in ROLE_THEMES and t not in USER_THEMES]
               + themes_on(season_date()))
     # Admins can try any limited theme from the Users page (try_theme); keep whichever they're trying
     if signed_in and current_user.can_admin:
@@ -224,6 +269,8 @@ def limited_themes():
     """Every theme that's only offered to some people or at some times, for the Users page: [(theme, label, who)]"""
     months = {m: date(2000, m, 1).strftime('%B') for m in range(1, 13)}
     who = {theme: 'everyone' for theme in ALL_YEAR_THEMES}
+    who.update({theme: f'the {settings.ROLE_DEFS[role].label} role' for theme, role in ROLE_THEMES.items()})
+    who.update({theme: f'{user} only' for theme, user in USER_THEMES.items()})
     who.update({theme: 'unlocked by an easter egg' for theme in EGG_THEMES})
     who.update({theme: f'everyone in {months[m]}' for theme, m in SEASONAL_THEMES.items()})
     who.update({theme: 'around its day' for theme, *_ in OCCASIONS.values()})
@@ -287,5 +334,8 @@ def about():
 @app.route('/favicon.ico')
 def favicon():
     """For browsers that ask for /favicon.ico directly: staging's own amber icon on staging."""
-    return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
-                               'favicon-staging.svg' if STAGING else 'favicon.svg', mimetype='image/svg+xml', max_age=86400)
+    folder = os.path.join(app.root_path, 'static', 'img')
+    name = 'favicon-staging' if STAGING else 'favicon'
+    if os.path.exists(os.path.join(folder, name + '.ico')):
+        return send_from_directory(folder, name + '.ico', mimetype='image/vnd.microsoft.icon', max_age=86400)
+    return send_from_directory(folder, name + '.svg', mimetype='image/svg+xml', max_age=86400)

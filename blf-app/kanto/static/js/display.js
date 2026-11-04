@@ -4,7 +4,13 @@
 // Loaded in <head> without defer so the saved theme applies before the page is drawn.
 (function () {
     const KEY = 'kanto-display';
-    const DEFAULTS = { theme: 'system', text: 'default', font: 'standard', motion: 'system', celebrations: 'on' };
+    const metaContent = function (name) { const el = document.querySelector('meta[name="' + name + '"]'); return el ? el.content : null; };
+    // The app's extra settings (settings.EXTRA_DISPLAY), e.g. Simple or Full detail view: {name: default}. They're drawn
+    // by the server, so changing one reloads the page, and they belong to the account: never stored in this browser.
+    let EXTRA = {};
+    try { EXTRA = JSON.parse(metaContent('kanto-extra-display') || '{}'); } catch (e) { /* none */ }
+    const DEFAULTS = Object.assign({ theme: 'system', text: 'default', font: 'standard', motion: 'system', celebrations: 'on' }, EXTRA);
+    function withoutExtra(p) { const copy = Object.assign({}, p); Object.keys(EXTRA).forEach(function (k) { delete copy[k]; }); return copy; }
     const FONT_URLS = {
         readable: 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap',
         fira: 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap',
@@ -18,7 +24,7 @@
     const THEMES = ['system', 'light', 'dark', 'contrast'].concat((meta('kanto-extra-themes') || '').split(' ').filter(Boolean));
 
     function local() {
-        try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; }
+        try { const saved = JSON.parse(localStorage.getItem(KEY)); return saved ? withoutExtra(saved) : null; } catch (e) { return null; }
     }
     function load() {
         let saved = local();
@@ -39,7 +45,7 @@
         }).catch(function () { /* offline: this browser still has them */ });
     }
     function save(prefs) {
-        try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* private mode: still applies for this page */ }
+        try { localStorage.setItem(KEY, JSON.stringify(withoutExtra(prefs))); } catch (e) { /* private mode: still applies for this page */ }
         return saveToAccount(prefs);
     }
 
@@ -53,6 +59,7 @@
         root.dataset.text = prefs.text;
         root.dataset.font = prefs.font;
         root.dataset.celebrations = prefs.celebrations === 'off' ? 'off' : 'on';
+        Object.keys(EXTRA).forEach(function (k) { root.dataset[k] = prefs[k]; });
         root.dataset.motion = prefs.motion === 'reduce' || matches('(prefers-reduced-motion: reduce)') ? 'reduce' : 'system';
         if (FONT_URLS[prefs.font] && !document.getElementById(prefs.font + '-font')) {
             const link = document.createElement('link');
@@ -66,9 +73,9 @@
     const hadLocal = local() !== null;
     let prefs = load();
     apply(prefs);
-    try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {}
+    try { localStorage.setItem(KEY, JSON.stringify(withoutExtra(prefs))); } catch (e) {}
     // First sign-in after choosing settings on this device: adopt them for the account
-    if (account === '' && hadLocal) saveToAccount(prefs);
+    if (account === '' && hadLocal) saveToAccount(withoutExtra(prefs));
 
     // Follow the device when set to System
     ['(prefers-color-scheme: dark)', '(prefers-contrast: more)', '(prefers-reduced-motion: reduce)'].forEach(function (q) {
@@ -86,19 +93,22 @@
         inputs().forEach(function (input) {
             input.addEventListener('change', function () {
                 prefs = Object.assign({}, prefs, { [input.dataset.pref]: input.value });
-                save(prefs);
+                const saved = save(prefs);
                 apply(prefs);
                 sync();
+                if (input.dataset.pref in EXTRA) saved.finally(function () { window.location.reload(); });
             });
         });
         const menu = document.getElementById('display-menu');
         if (!menu) return;
         const reset = menu.querySelector('[data-display-reset]');
         if (reset) reset.addEventListener('click', function () {
+            const extraChanged = Object.keys(EXTRA).some(function (k) { return prefs[k] !== DEFAULTS[k]; });
             prefs = Object.assign({}, DEFAULTS);
-            save(prefs);
+            const saved = save(prefs);
             apply(prefs);
             sync();
+            if (extraChanged) saved.finally(function () { window.location.reload(); });
         });
         // Close when clicking elsewhere or pressing Escape
         document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });

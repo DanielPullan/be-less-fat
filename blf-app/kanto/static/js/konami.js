@@ -1,8 +1,12 @@
 // Easter eggs:
 //  - type ↑ ↑ ↓ ↓ ← → ← → B A anywhere (outside a form field) for fireworks
 //  - type the new emergency number, 0118 999 881 999 119 725 3, to unlock the Frosted Glass theme and switch to it
-// Signed-in users get a (secret) profile badge for each one found. Also shares fireworks() and toast() with
-// seasonal.js (window.kantoCelebrate).
+// Signed-in users get a (secret) profile badge for each one found. Also shares fireworks(), toast() and recordEgg()
+// with seasonal.js and your own scripts (window.kantoCelebrate).
+// Your scripts can add to it:
+//  - window.kantoGuests[name] = function (reduced, done) {...}: a special guest the cheat code brings instead of the
+//    usual message, on pages whose <body> has data-konami="name" (it's also recorded as that easter egg)
+//  - window.kantoWords[word] = function (event) {...}: something that happens when WORD is typed outside a form field
 (function () {
     const SEQUENCE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
                       'ArrowLeft', 'ArrowRight', 'b', 'a'];
@@ -12,7 +16,10 @@
     const EMERGENCY = '01189998819991197253';
     let position = 0;
     let digits = '';
+    let typed = '';
     let running = false;
+    window.kantoGuests = window.kantoGuests || {};
+    window.kantoWords = window.kantoWords || {};
 
     document.addEventListener('keydown', function (e) {
         const target = e.target;
@@ -20,6 +27,7 @@
         if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
             position = 0;
             digits = '';
+            typed = '';
             return;
         }
         const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
@@ -28,6 +36,10 @@
             digits = '';
             emergency();
         }
+        typed = key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey ? (typed + key).slice(-40) : '';
+        Object.keys(window.kantoWords).forEach(function (word) {
+            if (typed.endsWith(word)) { typed = ''; window.kantoWords[word](e); }
+        });
         if (key === SEQUENCE[position]) {
             position += 1;
             if (position === SEQUENCE.length) {
@@ -75,6 +87,14 @@
         // The Display menu's "Reduce motion" sets data-motion on <html>; it also mirrors the device setting
         const reduced = document.documentElement.dataset.motion === 'reduce' ||
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const guestName = document.body.dataset.konami;
+        const guest = guestName && window.kantoGuests[guestName];
+        if (guest) {
+            recordEgg(guestName);
+            guest(reduced, function () { running = false; });
+            if (!reduced) fireworks(function () {});
+            return;
+        }
         toast(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
         if (reduced) {
             setTimeout(function () { running = false; }, 3000);
@@ -204,5 +224,5 @@
     }
 
     // Shared with seasonal.js (Bonfire Night and New Year's Eve)
-    window.kantoCelebrate = { fireworks: fireworks, toast: toast };
+    window.kantoCelebrate = { fireworks: fireworks, toast: toast, recordEgg: recordEgg };
 })();

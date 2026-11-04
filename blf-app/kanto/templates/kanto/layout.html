@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+{# Kanto's page layout: the header (wordmark, your links, More, profile, Aa display menu, ☰ on phones), messages,
+   then your page's {% block content %}. Don't copy it: extend it from your templates/base.html and fill in blocks. #}
+{% from '_macros.html' import avatar %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ settings.APP_NAME }}{% endblock %}</title>
+    {% set icon = 'favicon-staging' if staging else 'favicon' %}
+    <link rel="icon" href="{{ url_for('static', filename='img/' ~ icon ~ '.svg') }}" type="image/svg+xml">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {% if current_user.is_authenticated %}<meta name="kanto-account-display" content="{{ display_prefs_json() or '' }}">{% endif %}
+    <meta name="kanto-extra-themes" content="{{ extra_themes()|join(' ') }}">
+    {% if extra_display() %}<meta name="kanto-extra-display" content='{{ extra_display_defaults()|tojson }}'>{% endif %}
+    {# data-preview: ?celebrate= plays a celebration straight away (staging, and admins) #}
+    <meta name="kanto-season" content="{{ season() }}"{% if staging or (current_user.is_authenticated and current_user.can_admin) %} data-preview="1"{% endif %}>
+    <meta name="kanto-odds" content='{{ celebration_odds()|tojson }}'>
+    {% set messages_for = celebration_messages() %}
+    <meta name="kanto-messages" content='{{ {"bonfire": messages_for.bonfire, "nye": messages_for.nye}|tojson }}'>
+    <meta name="kanto-konami" content='{{ messages_for.konami|tojson }}'>
+    {# Display settings run first (not deferred) so the saved theme applies before anything is drawn #}
+    <script src="{{ url_for('kanto.static', filename='js/display.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('kanto.static', filename='css/themes.css') }}">
+    <script src="{{ url_for('kanto.static', filename='js/app.js') }}" defer></script>
+    <script src="{{ url_for('kanto.static', filename='js/konami.js') }}" defer></script>
+    <script src="{{ url_for('kanto.static', filename='js/seasonal.js') }}" defer></script>
+    {% for script in settings.EXTRA_SCRIPTS|default([]) %}<script src="{{ url_for('static', filename=script) }}" defer></script>
+    {% endfor %}
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col"{% block body_attrs %}{% endblock %}>
+{% if staging %}<div class="bg-amber-300 text-amber-950 text-center text-sm font-bold px-4 py-1.5 print:hidden" role="note">Staging site · made-up data for testing{% if pretend_date() %} · seasonal touches as on {{ pretend_date().strftime('%d %B %Y') }}{% endif %}</div>
+{% elif pretend_date() %}<div class="bg-amber-100 text-amber-950 text-center text-sm px-4 py-1.5 print:hidden" role="note">Themes and celebrations as on <strong>{{ pretend_date().strftime('%d %B %Y') }}</strong>, just for you · <a href="{{ url_for('admin_users') }}#pretend-date" class="font-semibold underline">Change</a></div>{% endif %}
+{% if viewing_admin %}<div class="bg-violet-700 text-white text-sm px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 print:hidden" role="status">
+    <span>👁 <strong>{{ viewing_admin.username }}</strong>, you're viewing as <strong>{{ current_user.username }}</strong> ({{ current_user.role_labels|join(', ') or 'no roles' }}). Read-only.</span>
+    <form method="POST" action="{{ url_for('stop_viewing_as') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="px-3 py-1 rounded-md bg-white text-violet-800 font-bold hover:bg-violet-50">Stop viewing</button></form>
+</div>{% endif %}
+    {# The header's links, written once: shown in the bar on wide screens, and in the ☰ menu on phones and tablets #}
+    {% if current_user.is_authenticated %}
+    {% set main_links, app_more = settings.nav_links(current_user, url_for) %}
+    {% set more_links = app_more
+                        + ([(url_for('activity'), 'Activity log')] if current_user.can_view_log else [])
+                        + ([(url_for('admin_users'), 'Users')] if current_user.can_admin else [])
+                        + ([(url_for('view_as_list'), '👁 View as a user')] if 'global_admin' in current_user.roles else []) %}
+    {% endif %}
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 print:static">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+            <a href="{{ url_for('home') if current_user.is_authenticated else url_for('index') }}" title="Home" class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 whitespace-nowrap">{{ settings.WORDMARK[0] }}<span class="text-forest-600">{{ settings.WORDMARK[1] }}</span></a>
+            <div class="flex items-center gap-2 sm:gap-3 lg:gap-6">
+                {% if current_user.is_authenticated %}
+                <div class="hidden lg:flex items-center gap-6">
+                    <nav aria-label="Main" class="flex items-center gap-6">
+                        {% for href, label in main_links %}<a href="{{ href }}" class="text-sm font-semibold whitespace-nowrap {{ 'text-forest-700' if request.path == href else 'text-slate-600 hover:text-forest-700' }}"{% if request.path == href %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+                    </nav>
+                    {% if more_links %}
+                    <details data-menu class="relative">
+                        <summary class="list-none cursor-pointer select-none whitespace-nowrap text-sm font-semibold text-slate-600 hover:text-forest-700 [&::-webkit-details-marker]:hidden">More <span aria-hidden="true">▾</span></summary>
+                        <div class="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg py-2 text-sm z-50">
+                            {% for href, label in more_links %}
+                            <a href="{{ href }}" class="block px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 hover:text-forest-700 {{ 'border-t border-slate-100' if app_more and loop.index0 == app_more|length }}">{{ label }}</a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                    {% endif %}
+                    {% block header_badge %}{% endblock %}
+                    <a href="{{ url_for('profile') }}" class="text-sm font-semibold text-slate-700 hover:text-forest-700 inline-flex items-center gap-1.5" title="Your profile">{{ avatar(current_user) }}<span class="sr-only">Your profile: </span>{{ current_user.display_name }}</a>
+                    <form method="POST" action="{{ url_for('logout') }}" class="inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="text-sm font-medium text-red-600 hover:underline">Logout</button>
+                    </form>
+                </div>
+                {% else %}
+                {% block signed_out_links %}
+                {% if settings.ALLOW_SIGN_UP %}<a href="{{ url_for('sign_up') }}" class="text-sm font-semibold text-slate-600 hover:text-forest-700 px-2 whitespace-nowrap">Sign up</a>{% endif %}
+                <a href="{{ url_for('login') }}" class="text-sm font-semibold text-forest-700 bg-forest-50 px-3 sm:px-4 py-2 rounded-xl border border-forest-100 hover:bg-forest-100 whitespace-nowrap">Sign in</a>
+                {% endblock %}
+                {% endif %}
+                {% block header_extra %}{% endblock %}
+                <details id="display-menu" class="relative">
+                    <summary class="list-none cursor-pointer select-none text-sm font-semibold text-slate-600 hover:text-forest-700 px-2 py-1.5 rounded-lg border border-slate-200 [&::-webkit-details-marker]:hidden" aria-label="Display and accessibility settings" title="Display and accessibility settings">
+                        <span aria-hidden="true">Aa</span>
+                    </summary>
+                    <div data-display-options class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-6rem)] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg p-4 space-y-4 text-sm z-50">
+                        {% include '_display_options.html' %}
+                        <div class="flex justify-between items-center pt-1 border-t border-slate-100">
+                            <span class="text-xs text-slate-500">{{ 'Saved to your account' if current_user.is_authenticated else 'Saved in this browser' }} · <a href="{{ url_for('about') }}#themes" class="underline hover:text-slate-900">About the themes</a></span>
+                            <button type="button" data-display-reset class="text-xs font-semibold text-slate-600 hover:text-slate-900 underline">Reset</button>
+                        </div>
+                    </div>
+                </details>
+                {% if current_user.is_authenticated %}
+                {# Phones and tablets: everything from the bar, in one menu #}
+                <details data-menu id="mobile-menu" class="lg:hidden">
+                    <summary class="list-none cursor-pointer select-none text-sm font-semibold text-slate-600 hover:text-forest-700 px-2.5 py-1.5 rounded-lg border border-slate-200 [&::-webkit-details-marker]:hidden" aria-label="Menu" title="Menu">
+                        <span aria-hidden="true">☰</span>
+                    </summary>
+                    <div class="absolute left-0 right-0 top-full bg-white border-b border-slate-200 shadow-lg z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                        <div class="max-w-6xl mx-auto px-4 py-3 text-base">
+                            <a href="{{ url_for('profile') }}" class="flex items-center gap-2 py-2.5 font-semibold text-slate-800">{{ avatar(current_user) }}{{ current_user.display_name }}</a>
+                            <nav aria-label="Main" class="border-t border-slate-100 py-1">
+                                {% for href, label in main_links %}<a href="{{ href }}" class="block py-2.5 font-semibold {{ 'text-forest-700' if request.path == href else 'text-slate-700 hover:text-forest-700' }}">{{ label }}</a>{% endfor %}
+                            </nav>
+                            {% if more_links %}
+                            <nav aria-label="More" class="border-t border-slate-100 py-1 grid grid-cols-2 gap-x-4">
+                                {% for href, label in more_links %}<a href="{{ href }}" class="block py-2 text-sm font-semibold text-slate-600 hover:text-forest-700">{{ label }}</a>{% endfor %}
+                            </nav>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('logout') }}" class="border-t border-slate-100 pt-2">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="py-2 font-semibold text-red-600">Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    {% block after_header %}{% endblock %}
+    {% if can_debug() %}<script src="{{ url_for('kanto.static', filename='js/debug.js') }}" defer></script>{% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-4xl w-full mx-auto px-4 sm:px-6 mt-4 space-y-2" role="status">
+                {% for category, message in messages %}
+                    <div data-flash="{{ category }}" class="p-4 rounded-xl text-sm border {{ {'success': 'bg-forest-50 text-forest-800 border-forest-200', 'warning': 'bg-amber-50 text-amber-800 border-amber-200'}.get(category, 'bg-red-50 text-red-800 border-red-200') }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="flex-1 min-w-0 w-full">
+    {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+    <footer class="border-t border-slate-200 bg-white print:hidden">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap gap-x-6 gap-y-2 justify-between text-sm text-slate-500">
+            <p>{{ settings.FOOTER_NOTE or settings.APP_NAME }}</p>
+            <nav aria-label="Footer" class="flex gap-4">
+                <a href="{{ url_for('about') }}" class="font-semibold hover:text-forest-700">About</a>
+            </nav>
+        </div>
+    </footer>
+    {% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

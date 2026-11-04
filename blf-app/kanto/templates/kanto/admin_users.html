@@ -31,6 +31,7 @@
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <th class="p-4 font-semibold">User</th>
                     <th class="p-4 font-semibold">Role</th>
+                    {% include ['_account_columns_head.html', 'kanto/_empty.html'] %}
                     <th class="p-4 font-semibold">Two-step</th>
                     <th class="p-4 font-semibold">Last sign-in (UK)</th>
                     <th class="p-4 font-semibold">Status</th>
@@ -42,6 +43,7 @@
                 <tr class="hover:bg-slate-50 align-top">
                     <td class="p-4"><div class="flex items-start gap-2.5">{{ avatar(u, 'w-8 h-8') }}<div><a href="{{ url_for('admin_user', user_id=u.id) }}" class="font-semibold text-forest-700 hover:underline">{{ u.username }}</a>{% if u == current_user %} <span class="text-xs text-slate-400">(you)</span>{% endif %}{% if u.full_name or u.email %}<span class="block text-xs text-slate-500">{{ u.full_name or '' }}{% if u.full_name and u.email %} · {% endif %}{{ u.email or '' }}</span>{% endif %}</div></div></td>
                     <td class="p-4"><span class="flex flex-wrap gap-1">{{ role_badges(u) }}</span></td>
+                    {% include ['_account_columns.html', 'kanto/_empty.html'] %}
                     <td class="p-4 whitespace-nowrap {{ 'text-forest-700 font-semibold' if u.has_two_step else 'text-amber-800' }}">{{ 'On' if u.has_two_step else 'Off' }}</td>
                     <td class="p-4 text-slate-600 whitespace-nowrap tabular-nums">{{ r.last|localtime or 'Never' }}</td>
                     <td class="p-4">
@@ -54,7 +56,7 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="p-8 text-center text-slate-400">No users match.</td></tr>
+                <tr><td colspan="{{ 5 + account_fields().columns }}" class="p-8 text-center text-slate-400">No users match.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -70,7 +72,7 @@
             <label class="text-sm font-semibold text-slate-700">Username
                 <input type="text" name="username" required pattern="[A-Za-z0-9._@\-]{3,50}" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
             </label>
-            <label class="text-sm font-semibold text-slate-700">Full name <span class="font-normal text-slate-500">(optional)</span>
+            <label class="text-sm font-semibold text-slate-700">Full name <span class="font-normal text-slate-500">({{ settings.FULL_NAME_HINT|default('optional') }})</span>
                 <input type="text" name="full_name" maxlength="150" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
             </label>
             <label class="text-sm font-semibold text-slate-700">Email <span class="font-normal text-slate-500">(optional; also signs in)</span>
@@ -78,6 +80,7 @@
             </label>
         </div>
         {% with chosen = [] %}{% include '_role_picker.html' %}{% endwith %}
+        {% include ['_account_fields.html', 'kanto/_empty.html'] %}
         <div class="flex justify-end">
             <button type="submit" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm">Add user</button>
         </div>
@@ -95,16 +98,17 @@
             <ul class="mt-2 space-y-1 list-disc pl-5">
                 <li><strong>account_id</strong>: filled in for everyone in the download; it's how rows are matched to accounts, so leave it as it is. Leave it blank for new users (rows without one are matched by username).</li>
                 <li><strong>username</strong>: the sign-in name, 3–50 letters, numbers, dots, dashes, underscores or @. Change it here to rename an account; their history stays with them.</li>
-                <li><strong>full_name</strong> (optional): shown instead of their username where it's set.</li>
+                <li><strong>full_name</strong> (optional): {{ settings.FULL_NAME_HELP|default("shown instead of their username where it's set.") }}</li>
                 <li><strong>email</strong> (optional): also works as a sign-in name, so it must be unique. No emails are sent.</li>
                 {% set locked = locked_roles() %}{% for code, r in role_defs_all().items() %}<li><strong>{{ code }}</strong>: {{ r.label }}. {{ r.summary }}.{% if code in locked %} <em>(you can't give or remove this one)</em>{% endif %}</li>{% endfor %}
+                {% include ['_account_csv_help.html', 'kanto/_empty.html'] %}
                 <li><strong>active</strong> (optional): <strong>no</strong> disables the account and signs them out; <strong>yes</strong> enables it. Blank leaves it as it is (new accounts start enabled).</li>
                 <li><strong>first_password</strong> (optional): at least 12 characters. For a new user, leave it blank and one is made, shown once afterwards. For an existing user, it replaces their password. Either way they must choose their own when they next sign in.</li>
                 <li><strong>reset_password</strong> (optional): <strong>yes</strong> gives an existing user a new temporary password, shown once afterwards.</li>
                 <li><strong>sign_out</strong> (optional): <strong>yes</strong> signs them out everywhere.</li>
                 <li><strong>two_step</strong> and <strong>last_sign_in</strong>: in the download for information only. They're ignored when you upload.</li>
             </ul>
-            <p class="mt-2">Leave a whole column out of the file and it isn't changed for anyone. In the role columns, a blank cell means none, so download all users first rather than starting from the blank file to change people.</p>
+            <p class="mt-2">Leave a whole column out of the file and it isn't changed for anyone. In the {{ account_fields().csv_blank_note }}, a blank cell means none, so download all users first rather than starting from the blank file to change people.</p>
         </details>
         <div class="flex flex-wrap items-end gap-3">
             <a href="{{ url_for('admin_users_import_template') }}" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50">⬇ Blank CSV</a>

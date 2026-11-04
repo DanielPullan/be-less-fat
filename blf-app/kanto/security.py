@@ -6,6 +6,7 @@ import secrets
 import time
 from functools import wraps
 
+import settings
 from flask import abort, flash, g, redirect, render_template, request, session, url_for
 from flask_login import current_user, logout_user
 
@@ -24,7 +25,10 @@ CSP = ("default-src 'self'; script-src 'self' 'nonce-{nonce}'; "
 # verification. Add your own public pages' endpoints here if they should stay reachable.
 ALWAYS_ALLOWED = {'profile', 'profile_password', 'profile_display', 'profile_easter_egg', 'logout', 'static',
                   'kanto.static', 'login', 'login_mfa', 'index', 'about', 'favicon'}
+ALWAYS_ALLOWED |= set(getattr(settings, 'EXTRA_ALLOWED_ENDPOINTS', ()))
 MFA_ALLOWED = ALWAYS_ALLOWED | {'mfa_setup', 'passkey_options', 'passkey_add', 'passkey_remove'}
+# What protected roles are called in messages ("a protected role"); SecureMy.School's are safeguarding roles
+PROTECTED_NAME = getattr(settings, 'PROTECTED_NAME', 'protected')
 
 
 @app.before_request
@@ -151,6 +155,11 @@ def role_defs_all():
 
 
 @app.template_global()
+def protected_name():
+    return PROTECTED_NAME
+
+
+@app.template_global()
 def protected_roles():
     return PROTECTED_ROLES
 
@@ -194,7 +203,7 @@ def view_as_refusal(admin, target):
     if 'global_admin' in target.roles:
         return 'Global admins can\'t view as each other.'
     if target.has_protected_role and not admin.has_protected_role:
-        return f'{target.username} has a protected role, which you don\'t, so you can\'t view as them.'
+        return f'{target.username} has a {PROTECTED_NAME} role, which you don\'t, so you can\'t view as them.'
     return None
 
 

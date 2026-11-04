@@ -2,6 +2,7 @@
 import io
 from datetime import date, datetime, timedelta
 
+import settings
 from flask import Response, redirect, render_template, request, url_for
 from flask_login import login_required
 from sqlalchemy import or_
@@ -10,7 +11,48 @@ from . import SafeCSVWriter, app, db, localtime, log_action
 from .admin import file_slug, log_viewer_required
 from .models import ActivityLog, User
 
-ACTIVITY_COLUMNS = ['Time (UK)', 'User', 'Viewing as', 'Action', 'About user', 'Details', 'IP address']
+
+
+class ActivityExtras:
+    """Your app's own parts of the activity log, for columns you've added to ActivityLog (SecureMy.School: the
+    area, and which audit an entry is about). Subclass this in settings.py and set ACTIVITY_EXTRAS = YourExtras().
+
+    Templates: _activity_filters_top.html and _activity_filters.html go in the filter form (at the start, and before
+    the search box), _activity_what.html under each entry's action, _activity_columns_head.html and
+    _activity_columns.html are <th>/<td>s after it (one each per `columns`; `entry` is the row, also on a user's
+    page), and _activity_intro.html replaces the line under the heading."""
+    filters = ()                # extra query-string filters, e.g. ('area', 'audit_id'): in `filters` on the page
+    columns = 0
+    csv_columns = []            # extra CSV columns, after 'About user'
+    search_hint = 'Details or username'
+    good_actions = ('Logged in', 'User created')   # shown in green
+
+    def filter(self, query, filters):
+        """QUERY narrowed by your FILTERS (all of them, as strings; blank when not set)."""
+        return query
+
+    def search(self, like):
+        """Extra conditions for the search box, any of which matches: e.g. [ActivityLog.audit_name.ilike(like)]."""
+        return []
+
+    def csv_values(self, entry):
+        return ['' for _ in self.csv_columns]
+
+    def context(self, filters):
+        """Extra template variables for the activity page."""
+        return {}
+
+
+ACTIVITY_EXTRAS = getattr(settings, 'ACTIVITY_EXTRAS', None) or ActivityExtras()
+
+
+@app.template_global()
+def activity_extras():
+    return ACTIVITY_EXTRAS
+
+
+ACTIVITY_COLUMNS = ['Time (UK)', 'User', 'Viewing as', 'Action', 'About user', *ACTIVITY_EXTRAS.csv_columns,
+                    'Details', 'IP address']
 
 
 def parse_date(value):
@@ -22,7 +64,8 @@ def parse_date(value):
 
 def activity_query():
     """Log entries matching the Activity page's filters, newest first, and the filters themselves."""
-    f = {k: request.args.get(k, '').strip() for k in ('user', 'about', 'action', 'q', 'from', 'to')}
+    f = {k: request.args.get(k, '').strip() for k in ('user', 'about', 'action', 'q', 'from', 'to',
+                                                       *ACTIVITY_EXTRAS.filters)}
     query = ActivityLog.query
     # A name that's an account's current username also finds that account's entries under earlier usernames
     accounts = {u.username: u.id for u in User.query.filter(User.username.in_([f['user'], f['about']]))}
@@ -37,11 +80,12 @@ def activity_query():
     if f['q']:
         like = f"%{f['q']}%"
         query = query.filter(or_(ActivityLog.detail.ilike(like), ActivityLog.username.ilike(like),
-                                 ActivityLog.target_username.ilike(like)))
+                                 ActivityLog.target_username.ilike(like), *ACTIVITY_EXTRAS.search(like)))
     if day := parse_date(f['from']):
         query = query.filter(ActivityLog.timestamp >= datetime.combine(day, datetime.min.time()))
     if day := parse_date(f['to']):
         query = query.filter(ActivityLog.timestamp < datetime.combine(day + timedelta(days=1), datetime.min.time()))
+    query = ACTIVITY_EXTRAS.filter(query, f)
     return query.order_by(ActivityLog.timestamp.desc(), ActivityLog.id.desc()), f
 
 
@@ -54,6 +98,16 @@ def split_viewer(username):
 @app.template_filter('split_viewer')
 def split_viewer_filter(username):
     return split_viewer(username)
+
+
+@app.template_filter('dict_without')
+def dict_without(d, key):
+    return {k: v for k, v in d.items() if k != key}
+
+
+@app.template_filter('dict_with')
+def dict_with(d, key, value):
+    return {**d, key: value}
 
 
 @app.template_filter('link_args')
@@ -78,7 +132,8 @@ def activity():
                .order_by(ActivityLog.target_username) if u]
     actions = [a for (a,) in db.session.query(ActivityLog.action).distinct().order_by(ActivityLog.action) if a]
     return render_template('kanto/activity.html', page=page, usernames=usernames, targets=targets, actions=actions,
-                           filters=filters, user_ids={u.username: u.id for u in User.query.all()})
+                           filters=filters, user_ids={u.username: u.id for u in User.query.all()},
+                           **ACTIVITY_EXTRAS.context(filters))
 
 
 @app.route('/activity.csv')
@@ -94,7 +149,7 @@ def activity_csv():
     for e in rows:
         actor, viewed = split_viewer(e.username)
         writer.writerow([localtime(e.timestamp), actor or '', viewed or '', e.action, e.target_username or '',
-                         e.detail or '', e.ip_address or ''])
+                         *ACTIVITY_EXTRAS.csv_values(e), e.detail or '', e.ip_address or ''])
     log_action('Activity log exported (CSV)', detail=f'{len(rows)} entr{"y" if len(rows) == 1 else "ies"}')
     db.session.commit()
     return Response('﻿' + out.getvalue(), mimetype='text/csv',

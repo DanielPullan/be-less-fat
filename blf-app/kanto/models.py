@@ -1,5 +1,6 @@
 """Kanto's tables: user accounts and their roles, passkeys, sign-in lockouts, the activity log and signed-out sessions."""
 import hmac
+import importlib
 import json
 import secrets
 import time
@@ -15,6 +16,13 @@ import settings
 from . import db, decrypt_secret, hash_recovery_code, hash_token, login_manager, utcnow
 
 ROLE_DEFS = settings.ROLE_DEFS
+
+# An app can add its own columns and behaviour to Kanto's tables: settings.MODEL_EXTRAS names a module with
+# UserExtras and/or ActivityLogExtras classes (plain columns, and methods that may override Kanto's and call super()),
+# and optionally after_models(User, ActivityLog) to run once they exist (e.g. SQLAlchemy event listeners).
+_extras = importlib.import_module(settings.MODEL_EXTRAS) if getattr(settings, 'MODEL_EXTRAS', None) else None
+_USER_EXTRAS = (_extras.UserExtras,) if hasattr(_extras, 'UserExtras') else ()
+_LOG_EXTRAS = (_extras.ActivityLogExtras,) if hasattr(_extras, 'ActivityLogExtras') else ()
 # Roles only someone holding one can give or take away (global admin always works this way)
 PROTECTED_ROLES = set(settings.PROTECTED_ROLES)
 
@@ -42,31 +50,8 @@ class Throttle(db.Model):
     locked_until = db.Column(db.DateTime)
 
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    # The account ID (id) is what everything links to. The username is just a sign-in name, so it can be changed
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    full_name = db.Column(db.String(150))  # shown instead of the username where it's set
-    email = db.Column(db.String(254), unique=True)  # optional, stored in lower case; also works as a sign-in name
-    avatar = db.Column(db.String(30))  # a key of AVATARS; their initials if blank
-    avatar_colour = db.Column(db.String(30))  # a key of AVATAR_COLOURS, the circle behind it
-    password_hash = db.Column(db.String(200), nullable=False)
-    active = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())  # False: can't sign in
-    must_change_password = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
-    created_at = db.Column(db.DateTime, default=utcnow)
-    # Two-step verification with an authenticator app (TOTP)
-    mfa_enabled = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
-    totp_secret = db.Column(db.Text)  # encrypted (see encrypt_secret)
-    mfa_pending_secret = db.Column(db.Text)  # encrypted; set during setup until a code confirms it
-    mfa_last_step = db.Column(db.Integer)  # last accepted 30-second step, so a code can't be reused
-    recovery_codes = db.Column(db.Text)  # JSON list of keyed hashes of unused recovery codes
-    display_prefs = db.Column(db.Text)  # JSON: theme, text, font, motion, celebrations (kanto/static/js/display.js)
-    easter_eggs = db.Column(db.Text)  # JSON list of easter eggs found, for profile badges
-    hide_badges = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
-    # Part of the session ID; changing it signs this user out everywhere (password change, MFA reset, role change)
-    session_version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
-
-    role_rows = db.relationship('UserRole', cascade='all, delete-orphan', lazy='selectin')
+class KantoUser:
+    """What Kanto's User can do. Kept apart from the columns so an app's UserExtras can override any of it."""
 
     def __init__(self, **kwargs):
         roles = kwargs.pop('roles', None)
@@ -175,6 +160,35 @@ class User(UserMixin, db.Model):
         return json.loads(self.easter_eggs or '[]')
 
 
+
+class User(*_USER_EXTRAS, KantoUser, UserMixin, db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    # The account ID (id) is what everything links to. The username is just a sign-in name, so it can be changed
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    full_name = db.Column(db.String(150))  # shown instead of the username where it's set
+    email = db.Column(db.String(254), unique=True)  # optional, stored in lower case; also works as a sign-in name
+    avatar = db.Column(db.String(30))  # a key of AVATARS; their initials if blank
+    avatar_colour = db.Column(db.String(30))  # a key of AVATAR_COLOURS, the circle behind it
+    password_hash = db.Column(db.String(200), nullable=False)
+    active = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())  # False: can't sign in
+    must_change_password = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    created_at = db.Column(db.DateTime, default=utcnow)
+    # Two-step verification with an authenticator app (TOTP)
+    mfa_enabled = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    totp_secret = db.Column(db.Text)  # encrypted (see encrypt_secret)
+    mfa_pending_secret = db.Column(db.Text)  # encrypted; set during setup until a code confirms it
+    mfa_last_step = db.Column(db.Integer)  # last accepted 30-second step, so a code can't be reused
+    recovery_codes = db.Column(db.Text)  # JSON list of keyed hashes of unused recovery codes
+    display_prefs = db.Column(db.Text)  # JSON: theme, text, font, motion, celebrations (kanto/static/js/display.js)
+    easter_eggs = db.Column(db.Text)  # JSON list of easter eggs found, for profile badges
+    hide_badges = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    # Part of the session ID; changing it signs this user out everywhere (password change, MFA reset, role change)
+    session_version = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+
+    role_rows = db.relationship('UserRole', cascade='all, delete-orphan', lazy='selectin')
+
+
 class UserRole(db.Model):
     """One role held by an account (see settings.ROLE_DEFS)."""
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
@@ -203,7 +217,7 @@ class Passkey(db.Model):
         return PublicKeyCredentialDescriptor(id=base64url_to_bytes(self.credential_id), transports=transports or None)
 
 
-class ActivityLog(db.Model):
+class ActivityLog(*_LOG_EXTRAS, db.Model):
     """Append-only: names are copied in so entries still read correctly after renames."""
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=utcnow, nullable=False, index=True)
@@ -237,3 +251,7 @@ def load_user(session_id):
     if user is None or not user.is_active or not version.isdigit() or int(version) != (user.session_version or 0):
         return None
     return user
+
+
+if _extras is not None and hasattr(_extras, 'after_models'):
+    _extras.after_models(User, ActivityLog)

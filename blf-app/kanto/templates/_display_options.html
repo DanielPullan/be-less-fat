@@ -7,7 +7,7 @@
     ('font', 'Font', [('standard', 'Standard'), ('readable', 'Easier to read'), ('fira', 'Fira Sans + Code')]),
     ('motion', 'Animation', [('system', 'Match my device'), ('reduce', 'Reduce motion')]),
     ('celebrations', 'Celebrations', [('on', 'On'), ('off', 'Off')]),
-] %}
+] + extra_display_rows() %}
 <fieldset>
     <legend class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">{{ legend }}</legend>
     <div class="flex flex-wrap gap-1.5">

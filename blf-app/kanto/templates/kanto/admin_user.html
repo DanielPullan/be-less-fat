@@ -46,13 +46,13 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <h2 class="text-lg font-bold text-slate-900">Access</h2>
             {% if user.has_protected_role and not current_user.has_protected_role %}
-            <p class="p-3 rounded-lg bg-violet-50 border border-violet-100 text-sm text-violet-900">🔒 {{ user.username }} has a protected role, so only an admin who also has one can change their roles, password or two-step verification.</p>
+            <p class="p-3 rounded-lg bg-violet-50 border border-violet-100 text-sm text-violet-900">🔒 {{ user.username }} has a {{ protected_name() }} role, so only an admin who also has one can change their roles, password or two-step verification.</p>
             {% endif %}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label class="text-sm font-semibold text-slate-700">Username <span class="font-normal text-slate-500">(to sign in)</span>
                     <input type="text" name="username" value="{{ user.username }}" required pattern="[A-Za-z0-9._@\-]{3,50}" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
                 </label>
-                <label class="text-sm font-semibold text-slate-700">Full name <span class="font-normal text-slate-500">(optional)</span>
+                <label class="text-sm font-semibold text-slate-700">Full name <span class="font-normal text-slate-500">({{ settings.FULL_NAME_HINT|default('optional') }})</span>
                     <input type="text" name="full_name" value="{{ user.full_name or '' }}" maxlength="150" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
                 </label>
                 <label class="text-sm font-semibold text-slate-700">Email <span class="font-normal text-slate-500">(optional; also signs in)</span>
@@ -61,10 +61,11 @@
             </div>
             <p class="text-xs text-slate-500 -mt-2">Changing these doesn't affect their history: everything is linked to their account ID, and records keep the name used at the time.</p>
             {% with chosen = user.roles %}{% include '_role_picker.html' %}{% endwith %}
+            {% include ['_account_fields.html', 'kanto/_empty.html'] %}
             <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <input type="checkbox" name="active" class="w-4 h-4" {% if user.is_active %}checked{% endif %}> Account enabled
             </label>
-            <p class="text-xs text-slate-500">Removing a role or disabling the account signs {{ 'you' if is_me else 'them' }} out everywhere so it takes effect at once.</p>
+            <p class="text-xs text-slate-500">Removing {{ account_fields().less_access_note }} or disabling the account signs {{ 'you' if is_me else 'them' }} out everywhere so it takes effect at once.</p>
             <div class="flex justify-end">
                 <button type="submit" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm">Save access</button>
             </div>
@@ -131,16 +132,17 @@
         </div>
         <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
-            <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200"><th class="p-3 font-semibold whitespace-nowrap">When (UK)</th><th class="p-3 font-semibold">Action</th><th class="p-3 font-semibold">Detail</th></tr></thead>
+            <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200"><th class="p-3 font-semibold whitespace-nowrap">When (UK)</th><th class="p-3 font-semibold">Action</th>{% include ['_activity_columns_head.html', 'kanto/_empty.html'] %}<th class="p-3 font-semibold">Detail</th></tr></thead>
             <tbody class="divide-y divide-slate-100 align-top">
                 {% for e in page.items %}
                 <tr>
                     <td class="p-3 tabular-nums whitespace-nowrap text-slate-800">{{ e.timestamp|localtime }}</td>
                     <td class="p-3 text-slate-800 whitespace-nowrap">{{ e.action }}{% if e.target_user_id == user.id and e.user_id != user.id %}<span class="block text-xs text-slate-500">by {{ e.username or 'command line' }}</span>{% endif %}</td>
+                    {% with entry = e %}{% include ['_activity_columns.html', 'kanto/_empty.html'] %}{% endwith %}
                     <td class="p-3 text-slate-600 whitespace-pre-wrap max-w-xl">{{ e.detail or '' }}</td>
                 </tr>
                 {% else %}
-                <tr><td colspan="3" class="p-6 text-center text-slate-400">No activity yet.</td></tr>
+                <tr><td colspan="{{ 3 + activity_extras().columns }}" class="p-6 text-center text-slate-400">No activity yet.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

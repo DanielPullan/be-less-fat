@@ -16,13 +16,14 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
         <table class="w-full text-sm text-left">
             <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
-                <th class="p-4 font-semibold">User</th><th class="p-4 font-semibold">Roles</th><th class="p-4"></th>
+                <th class="p-4 font-semibold">User</th><th class="p-4 font-semibold">Roles</th>{% include ['_account_columns_head.html', 'kanto/_empty.html'] %}<th class="p-4"></th>
             </tr></thead>
             <tbody class="divide-y divide-slate-100">
                 {% for r in rows %}{% set u = r.user %}
                 <tr class="align-top">
                     <td class="p-4 font-semibold text-slate-900">{{ u.username }}</td>
                     <td class="p-4"><span class="flex flex-wrap gap-1">{{ role_badges(u) }}</span></td>
+                    {% include ['_account_columns.html', 'kanto/_empty.html'] %}
                     <td class="p-4 text-right">
                         {% if r.refusal %}<span class="text-xs text-slate-500">{{ r.refusal }}</span>
                         {% else %}
@@ -34,7 +35,7 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="3" class="p-6 text-center text-slate-500">No one matches.</td></tr>
+                <tr><td colspan="{{ 3 + account_fields().columns }}" class="p-6 text-center text-slate-500">No one matches.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

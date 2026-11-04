@@ -12,6 +12,7 @@
             <p class="text-xs text-slate-500 mt-0.5">Signs in as <span class="font-semibold text-slate-700">{{ user.username }}</span>{% if user.email %} or {{ user.email }}{% endif %} · Account ID {{ user.id }}</p>
             <p class="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
                 {{ role_badges(user) }}
+                {% include ['_profile_header.html', 'kanto/_empty.html'] %}
                 {% if member_since %}<span>Member since {{ (member_since|localtime)[:10] }}</span>{% endif %}
             </p>
         </div>
@@ -87,19 +88,10 @@
             </ul>
         </section>
 
-        <!-- Stats (settings.profile_stats) -->
-        <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
-            <h2 class="text-lg font-bold text-slate-900 mb-4">Your activity</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {% for label, value in stats %}
-                <div class="p-4 rounded-xl border border-slate-200">
-                    <span class="text-sm font-semibold text-slate-500 block">{{ label }}</span>
-                    <span class="text-3xl font-bold text-slate-900 tabular-nums">{{ value }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
+        {# Cards beside "Your roles": your app's templates/_profile_cards.html, or Kanto's activity stats #}
+        {% include ['_profile_cards.html', 'kanto/_profile_stats.html'] %}
     </div>
+    {% include ['_profile_after_cards.html', 'kanto/_empty.html'] %}
 
     <!-- Badges -->
     <section id="badges" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm scroll-mt-24">
@@ -154,7 +146,7 @@
         <h2 class="text-lg font-bold text-slate-900">Security</h2>
         <form method="POST" action="{{ url_for('profile_name') }}" class="flex flex-wrap items-end gap-3">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <label class="text-sm font-semibold text-slate-700">Your name <span class="font-normal text-slate-500">(shown instead of your username)</span>
+            <label class="text-sm font-semibold text-slate-700">Your name <span class="font-normal text-slate-500">({{ settings.YOUR_NAME_HINT|default('shown instead of your username') }})</span>
                 <input type="text" name="full_name" value="{{ user.full_name or '' }}" maxlength="150" autocomplete="name" placeholder="{{ user.username }}" class="mt-1 block w-72 max-w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
             </label>
             <button type="submit" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50">Save name</button>
@@ -214,7 +206,7 @@
             <h3 class="text-sm font-bold text-slate-900">Passkeys</h3>
             <p class="text-sm text-slate-700">Sign in with your fingerprint, face or device PIN instead of a password and code. A passkey counts as two-step verification on its own, and it can't be phished: it only works on this site.</p>
             {% if not viewing_admin %}<p class="text-sm text-slate-700">This session: signed in with <strong>{{ sign_in_methods().get(session.get('signed_in_with'), 'unknown')|lower }}</strong>{% if passkey_ok() and session.get('signed_in_with') != 'passkey' %}, confirmed with a passkey{% endif %}.
-                {% if not passkey_ok() and user.passkeys %}Global admin tools and changing your passkeys need a passkey. <a href="{{ url_for('confirm_passkey', next=url_for('profile') ~ '#security') }}" class="font-semibold text-forest-700 hover:underline">Confirm with a passkey</a>{% endif %}</p>{% endif %}
+                {% if not passkey_ok() and user.passkeys %}{{ settings.PASSKEY_NEEDED_FOR|default('Global admin tools') }} and changing your passkeys need a passkey. <a href="{{ url_for('confirm_passkey', next=url_for('profile') ~ '#security') }}" class="font-semibold text-forest-700 hover:underline">Confirm with a passkey</a>{% endif %}</p>{% endif %}
             {% if user.passkeys %}
             <ul class="divide-y divide-slate-100 border border-slate-200 rounded-xl">
                 {% for p in user.passkeys %}

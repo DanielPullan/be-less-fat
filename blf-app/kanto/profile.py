@@ -20,13 +20,14 @@ import settings
 from . import REQUIRE_MFA, UK, app, db, decrypt_secret, encrypt_secret, log_action, no_store, utcnow
 from .auth import (LIMIT_MFA, MIN_PASSWORD, options_response, passkey_site, remember_passkey_challenge,
                    start_session, take_passkey_challenge, throttle_clear, throttle_fail, throttle_wait, wait_message)
-from .display import DISPLAY_CHOICES, EASTER_EGGS, EGG_THEMES, STANDARD_THEMES, THEME_LABELS, extra_themes, save_theme
+from .display import (DISPLAY_CHOICES, EASTER_EGGS, EGG_THEMES, EXTRA_DISPLAY, STANDARD_THEMES, THEME_LABELS,
+                      display_prefs_json, extra_themes, save_theme)
 from .models import AVATAR_COLOURS, AVATARS, ROLE_DEFS, ActivityLog, Passkey
 from .security import needs_passkey_redirect, passkey_confirmed
 
 Badge = namedtuple('Badge', 'emoji title description earned secret group')
 SECRET_EGGS = [('konami', '🎮', 'Cheat code', 'Up, up, down, down…'),
-               ('emergency', '📟', 'New emergency number', '0118 999…')]
+               ('emergency', '📟', 'New emergency number', '0118 999…')] + list(getattr(settings, 'EXTRA_SECRET_EGGS', []))
 
 
 def longest_streak(days):
@@ -88,10 +89,11 @@ def profile():
                                  ActivityLog.timestamp >= since).count()
     member_since = user.created_at or (logs[-1].timestamp if logs else None)
     groups = list(dict.fromkeys(['Getting started'] + settings.BADGE_GROUPS + ['Just for fun']))
+    extra = settings.profile_context(user, logs, counts) if hasattr(settings, 'profile_context') else {}
     return render_template('kanto/profile.html', user=user, role_defs=[ROLE_DEFS[c] for c in ROLE_DEFS if c in user.roles],
                            stats=settings.profile_stats(user, logs, counts), sign_ins=sign_ins,
                            failed_recent=failed_recent, member_since=member_since,
-                           badges=badges_for(user, logs, counts), badge_groups=groups, require_mfa=REQUIRE_MFA)
+                           badges=badges_for(user, logs, counts), badge_groups=groups, require_mfa=REQUIRE_MFA, **extra)
 
 
 def check_own_password(password):
@@ -314,7 +316,12 @@ def profile_display():
     data = request.get_json(silent=True) or {}
     prefs = {k: v for k, v in data.items() if k in DISPLAY_CHOICES and v in DISPLAY_CHOICES[k]}
     prefs.setdefault('celebrations', 'on')  # pages from before the setting existed
-    if set(prefs) != set(DISPLAY_CHOICES):
+    # The app's extra settings are optional in what's sent; keep the saved choice for any left out
+    saved = json.loads(display_prefs_json() or '{}')
+    for name in EXTRA_DISPLAY:
+        if name not in prefs and name in saved:
+            prefs[name] = saved[name]
+    if set(prefs) - set(EXTRA_DISPLAY) != set(DISPLAY_CHOICES) - set(EXTRA_DISPLAY):
         abort(400)
     if prefs['theme'] not in STANDARD_THEMES and prefs['theme'] not in extra_themes():
         prefs['theme'] = 'system'

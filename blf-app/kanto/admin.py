@@ -24,11 +24,65 @@ from .display import (CELEBRATION_BUTTONS, CELEBRATION_ODDS_FILE, CELEBRATIONS, 
                       celebration_odds, limited_themes, save_theme, season_date, season_date_shortcuts,
                       staging_season_date, themes_on)
 from .models import PROTECTED_ROLES, ROLE_DEFS, ActivityLog, Throttle, User
-from .security import confirm_first, needs_passkey_redirect, passkey_confirmed, view_as_refusal
+from .security import PROTECTED_NAME, confirm_first, needs_passkey_redirect, passkey_confirmed, view_as_refusal
 
 SIGN_IN_ACTIONS = ['Logged in', 'Failed login', 'Failed verification code', 'Failed passkey sign-in',
                    'Sign-in blocked (too many attempts)', 'Sign-in refused (account disabled)']
-PASSKEY_FOR_ROLES = 'Confirm it\'s you with a passkey before giving or removing protected or Global admin roles.'
+PASSKEY_FOR_ROLES = f'Confirm it\'s you with a passkey before giving or removing {PROTECTED_NAME} or Global admin roles.'
+
+
+class AccountFields:
+    """Your app's own fields on accounts, edited with the roles on the Users pages and in the users CSV
+    (SecureMy.School: which schools a school login belongs to). Subclass this in settings.py and set
+    ACCOUNT_FIELDS = YourFields(). Values are whatever your app likes (a list of schools, say).
+
+    Templates: put your form fields in templates/_account_fields.html (inside the add and change forms, after the
+    roles: `user` is set on the change form), table cells in _account_columns_head.html and _account_columns.html
+    (one <th>/<td> each per `columns`, with `u` the row's user), and CSV help in _account_csv_help.html (<li>s)."""
+    columns = 0                 # extra table columns on the Users and View as pages
+    csv_columns = []            # extra CSV columns, after the roles
+    csv_blank_note = 'role columns'   # "In the ___, a blank cell means none"
+    less_access_note = 'a role'       # "Removing ___ or disabling the account signs them out everywhere"
+
+    def from_form(self, roles, user=None):
+        """Values from the add (USER None) or change form for an account with ROLES: (values, error or None)."""
+        return None, None
+
+    def from_csv(self, row, present, user, roles):
+        """Values from a CSV ROW (a dict by column; PRESENT is the set of columns in the file) for USER (None for a
+        new account) with ROLES: (values, error or None). Keep the account's values when your columns are absent."""
+        return None, None
+
+    def csv_values(self, user):
+        """USER's cells for csv_columns."""
+        return ['' for _ in self.csv_columns]
+
+    def changes(self, user, values):
+        """Log lines for changing USER to VALUES (none: nothing changes)."""
+        return []
+
+    def less_access(self, user, values):
+        """True if VALUES give USER less access, so their other sessions are signed out."""
+        return False
+
+    def apply(self, user, values):
+        """Set VALUES on USER (a new account is already added to the session)."""
+
+    def created_detail(self, values):
+        """Added to the log when an account is created, e.g. '; schools: Oak Primary'."""
+        return ''
+
+    def context(self):
+        """Extra template variables for the Users pages (e.g. every school to pick from)."""
+        return {}
+
+
+ACCOUNT_FIELDS = getattr(settings, 'ACCOUNT_FIELDS', None) or AccountFields()
+
+
+@app.template_global()
+def account_fields():
+    return ACCOUNT_FIELDS
 
 
 def admin_required(view):
@@ -122,7 +176,7 @@ def roles_from_form(user=None):
 def role_change_error(chosen, before=frozenset()):
     """Why the current admin can't change roles BEFORE to CHOSEN, or None."""
     if (chosen ^ before) & PROTECTED_ROLES and not current_user.has_protected_role:
-        return 'Only someone with a protected role (🔒) can give or remove those roles.'
+        return f'Only someone with a {PROTECTED_NAME} role (🔒) can give or remove those roles.'
     if (chosen ^ before) & {'global_admin'} and 'global_admin' not in current_user.roles:
         return 'Only a global admin can give or remove the Global admin role.'
     if (chosen ^ before) & (PROTECTED_ROLES | {'global_admin'}) and not passkey_confirmed():
@@ -154,7 +208,7 @@ def guards_protected_account(user):
     someone who has one: otherwise they could take over that account. Likewise for global admins.
     Returns a redirect to send instead, or None."""
     if user.has_protected_role and not current_user.has_protected_role:
-        flash(f'{user.username} has a protected role, so only an admin who also has one can change '
+        flash(f'{user.username} has a {PROTECTED_NAME} role, so only an admin who also has one can change '
               'their account, password or two-step verification.', 'error')
         return redirect(url_for('admin_user', user_id=user.id))
     if 'global_admin' in user.roles and 'global_admin' not in current_user.roles:
@@ -162,7 +216,7 @@ def guards_protected_account(user):
               'their account, password or two-step verification.', 'error')
         return redirect(url_for('admin_user', user_id=user.id))
     if (user.has_protected_role or 'global_admin' in user.roles) and not passkey_confirmed():
-        return needs_passkey_redirect(f'{user.username} has a protected or Global admin role. Confirm it\'s you '
+        return needs_passkey_redirect(f'{user.username} has a {PROTECTED_NAME} or Global admin role. Confirm it\'s you '
                                       'with a passkey before changing their account, password or two-step verification.',
                                       url_for('admin_user', user_id=user.id))
     return None
@@ -189,7 +243,7 @@ def view_as_list():
     if search:
         query = query.filter(User.username.ilike(f'%{search}%'))
     rows = [{'user': u, 'refusal': view_as_refusal(current_user, u)} for u in query.all() if u != current_user]
-    return render_template('kanto/view_as.html', rows=rows, search=search)
+    return render_template('kanto/view_as.html', rows=rows, search=search, **ACCOUNT_FIELDS.context())
 
 
 @app.route('/view-as/<int:user_id>', methods=['POST'])
@@ -237,20 +291,23 @@ def admin_users():
         full_name = request.form.get('full_name', '').strip()[:150]
         email = request.form.get('email', '').strip().lower()
         roles, error = roles_from_form()
+        extra, extra_error = ACCOUNT_FIELDS.from_form(roles)
         if problem := username_error(username) or email_error(email):
             flash(problem, 'error')
         elif error == PASSKEY_FOR_ROLES:
             return needs_passkey_redirect(error, url_for('admin_users') + '#add-user')
-        elif error:
+        elif error or (error := extra_error):
             flash(error, 'error')
             return redirect(url_for('admin_users') + '#add-user')
         else:
             user = User(username=username, full_name=full_name or None, email=email or None, roles=roles, password_hash='')
             db.session.add(user)
+            ACCOUNT_FIELDS.apply(user, extra)
             db.session.flush()
             password = issue_temporary_password(user)
             log_action('User created', target=user, detail=(f'Name: {full_name}; ' if full_name else '')
-                       + (f'email: {email}; ' if email else '') + 'Roles: ' + ', '.join(user.role_labels))
+                       + (f'email: {email}; ' if email else '') + 'Roles: ' + ', '.join(user.role_labels)
+                       + ACCOUNT_FIELDS.created_detail(extra))
             db.session.commit()
             return no_store(render_template('kanto/admin_password.html', user=user, password=password, created=True))
 
@@ -271,14 +328,14 @@ def admin_users():
                            celebration_odds_rows=[(name, label, when, usual, odds[name])
                                                   for name, (label, when, usual) in CELEBRATIONS.items()],
                            my_theme=json.loads(current_user.display_prefs or '{}').get('theme'),
-                           season_now=season_date(), season_set=staging_season_date())
+                           season_now=season_date(), season_set=staging_season_date(), **ACCOUNT_FIELDS.context())
 
 
 # Users as a CSV, like Google Workspace's bulk upload: download a blank file or everyone, fill in or change rows,
 # and upload it. Rows are matched to accounts by account_id (so usernames can be changed), or by username when it's
 # blank; anything else is a new account. Existing accounts are changed to match their row. Columns left out of the
 # file, and blank cells in the optional columns, change nothing. Rows left out of the file change nothing either.
-USER_CSV_COLUMNS = ['account_id', 'username', 'full_name', 'email', *ROLE_DEFS, 'active',
+USER_CSV_COLUMNS = ['account_id', 'username', 'full_name', 'email', *ROLE_DEFS, *ACCOUNT_FIELDS.csv_columns, 'active',
                     'first_password', 'reset_password', 'sign_out']
 USER_CSV_INFO = ['two_step', 'last_sign_in']  # in the download for reference; ignored on upload
 IMPORT_MAX_ROWS = 500
@@ -303,7 +360,7 @@ def users_csv(users=()):
     last = last_sign_ins() if users else {}
     for u in users:
         writer.writerow([u.id, u.username, u.full_name or '', u.email or '',
-                         *('yes' if c in u.roles else '' for c in ROLE_DEFS),
+                         *('yes' if c in u.roles else '' for c in ROLE_DEFS), *ACCOUNT_FIELDS.csv_values(u),
                          'yes' if u.is_active else 'no', '', '', '',
                          'yes' if u.has_two_step else 'no',
                          last[u.id].strftime('%d/%m/%Y %H:%M') if u.id in last else ''])
@@ -390,6 +447,8 @@ def plan_import(file):
                 error = f'{col} should be yes or no, not "{row[col]}"'
         roles = {c for c in ROLE_DEFS if row.get(c, '').lower() in YES} if has_roles else \
             (user.roles if user else set(settings.DEFAULT_ROLES))
+        extra, extra_error = ACCOUNT_FIELDS.from_csv(row, present, user, roles)
+        error = error or extra_error
         password = row.get('first_password', '')
         active = flags['active'] if flags['active'] is not None else (user.is_active if user else True)
         taken = existing.get(username.lower()) or emails.get(username.lower())
@@ -416,13 +475,13 @@ def plan_import(file):
         seen.add(username.lower())
         if email:
             seen_emails.add(email)
-        plan |= {'roles': roles, 'active': active, 'password': password,
+        plan |= {'roles': roles, 'extra': extra, 'active': active, 'password': password,
                  'reset': bool(flags['reset_password']), 'sign_out': bool(flags['sign_out'])}
         if user and not error:
             changes = account_changes(user, plan)
             plan['changes'] = changes
             if changes and user.has_protected_role and not current_user.has_protected_role:
-                error = f'{username} has a protected role, so only an admin who also has one can change their account'
+                error = f'{username} has a {PROTECTED_NAME} role, so only an admin who also has one can change their account'
             elif changes and 'global_admin' in user.roles and 'global_admin' not in current_user.roles:
                 error = f'{username} is a global admin, so only another global admin can change their account'
             elif user == current_user and (password or plan['reset']):
@@ -430,7 +489,7 @@ def plan_import(file):
             elif user == current_user and not ('admin' in roles and active):
                 error = 'you can\'t remove your own admin role or disable your own account'
             elif user == current_user and (user.roles - roles) & PROTECTED_ROLES:
-                error = 'you can\'t remove your own protected role'
+                error = f'you can\'t remove your own {PROTECTED_NAME} role'
             elif changes and (user.has_protected_role or 'global_admin' in user.roles) and not passkey_confirmed():
                 needs_passkey = True
         if error:
@@ -452,7 +511,8 @@ def account_changes(user, plan):
     """What applying PLAN would change about an existing USER, as lines for the log."""
     changes = identity_changes(user, plan['username'], plan['full_name'], plan['email']) + \
         [f'Role added: {ROLE_DEFS[r].label}' for r in sorted(plan['roles'] - user.roles)] + \
-        [f'Role removed: {ROLE_DEFS[r].label}' for r in sorted(user.roles - plan['roles'])]
+        [f'Role removed: {ROLE_DEFS[r].label}' for r in sorted(user.roles - plan['roles'])] + \
+        ACCOUNT_FIELDS.changes(user, plan['extra'])
     if plan['active'] != user.is_active:
         changes.append('Account ' + ('enabled' if plan['active'] else 'disabled'))
     if plan['password']:
@@ -474,7 +534,7 @@ def admin_users_import():
         return redirect(url_for('admin_users') + '#import-users')
     plans, problems, needs_passkey = plan_import(file)
     if needs_passkey and not problems:
-        return needs_passkey_redirect('The file changes protected or Global admin roles or accounts. Confirm it\'s you '
+        return needs_passkey_redirect(f'The file changes {PROTECTED_NAME} or Global admin roles or accounts. Confirm it\'s you '
                                       'with a passkey, then upload it again.', url_for('admin_users') + '#import-users')
     if problems:
         return render_template('kanto/admin_import.html', problems=problems, created=[], updated=[])
@@ -485,18 +545,20 @@ def admin_users_import():
             user = User(username=p['username'], full_name=p['full_name'] or None, email=p['email'] or None,
                         roles=p['roles'], active=p['active'], password_hash='')
             db.session.add(user)
+            ACCOUNT_FIELDS.apply(user, p['extra'])
             db.session.flush()
             if p['password']:
                 user.password_hash, user.must_change_password = generate_password_hash(p['password']), True
             else:
                 password = issue_temporary_password(user)
             log_action('User created', target=user, detail='From a CSV upload. Roles: ' + ', '.join(user.role_labels)
-                       + ('' if user.is_active else '; disabled'))
+                       + ACCOUNT_FIELDS.created_detail(p['extra']) + ('' if user.is_active else '; disabled'))
             created.append({'user': user, 'password': password})
             continue
-        less_access = (user.roles - p['roles']) or not p['active']
+        less_access = (user.roles - p['roles']) or not p['active'] or ACCOUNT_FIELDS.less_access(user, p['extra'])
         set_identity(user, p['username'], p['full_name'], p['email'])
         user.set_roles(p['roles'])
+        ACCOUNT_FIELDS.apply(user, p['extra'])
         user.active = p['active']
         if p['password']:
             user.password_hash, user.must_change_password = generate_password_hash(p['password']), True
@@ -525,6 +587,7 @@ def admin_user(user_id):
         if blocked := guards_protected_account(user):
             return blocked
         roles, error = roles_from_form(user)
+        extra, extra_error = ACCOUNT_FIELDS.from_form(roles, user)
         make_active = request.form.get('active') == 'on'
         username = request.form.get('username', user.username).strip()
         full_name = request.form.get('full_name', user.full_name or '').strip()[:150]
@@ -533,27 +596,30 @@ def admin_user(user_id):
         losing_admin = user.can_admin and not ('admin' in roles and make_active)
         if error == PASSKEY_FOR_ROLES:
             return needs_passkey_redirect(error, url_for('admin_user', user_id=user.id))
-        if error or (error := username_error(username, user) or email_error(email, user)):
+        if error or (error := extra_error or username_error(username, user) or email_error(email, user)):
             flash(error, 'error')
         elif user == current_user and losing_admin:
             flash('You can\'t remove your own admin role or disable your own account. Ask another admin.', 'error')
         elif losing_admin and active_admin_count(excluding=user) == 0:
             flash('This is the last admin. Make someone else an admin first.', 'error')
         elif user == current_user and (user.roles - roles) & PROTECTED_ROLES:
-            flash('You can\'t remove your own protected role. Ask another admin who has one.', 'error')
+            flash(f'You can\'t remove your own {PROTECTED_NAME} role. Ask another admin who has one.', 'error')
         else:
             added_roles, removed_roles = roles - user.roles, user.roles - roles
             changes = identity_changes(user, username, full_name, email) + \
                 [f'Role added: {ROLE_DEFS[r].label}' for r in sorted(added_roles)] + \
-                [f'Role removed: {ROLE_DEFS[r].label}' for r in sorted(removed_roles)]
+                [f'Role removed: {ROLE_DEFS[r].label}' for r in sorted(removed_roles)] + \
+                ACCOUNT_FIELDS.changes(user, extra)
             if make_active != user.is_active:
                 changes.append('Account ' + ('enabled' if make_active else 'disabled'))
             if changes:
+                less_access = removed_roles or not make_active or ACCOUNT_FIELDS.less_access(user, extra)
                 set_identity(user, username, full_name, email)
                 user.set_roles(roles)
+                ACCOUNT_FIELDS.apply(user, extra)
                 user.active = make_active
                 # Less access takes effect everywhere at once
-                if removed_roles or not make_active:
+                if less_access:
                     user.end_other_sessions()
                     if user == current_user:
                         start_session(current_user)
@@ -569,7 +635,7 @@ def admin_user(user_id):
             .order_by(ActivityLog.timestamp.desc(), ActivityLog.id.desc())
             .paginate(page=request.args.get('page', 1, type=int), per_page=50, error_out=False))
     return render_template('kanto/admin_user.html', user=user, locked=lock_state(user),
-                           last=last_sign_in(user), sign_ins=sign_ins, page=page)
+                           last=last_sign_in(user), sign_ins=sign_ins, page=page, **ACCOUNT_FIELDS.context())
 
 
 @app.route('/admin/users/<int:user_id>/password', methods=['POST'])
