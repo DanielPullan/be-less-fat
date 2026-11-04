@@ -31,7 +31,7 @@
     {% block head %}{% endblock %}
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col"{% block body_attrs %}{% endblock %}>
-{% if staging %}<div class="bg-amber-300 text-amber-950 text-center text-sm font-bold px-4 py-1.5 print:hidden" role="note">Staging site · made-up data for testing{% if pretend_date() %} · seasonal touches as on {{ pretend_date().strftime('%d %B %Y') }}{% endif %}</div>
+{% if staging %}<div class="bg-amber-300 text-amber-950 text-center text-sm font-bold px-4 py-1.5 print:hidden" role="note">Staging site · made-up data for testing{% if settings.STAGING_NOTE %} · {{ settings.STAGING_NOTE }}{% endif %}{% if pretend_date() %} · seasonal touches as on {{ pretend_date().strftime('%d %B %Y') }}{% endif %}</div>
 {% elif pretend_date() %}<div class="bg-amber-100 text-amber-950 text-center text-sm px-4 py-1.5 print:hidden" role="note">Themes and celebrations as on <strong>{{ pretend_date().strftime('%d %B %Y') }}</strong>, just for you · <a href="{{ url_for('admin_users') }}#pretend-date" class="font-semibold underline">Change</a></div>{% endif %}
 {% if viewing_admin %}<div class="bg-violet-700 text-white text-sm px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 print:hidden" role="status">
     <span>👁 <strong>{{ viewing_admin.username }}</strong>, you're viewing as <strong>{{ current_user.username }}</strong> ({{ current_user.role_labels|join(', ') or 'no roles' }}). Read-only.</span>

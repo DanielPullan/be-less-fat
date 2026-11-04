@@ -31,7 +31,7 @@
                 {% for c in rows %}
                 <tr class="border-b border-slate-100 align-top">
                     <td class="py-2 pr-4"><a href="{{ url_for('admin_user', user_id=c.user.id) }}" class="font-semibold text-forest-700 hover:underline">{{ c.user.username }}</a></td>
-                    <td class="py-2 pr-4 text-slate-600">{% if c.changes %}{{ c.changes|join('; ') }}{% else %}<span class="font-semibold text-forest-700">Created</span>: {{ c.user.role_labels|join(', ') }}{% if not c.user.is_active %} (disabled){% endif %}{% endif %}</td>
+                    <td class="py-2 pr-4 text-slate-600">{% if c.changes %}{{ c.changes|join('; ') }}{% else %}<span class="font-semibold text-forest-700">Created</span>: {{ c.user.role_labels|join(', ') }}{% with u = c.user %}{% include ['_account_summary.html', 'kanto/_empty.html'] %}{% endwith %}{% if not c.user.is_active %} (disabled){% endif %}{% endif %}</td>
                     <td class="py-2 font-mono {{ 'select-all text-slate-900' if c.password else 'text-slate-500 font-sans' }}" {% if c.password %}data-password{% endif %}>{{ c.password or ('The one in your file' if not c.changes or 'First password set from the file' in c.changes else '') }}</td>
                 </tr>
                 {% endfor %}

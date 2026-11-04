@@ -5,8 +5,9 @@
     <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
         <h1 class="text-2xl font-bold text-slate-900 mb-2 text-center">Confirm it's you with a passkey</h1>
         <p class="text-sm text-slate-600 text-center mb-6">
-            {% if global_admin %}Global admin tools{% else %}This{% endif %}
-            needs a passkey, not just a password and code. A passkey can't be phished, so it proves it's really you.</p>
+            {% set locked = passkey_locked_names() %}
+            {% if locked %}{{ locked|join(' and ') }}{% if global_admin %} and global admin tools{% endif %} need
+            {%- elif global_admin %}Global admin tools need{% else %}This page needs{% endif %} a passkey, not just a password and code. A passkey can't be phished, so it proves it's really you.</p>
         {% if current_user.passkeys %}
         <div data-passkey-supported class="hidden">
             <button type="button" data-passkey-login data-options-url="{{ url_for('confirm_passkey_options') }}" data-url="{{ url_for('confirm_passkey_check', next=next_url) }}"

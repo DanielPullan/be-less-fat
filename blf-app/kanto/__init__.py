@@ -140,12 +140,17 @@ def hash_token(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+# Mixed into every derived key. Changing it has the same effect as changing SECRET_KEY, so an app that started out
+# on its own keeps its old value (SecureMy.School: 'securemyschool')
+KEY_CONTEXT = getattr(settings, 'KEY_CONTEXT', 'kanto')
+
+
 def derived_key(purpose):
     """A separate 32-byte key for PURPOSE, derived from SECRET_KEY.
     Changing SECRET_KEY therefore makes stored authenticator secrets and recovery codes unreadable:
     run `flask reset-mfa --all` afterwards so everyone sets their authenticator app up again."""
     return HKDF(algorithm=hashes.SHA256(), length=32, salt=None,
-                info=f'kanto:{purpose}'.encode()).derive(app.config['SECRET_KEY'].encode())
+                info=f'{KEY_CONTEXT}:{purpose}'.encode()).derive(app.config['SECRET_KEY'].encode())
 
 
 def mfa_cipher():

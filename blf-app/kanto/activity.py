@@ -9,41 +9,12 @@ from sqlalchemy import or_
 
 from . import SafeCSVWriter, app, db, localtime, log_action
 from .admin import file_slug, log_viewer_required
+from .extras import ActivityExtras, load
 from .models import ActivityLog, User
 
 
 
-class ActivityExtras:
-    """Your app's own parts of the activity log, for columns you've added to ActivityLog (SecureMy.School: the
-    area, and which audit an entry is about). Subclass this in settings.py and set ACTIVITY_EXTRAS = YourExtras().
-
-    Templates: _activity_filters_top.html and _activity_filters.html go in the filter form (at the start, and before
-    the search box), _activity_what.html under each entry's action, _activity_columns_head.html and
-    _activity_columns.html are <th>/<td>s after it (one each per `columns`; `entry` is the row, also on a user's
-    page), and _activity_intro.html replaces the line under the heading."""
-    filters = ()                # extra query-string filters, e.g. ('area', 'audit_id'): in `filters` on the page
-    columns = 0
-    csv_columns = []            # extra CSV columns, after 'About user'
-    search_hint = 'Details or username'
-    good_actions = ('Logged in', 'User created')   # shown in green
-
-    def filter(self, query, filters):
-        """QUERY narrowed by your FILTERS (all of them, as strings; blank when not set)."""
-        return query
-
-    def search(self, like):
-        """Extra conditions for the search box, any of which matches: e.g. [ActivityLog.audit_name.ilike(like)]."""
-        return []
-
-    def csv_values(self, entry):
-        return ['' for _ in self.csv_columns]
-
-    def context(self, filters):
-        """Extra template variables for the activity page."""
-        return {}
-
-
-ACTIVITY_EXTRAS = getattr(settings, 'ACTIVITY_EXTRAS', None) or ActivityExtras()
+ACTIVITY_EXTRAS = load(getattr(settings, 'ACTIVITY_EXTRAS', None), ActivityExtras)
 
 
 @app.template_global()

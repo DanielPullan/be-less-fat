@@ -137,7 +137,10 @@ def debug_info():
     started = time.perf_counter()
     database = {}
     try:
-        size = db.session.execute(db.text('SELECT pg_database_size(current_database())')).scalar()
+        if db.engine.dialect.name == 'sqlite':
+            size = os.path.getsize(db.engine.url.database)
+        else:
+            size = db.session.execute(db.text('SELECT pg_database_size(current_database())')).scalar()
         database['size_mb'] = round(size / (1 << 20), 1)
     except Exception:
         db.session.rollback()

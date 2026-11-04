@@ -19,5 +19,5 @@
         </div>
     </div>
     {% endfor %}
-    {% if locked_roles() %}<p class="text-xs text-slate-500">Greyed-out roles can only be given or removed by someone who has them: 🔒 protected roles by someone with one, and Global admin by a global admin.</p>{% endif %}
+    {% if locked_roles() %}<p class="text-xs text-slate-500">Greyed-out roles can only be given or removed by someone who has them: 🔒 {{ protected_name() }} roles by someone with a {{ protected_name() }} role, and Global admin by a global admin.</p>{% endif %}
 </fieldset>

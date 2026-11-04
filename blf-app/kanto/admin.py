@@ -24,6 +24,7 @@ from .display import (CELEBRATION_BUTTONS, CELEBRATION_ODDS_FILE, CELEBRATIONS, 
                       celebration_odds, limited_themes, save_theme, season_date, season_date_shortcuts,
                       staging_season_date, themes_on)
 from .models import PROTECTED_ROLES, ROLE_DEFS, ActivityLog, Throttle, User
+from .extras import AccountFields, load
 from .security import PROTECTED_NAME, confirm_first, needs_passkey_redirect, passkey_confirmed, view_as_refusal
 
 SIGN_IN_ACTIONS = ['Logged in', 'Failed login', 'Failed verification code', 'Failed passkey sign-in',
@@ -31,53 +32,7 @@ SIGN_IN_ACTIONS = ['Logged in', 'Failed login', 'Failed verification code', 'Fai
 PASSKEY_FOR_ROLES = f'Confirm it\'s you with a passkey before giving or removing {PROTECTED_NAME} or Global admin roles.'
 
 
-class AccountFields:
-    """Your app's own fields on accounts, edited with the roles on the Users pages and in the users CSV
-    (SecureMy.School: which schools a school login belongs to). Subclass this in settings.py and set
-    ACCOUNT_FIELDS = YourFields(). Values are whatever your app likes (a list of schools, say).
-
-    Templates: put your form fields in templates/_account_fields.html (inside the add and change forms, after the
-    roles: `user` is set on the change form), table cells in _account_columns_head.html and _account_columns.html
-    (one <th>/<td> each per `columns`, with `u` the row's user), and CSV help in _account_csv_help.html (<li>s)."""
-    columns = 0                 # extra table columns on the Users and View as pages
-    csv_columns = []            # extra CSV columns, after the roles
-    csv_blank_note = 'role columns'   # "In the ___, a blank cell means none"
-    less_access_note = 'a role'       # "Removing ___ or disabling the account signs them out everywhere"
-
-    def from_form(self, roles, user=None):
-        """Values from the add (USER None) or change form for an account with ROLES: (values, error or None)."""
-        return None, None
-
-    def from_csv(self, row, present, user, roles):
-        """Values from a CSV ROW (a dict by column; PRESENT is the set of columns in the file) for USER (None for a
-        new account) with ROLES: (values, error or None). Keep the account's values when your columns are absent."""
-        return None, None
-
-    def csv_values(self, user):
-        """USER's cells for csv_columns."""
-        return ['' for _ in self.csv_columns]
-
-    def changes(self, user, values):
-        """Log lines for changing USER to VALUES (none: nothing changes)."""
-        return []
-
-    def less_access(self, user, values):
-        """True if VALUES give USER less access, so their other sessions are signed out."""
-        return False
-
-    def apply(self, user, values):
-        """Set VALUES on USER (a new account is already added to the session)."""
-
-    def created_detail(self, values):
-        """Added to the log when an account is created, e.g. '; schools: Oak Primary'."""
-        return ''
-
-    def context(self):
-        """Extra template variables for the Users pages (e.g. every school to pick from)."""
-        return {}
-
-
-ACCOUNT_FIELDS = getattr(settings, 'ACCOUNT_FIELDS', None) or AccountFields()
+ACCOUNT_FIELDS = load(getattr(settings, 'ACCOUNT_FIELDS', None), AccountFields)
 
 
 @app.template_global()
@@ -168,6 +123,8 @@ def roles_from_form(user=None):
     Returns (roles, error message or None)."""
     chosen = {r for r in request.form.getlist('roles') if r in ROLE_DEFS}
     before = user.roles if user else set()
+    if not chosen and (other := ACCOUNT_FIELDS.roles_from_other_form(request.form, before)) is not None:
+        chosen = set(other)
     if error := role_change_error(chosen, before):
         return before, error
     return chosen, None
@@ -176,7 +133,7 @@ def roles_from_form(user=None):
 def role_change_error(chosen, before=frozenset()):
     """Why the current admin can't change roles BEFORE to CHOSEN, or None."""
     if (chosen ^ before) & PROTECTED_ROLES and not current_user.has_protected_role:
-        return f'Only someone with a {PROTECTED_NAME} role (🔒) can give or remove those roles.'
+        return f'Only someone with a {PROTECTED_NAME} role can give or remove {PROTECTED_NAME} roles.'
     if (chosen ^ before) & {'global_admin'} and 'global_admin' not in current_user.roles:
         return 'Only a global admin can give or remove the Global admin role.'
     if (chosen ^ before) & (PROTECTED_ROLES | {'global_admin'}) and not passkey_confirmed():
@@ -201,6 +158,11 @@ def identity_changes(user, username, full_name, email):
 def set_identity(user, username, full_name, email):
     rename_user(user, username)
     user.full_name, user.email = full_name or None, email or None
+
+
+def guard_account(user_id):
+    """For confirm_first: the refusal guards_protected_account gives for this account, before asking."""
+    return guards_protected_account(db.get_or_404(User, user_id))
 
 
 def guards_protected_account(user):
@@ -642,7 +604,7 @@ def admin_user(user_id):
 @login_required
 @admin_required
 @confirm_first(lambda user_id: f'Reset {_username(user_id)}\'s password? They\'ll be signed out and need the '
-               'temporary password you\'re given.', 'Yes, reset it')
+               'temporary password you\'re given.', 'Yes, reset it', guard=guard_account)
 def admin_reset_password(user_id):
     user = db.get_or_404(User, user_id)
     if blocked := guards_protected_account(user):
@@ -660,7 +622,7 @@ def admin_reset_password(user_id):
 @login_required
 @admin_required
 @confirm_first(lambda user_id: f'Turn off two-step verification for {_username(user_id)}? Their authenticator app, '
-               'recovery codes and passkeys stop working and they\'ll be signed out.', 'Yes, turn it off')
+               'recovery codes and passkeys stop working and they\'ll be signed out.', 'Yes, turn it off', guard=guard_account)
 def admin_reset_mfa(user_id):
     user = db.get_or_404(User, user_id)
     if blocked := guards_protected_account(user):
@@ -699,7 +661,7 @@ def admin_unlock(user_id):
 @app.route('/admin/users/<int:user_id>/sign-out', methods=['POST'])
 @login_required
 @admin_required
-@confirm_first(lambda user_id: f'Sign {_username(user_id)} out everywhere?', 'Yes, sign them out')
+@confirm_first(lambda user_id: f'Sign {_username(user_id)} out everywhere?', 'Yes, sign them out', guard=guard_account)
 def admin_sign_out(user_id):
     user = db.get_or_404(User, user_id)
     user.end_other_sessions()

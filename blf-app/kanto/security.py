@@ -27,6 +27,9 @@ ALWAYS_ALLOWED = {'profile', 'profile_password', 'profile_display', 'profile_eas
                   'kanto.static', 'login', 'login_mfa', 'index', 'about', 'favicon'}
 ALWAYS_ALLOWED |= set(getattr(settings, 'EXTRA_ALLOWED_ENDPOINTS', ()))
 MFA_ALLOWED = ALWAYS_ALLOWED | {'mfa_setup', 'passkey_options', 'passkey_add', 'passkey_remove'}
+# Addresses that answer for themselves rather than redirecting to set up two-step verification (e.g. an API that
+# takes its own tokens): settings.MFA_EXEMPT_PATHS = ('/api/',)
+MFA_EXEMPT_PATHS = tuple(getattr(settings, 'MFA_EXEMPT_PATHS', ()))
 # What protected roles are called in messages ("a protected role"); SecureMy.School's are safeguarding roles
 PROTECTED_NAME = getattr(settings, 'PROTECTED_NAME', 'protected')
 
@@ -87,16 +90,20 @@ def too_large(e):
 # "Are you sure?" for actions that remove or reset something
 # ---------------------------------------------------------------------------
 
-def confirm_first(message, yes='Yes, go ahead'):
+def confirm_first(message, yes='Yes, go ahead', guard=None):
     """Ask before doing a POST action. With JavaScript, the form's data-confirm pop-up asks and adds confirmed=1
     (kanto/static/js/app.js). Without it (a script blocked or failed to load), the action isn't done: an
     "Are you sure?" page asks instead, then sends the same form again with confirmed=1.
 
     MESSAGE is the question, or a function taking the view's arguments (e.g. entry_id) that returns it.
+    GUARD, also given the view's arguments, runs before asking: a response it returns (e.g. a refusal) is sent
+    instead, so nobody is asked to confirm something they aren't allowed to do.
     Not for file uploads: a file can't be sent on again from the confirm page."""
     def decorate(view):
         @wraps(view)
         def wrapped(*args, **kwargs):
+            if request.method == 'POST' and guard is not None and (refused := guard(**kwargs)) is not None:
+                return refused
             if request.method == 'POST' and request.form.get('confirmed') != '1':
                 question = message(**kwargs) if callable(message) else message
                 fields = [(k, v) for k, v in request.form.items(multi=True) if k not in ('csrf_token', 'confirmed')]
@@ -152,6 +159,14 @@ def avatar_colour(user):
 @app.template_global()
 def role_defs_all():
     return ROLE_DEFS
+
+
+@app.template_global()
+def passkey_locked_names():
+    """What this session can't open until it's confirmed with a passkey, beyond global admin tools, in words
+    (settings.passkey_locked_names(), e.g. ['Safeguarding audits'])."""
+    names = getattr(settings, 'passkey_locked_names', None)
+    return names() if names and not passkey_confirmed() else []
 
 
 @app.template_global()
@@ -254,5 +269,5 @@ def enforce_password_change():
 def enforce_mfa():
     # With REQUIRE_MFA on, a signed-in user without two-step verification can only reach their profile to set it up
     if (REQUIRE_MFA and current_user.is_authenticated and not current_user.has_two_step and not g.get('viewing_admin')
-            and request.endpoint not in MFA_ALLOWED):
+            and request.endpoint not in MFA_ALLOWED and not request.path.startswith(MFA_EXEMPT_PATHS)):
         return redirect(url_for('profile') + '#security')
