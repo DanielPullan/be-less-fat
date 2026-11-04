@@ -2,7 +2,7 @@
 
 Themes (kanto/static/css/themes.css, chosen in the Aa menu):
 - Always: Match my device, Light, Dark, High contrast
-- All year, for everyone: Haunted, Memes, Nord, Silly, Network Console, Fruity Frog, Pomegranate Piranha
+- All year, for everyone: Haunted, Memes, Nord, Silly, Network Console, Fruity Frog, Pomegranate Piranha, Blueberry Bear
 - Unlocked by an easter egg: Frosted Glass (type the new emergency number, 0118 999 881 999 119 725 3)
 - In their month: Pride (June), Black History Month (October, as in the UK), Festive (December)
 - Around their day: Safer Internet Day, World Book Day, Pi Day, 4 May, Lunar New Year, Diwali, Eid
@@ -21,7 +21,7 @@ import settings
 from . import STAGING, SEASON_DATE, UK, app
 
 STANDARD_THEMES = ['system', 'light', 'dark', 'contrast']
-ALL_YEAR_THEMES = ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha']
+ALL_YEAR_THEMES = ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear']
 # Themes unlocked by finding an easter egg (kanto/static/js/konami.js)
 EGG_THEMES = {'vista': 'emergency'}
 EASTER_EGGS = {'konami', 'emergency'}
@@ -47,7 +47,7 @@ FESTIVAL_DATES = {
             '2029-02-14', '2029-04-23', '2030-02-05', '2030-04-13'],
 }
 THEME_LABELS = {'haunted': 'Haunted 👻', 'meme': 'Memes 😎', 'nord': 'Nord', 'silly': 'Silly 🤡',
-                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
+                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
                 'heritage': 'Black History Month', 'festive': 'Festive 🎄', 'safer': 'Safer Internet 🛡️',
                 'books': 'Book Day 📚', 'pi': 'Raspberry π', 'space': 'Galaxy 🌌', 'lunar': 'Lunar New Year 🏮',
                 'diwali': 'Diwali 🪔', 'eid': 'Eid 🌙'}
