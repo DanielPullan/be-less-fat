@@ -1,18 +1,15 @@
-# File Extensions
+# Secrets and per-machine settings: never commit these
+.env
+*.pem
+
+# Data: the database lives on each machine, not in git
+blf-app/instance/
+blf-app/blf_app/*.sqlite3
+
+# Environments, caches, OS files
+.venv*/
+__pycache__/
 *.pyc
 *.swp
-
-# Files
+node_modules/
 .DS_Store
-flask-app/config.py
-blf-app/.DS_Store
-blf-app/blf_app/config.py
-
-# Test files
-blf-app/blf_app/test.py
-blf-app/blf_app/test2.py
-blf-app/blf_app/test3.py
-
-# Local database
-blf-app/blf_app/*.sqlite3
-blf-app/.venv/

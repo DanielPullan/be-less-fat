@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from blf_app.importer import parse_date, parse_weight, read_weights
+from importer import parse_date, parse_weight, read_weights
 
 TODAY = date(2026, 11, 3)
 

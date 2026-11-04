@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Set up two-step verification — {{ settings.APP_NAME }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    <a href="{{ url_for('profile') }}#security" class="text-sm font-semibold text-slate-600 hover:text-forest-700">← Back to your profile</a>
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Set up two-step verification</h1>
+        <p class="text-sm text-slate-500">After this, signing in needs your password and a code from your phone.</p>
+    </div>
+    <ol class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-sm text-slate-700">
+        <li>
+            <p class="font-bold text-slate-900">1. Install an authenticator app</p>
+            <p>Microsoft Authenticator, Google Authenticator or any app that supports TOTP codes.</p>
+        </li>
+        <li>
+            <p class="font-bold text-slate-900">2. Scan this QR code with the app</p>
+            <div class="mt-3 flex flex-wrap items-center gap-6">
+                {# QR codes need dark-on-light to scan, whatever the theme #}
+                <div class="p-2 rounded-lg" style="background: #ffffff; width: 200px" role="img" aria-label="QR code for setting up your authenticator app">{{ qr|safe }}</div>
+                <div>
+                    <p class="text-xs text-slate-500">Can't scan it? Choose "enter a setup key" in the app and type:</p>
+                    <p class="font-mono text-base text-slate-900 mt-1 select-all">{{ secret }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Time-based, 6 digits.</p>
+                </div>
+            </div>
+        </li>
+        <li>
+            <p class="font-bold text-slate-900">3. Enter the 6-digit code the app shows</p>
+            <form method="POST" class="mt-3 flex flex-wrap items-end gap-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="code" class="sr-only">Code from your authenticator app</label>
+                <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required placeholder="123456"
+                       class="w-40 px-4 py-3 rounded-xl border border-slate-300 text-lg tracking-[0.3em] text-center font-mono">
+                <button type="submit" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-3 rounded-xl text-sm">Turn on</button>
+            </form>
+        </li>
+    </ol>
+</div>
+<script nonce="{{ csp_nonce }}">document.querySelectorAll('[role="img"] > svg').forEach(s => { s.style.width = '100%'; s.style.height = 'auto'; });</script>
+{% endblock %}

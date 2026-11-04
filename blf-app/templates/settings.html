@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Goals — {{ settings.APP_NAME }}{% endblock %}
+{% from '_blf.html' import card, field, label_class, btn_primary, csrf with context %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Goals</h1>
+        <p class="text-sm text-slate-500">Your height gives your BMI. With your date of birth, sex and activity level we estimate how many calories you burn a day (the Mifflin-St Jeor formula) and suggest a daily target. Your activity level also sets your protein goal.</p>
+    </div>
+    <form method="POST" class="{{ card }} p-6 sm:p-8 space-y-5">
+        {{ csrf() }}
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="height" class="{{ label_class }}">Height (m)</label>
+                <input type="number" id="height" name="height" step="0.01" min="0" value="{{ body.height or '' }}" required class="{{ field }}" placeholder="e.g. 1.75">
+                <p class="mt-1 text-xs text-slate-500">Centimetres are fine too.</p>
+            </div>
+            <div>
+                <label for="goalweight" class="{{ label_class }}">Goal weight (kg)</label>
+                <input type="number" id="goalweight" name="goalweight" step="0.1" min="0" value="{{ body.goalweight or '' }}" required class="{{ field }}" placeholder="e.g. 75">
+            </div>
+            <div>
+                <label for="birthdate" class="{{ label_class }}">Date of birth</label>
+                <input type="date" id="birthdate" name="birthdate" value="{{ body.birthdate or '' }}" class="{{ field }}">
+            </div>
+            <fieldset>
+                <legend class="{{ label_class }}">Sex</legend>
+                <div class="flex gap-2">
+                    {% for sex in sexes %}
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="sex" value="{{ sex }}" class="peer sr-only" {% if body.sex == sex %}checked{% endif %}>
+                        <span class="block text-center px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:border-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-forest-600">{{ sex|capitalize }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+        </div>
+        <fieldset>
+            <legend class="{{ label_class }}">Activity level</legend>
+            <div class="space-y-2">
+                {% for level, (multiplier, label) in activity_levels.items() %}
+                <label class="block cursor-pointer">
+                    <input type="radio" name="activity" value="{{ level }}" class="peer sr-only" {% if body.activity == level %}checked{% endif %}>
+                    <span class="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-300 text-sm text-slate-700 peer-checked:bg-slate-900 peer-checked:border-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-forest-600">
+                        <span class="w-6 h-6 shrink-0 rounded-full border border-current inline-flex items-center justify-center text-xs font-bold">{{ level }}</span>{{ label }}
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <button type="submit" class="{{ btn_primary }}">Save goals</button>
+    </form>
+</div>
+{% endblock %}

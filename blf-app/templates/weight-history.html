@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Weight — {{ settings.APP_NAME }}{% endblock %}
+{% from '_blf.html' import card, csrf, weight_form with context %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Weight</h1>
+            <p class="text-sm text-slate-500">{{ total }} weigh-in{{ 's' if total != 1 }}{% if body.goalweight %}, with your goal of {{ body.goalweight }} kg{% endif %}.</p>
+        </div>
+        <a href="{{ url_for('importweights') }}" class="text-sm font-semibold text-forest-700 bg-forest-50 px-4 py-2 rounded-xl border border-forest-100 hover:bg-forest-100">Import from another app</a>
+    </div>
+
+    {% if imported %}
+    <div class="bg-forest-50 border border-forest-200 text-forest-800 rounded-2xl px-5 py-4 text-sm flex flex-wrap items-center justify-between gap-3">
+        <p>{{ imported.count }} imported weigh-in{{ 's' if imported.count != 1 }} are marked <strong>Imported</strong> below. Not what you expected?</p>
+        <form method="POST" action="{{ url_for('undoimport', import_id=imported.id) }}">
+            {{ csrf() }}
+            <button type="submit" class="font-semibold text-red-700 underline" data-confirm="Remove the {{ imported.count }} weigh-ins from this import?">Undo this import</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <section class="{{ card }} p-6 space-y-3" aria-labelledby="weigh-in">
+        <h2 id="weigh-in" class="text-lg font-bold text-slate-900">Weigh in</h2>
+        {{ weight_form(url_for('weighthistory')) }}
+    </section>
+
+    {% if total %}
+    <nav aria-label="Time range" class="flex flex-wrap gap-2">
+        {% for code, (label, days) in ranges.items() %}
+        <a href="{{ url_for('weighthistory', range=code) }}" class="px-3.5 py-1.5 rounded-full text-sm font-semibold border {{ 'bg-slate-900 border-slate-900 text-white' if code == current_range else 'bg-white border-slate-300 text-slate-700 hover:border-slate-400' }}"{% if code == current_range %} aria-current="page"{% endif %}>{{ label }}</a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+
+    {% if chart %}
+    <section class="{{ card }} p-6 space-y-3" aria-labelledby="trend">
+        <h2 id="trend" class="text-lg font-bold text-slate-900">Trend</h2>
+        <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="w-full h-auto" role="img"
+             aria-label="Weight from {{ chart.first|longdate }} to {{ chart.last|longdate }}: {{ chart.points[0].weight }} kg to {{ chart.points[-1].weight }} kg">
+            {% for t in chart.ticks %}
+            <line x1="{{ chart.left }}" x2="{{ chart.right }}" y1="{{ t.y }}" y2="{{ t.y }}" stroke="#e2e8f0" stroke-width="1"/>
+            <text x="{{ chart.left - 8 }}" y="{{ t.y + 4 }}" text-anchor="end" font-size="11" fill="#64748b">{{ t.value }}</text>
+            {% endfor %}
+            {% if chart.goal_y %}
+            <line x1="{{ chart.left }}" x2="{{ chart.right }}" y1="{{ chart.goal_y }}" y2="{{ chart.goal_y }}" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4"/>
+            <text x="{{ chart.right }}" y="{{ chart.goal_y - 6 }}" text-anchor="end" font-size="11" font-weight="700" fill="#15803d" class="text-forest-700">Goal {{ body.goalweight }} kg</text>
+            {% endif %}
+            <path d="{{ chart.area }}" fill="#16a34a" fill-opacity="0.08"/>
+            <path d="{{ chart.path }}" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            {% for p in chart.points if chart.dots %}
+            <circle cx="{{ p.x }}" cy="{{ p.y }}" r="4" fill="#16a34a" stroke="#ffffff" stroke-width="2"><title>{{ p.date|longdate }}: {{ p.weight }} kg</title></circle>
+            {% endfor %}
+            <text x="{{ chart.left }}" y="{{ chart.height - 6 }}" font-size="11" fill="#64748b">{{ chart.first|longdate if current_range != '3m' else chart.first|shortdate }}</text>
+            <text x="{{ chart.right }}" y="{{ chart.height - 6 }}" text-anchor="end" font-size="11" fill="#64748b">{{ chart.last|longdate if current_range != '3m' else chart.last|shortdate }}</text>
+        </svg>
+    </section>
+    {% elif in_range == 1 %}
+    <p class="text-sm text-slate-500">One weigh-in in this range: add another to see a trend.</p>
+    {% endif %}
+
+    <section class="{{ card }} overflow-hidden" aria-labelledby="history">
+        <div class="px-6 pt-6 pb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="history" class="text-lg font-bold text-slate-900">History</h2>
+            {% if results %}
+            <form method="POST" action="{{ url_for('deletelastweight') }}">
+                {{ csrf() }}
+                <button type="submit" class="text-sm font-medium text-red-600 hover:underline" data-confirm="Remove the weigh-in you added most recently?">Undo last added</button>
+            </form>
+            {% endif %}
+        </div>
+        {% if results %}
+        <div class="relative overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                <tr><th scope="col" class="px-3 sm:px-6 py-3">Date</th><th scope="col" class="px-3 sm:px-6 py-3 text-right">Weight</th><th scope="col" class="px-3 sm:px-6 py-3 text-right">Change</th><th scope="col" class="px-3 sm:px-6 py-3"><span class="sr-only">Remove</span></th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for x in results %}
+                {% set prev = results[loop.index] if not loop.last else none %}
+                <tr>
+                    <td class="px-3 sm:px-6 py-3 text-slate-700">{{ x.logdate|longdate }}{% if x.import_id %} <span class="ml-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600">Imported</span>{% endif %}</td>
+                    <td class="px-3 sm:px-6 py-3 text-right font-semibold text-slate-900 tabular-nums">{{ x.weight }} kg</td>
+                    <td class="px-3 sm:px-6 py-3 text-right tabular-nums">
+                        {% if prev %}{% set d = (x.weight - prev.weight)|round(1) %}
+                        {% if d < 0 %}<span class="text-forest-700 font-semibold">▼ {{ d|abs }}</span>{% elif d > 0 %}<span class="text-red-700 font-semibold">▲ {{ d }}</span>{% else %}<span class="text-slate-400">—</span>{% endif %}
+                        {% else %}<span class="text-slate-400">—</span>{% endif %}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 text-right">
+                        <form method="POST" action="{{ url_for('deleteweight', entry_id=x.id) }}">
+                            {{ csrf() }}
+                            <input type="hidden" name="next" value="{{ request.full_path }}">
+                            <button type="submit" class="text-sm font-medium text-red-600 hover:underline" data-confirm="Remove the weigh-in from {{ x.logdate|longdate }}?" title="Remove"><span class="sm:hidden text-base leading-none" aria-hidden="true">✕</span><span class="hidden sm:inline">Remove</span><span class="sr-only"> {{ x.logdate|longdate }}</span></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% if results|length < in_range %}
+        <p class="px-6 py-4 text-sm text-slate-500 border-t border-slate-100">Showing the latest {{ results|length }} of {{ in_range }}; the chart includes them all.{% if show_all_url %} <a href="{{ show_all_url }}" class="font-semibold text-forest-700 hover:underline">Show all</a>{% endif %}</p>
+        {% endif %}
+        {% else %}
+        <p class="px-6 pb-6 text-sm text-slate-400">{% if total %}Nothing tracked in this range.{% else %}Nothing tracked yet. Weigh in above, or <a href="{{ url_for('importweights') }}" class="font-semibold text-forest-700 hover:underline">import weights from another app</a>.{% endif %}</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

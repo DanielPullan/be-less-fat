@@ -1,0 +1,783 @@
+/*
+ * Display settings: themes, text size, fonts and reduced motion.
+ * Set as attributes on <html> by kanto/static/js/display.js. Which themes are offered when: kanto/display.py.
+ *
+ * The templates use Tailwind's light colour classes directly, so the dark and high-contrast
+ * themes remap those classes here rather than adding dark: variants to every template.
+ * If a template starts using a new colour class, add it to the theme blocks below.
+ * Screen only: printouts and PDFs always use the normal light style.
+ */
+
+/* ---------- Text size (Tailwind sizes are in rem, so the whole UI scales) ---------- */
+html[data-text="large"] { font-size: 112.5%; }
+html[data-text="larger"] { font-size: 125%; }
+
+/* ---------- Readable font ---------- */
+html[data-font="readable"] body {
+    font-family: "Atkinson Hyperlegible", system-ui, sans-serif !important;
+    letter-spacing: 0.02em;
+    word-spacing: 0.08em;
+}
+
+/* ---------- Fira Sans, with Fira Code for codes and other monospaced text ---------- */
+html[data-font="fira"] body { font-family: "Fira Sans", system-ui, sans-serif !important; }
+html[data-font="fira"] :is(.font-mono, code, pre, kbd, samp) { font-family: "Fira Code", ui-monospace, monospace !important; }
+
+/* ---------- Reduced motion ---------- */
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* ---------- Windows high contrast (forced colours): keep chart marks visible ---------- */
+@media (forced-colors: active) {
+    [style*="background"] { forced-color-adjust: none; }
+}
+
+@media screen {
+
+/* =====================================================================
+   Dark, Nord (the colour scheme many code editors use, nordtheme.com) and
+   Haunted (for everyone), and Lunar New Year, Diwali, Eid and Galaxy (around those days). All use the rules below;
+   each sets its own colours as variables.
+   ===================================================================== */
+html[data-theme="dark"] {
+    --bg: #0b1220; --fg: #e2e8f0;
+    --surface: #151e2e; --surface-50: #1b2638; --surface-100: #243045; --surface-200: #2f3b52; --surface-300: #3a4760; --hover-50: #1f2b40;
+    --t900: #f1f5f9; --t800: #e2e8f0; --t700: #cbd5e1; --t600: #b4c0d1; --t500: #97a5ba; --t400: #7f8ea5; --t300: #56647d;
+    --t-hover: #ffffff; --placeholder: #6b7a92;
+    --b100: #212d42; --b200: #2a3750; --b300: #3a4862; --b400: #56647d;
+    --selected: #e2e8f0; --on-selected: #0f172a; --selected-muted: #475569;
+    --pass: #16a34a; --pass-border: #22c55e; --fail: #dc2626; --fail-border: #ef4444; --na: #64748b; --na-border: #94a3b8; --on-fill: #ffffff;
+    --brand: #6ee7a0; --brand-strong: #a7f3c4; --brand-rgb: 34, 197, 94;
+    --red: #fca5a5; --red-rgb: 239, 68, 68; --amber: #fcd34d; --amber-rgb: 245, 158, 11;
+    --violet: #c4b5fd; --violet-rgb: 139, 92, 246; --violet-border: #a78bfa;
+    --blue: #93c5fd; --blue-rgb: 59, 130, 246; --orange: #fdba74; --orange-rgb: 249, 115, 22;
+}
+/* Nord's palette: Polar Night backgrounds, Snow Storm text, Frost for the brand colour, Aurora for status.
+   Aurora red, orange, blue and purple are lightened a little for text, so it stays readable (4.5:1) */
+html[data-theme="nord"] {
+    --bg: #2e3440; --fg: #d8dee9;
+    --surface: #3b4252; --surface-50: #353c4a; --surface-100: #434c5e; --surface-200: #4c566a; --surface-300: #566176; --hover-50: #434c5e;
+    --t900: #eceff4; --t800: #e5e9f0; --t700: #d8dee9; --t600: #c5cdda; --t500: #aeb7c7; --t400: #9aa4b6; --t300: #616e88;
+    --t-hover: #eceff4; --placeholder: #7b88a1;
+    --b100: #434c5e; --b200: #4c566a; --b300: #566176; --b400: #6b7890;
+    --selected: #88c0d0; --on-selected: #2e3440; --selected-muted: #3b4252;
+    --pass: #a3be8c; --pass-border: #a3be8c; --fail: #b3545d; --fail-border: #bf616a; --na: #4c566a; --na-border: #81a1c1; --on-fill: #2e3440;
+    --brand: #88c0d0; --brand-strong: #8fbcbb; --brand-rgb: 136, 192, 208;
+    --red: #e8a9ae; --red-rgb: 191, 97, 106; --amber: #ebcb8b; --amber-rgb: 235, 203, 139;
+    --violet: #c9a8c2; --violet-rgb: 180, 142, 173; --violet-border: #b48ead;
+    --blue: #a3bfdb; --blue-rgb: 129, 161, 193; --orange: #e0ad99; --orange-rgb: 208, 135, 112;
+}
+/* Haunted: a midnight-purple ghost town. Lavender mist, a purple glow, pumpkin and eerie pink for accents */
+html[data-theme="haunted"] {
+    --bg: #1a1324; --fg: #e9e1f5;
+    --surface: #261c34; --surface-50: #2d2240; --surface-100: #352848; --surface-200: #3f3155; --surface-300: #4a3a63; --hover-50: #31253f;
+    --t900: #f3eefb; --t800: #e9e1f5; --t700: #d9cdeb; --t600: #c6b7de; --t500: #ad9bc9; --t400: #9886b6; --t300: #6d5d8a;
+    --t-hover: #ffffff; --placeholder: #8a79a8;
+    --b100: #33284a; --b200: #3d3156; --b300: #4b3d68; --b400: #65548a;
+    --selected: #c9b3f0; --on-selected: #1a1324; --selected-muted: #4a3a63;
+    --pass: #7fd1a6; --pass-border: #7fd1a6; --fail: #b8405f; --fail-border: #d9577a; --na: #4a3a63; --na-border: #9886b6; --on-fill: #1a1324;
+    --brand: #c3a6ef; --brand-strong: #dccbff; --brand-rgb: 195, 166, 239;
+    --red: #ff9db8; --red-rgb: 217, 87, 122; --amber: #f2c46d; --amber-rgb: 242, 196, 109;
+    --violet: #d6b8ff; --violet-rgb: 168, 120, 240; --violet-border: #b892f5;
+    --blue: #a9c4ff; --blue-rgb: 110, 140, 230; --orange: #ffad73; --orange-rgb: 255, 140, 60;
+}
+/* Galaxy (4 May): deep space, starlight and a cool glow */
+html[data-theme="space"] {
+    --bg: #05060f; --fg: #e3e8f7;
+    --surface: #0f1326; --surface-50: #13182f; --surface-100: #181e3a; --surface-200: #1f2647; --surface-300: #283056; --hover-50: #151a33;
+    --t900: #f3f6ff; --t800: #e3e8f7; --t700: #cdd4ea; --t600: #b9c1db; --t500: #a7b0cc; --t400: #8e98b8; --t300: #545e80;
+    --t-hover: #ffffff; --placeholder: #6d7799;
+    --b100: #181e3a; --b200: #222a4d; --b300: #2e3762; --b400: #45507f;
+    --selected: #6fd3ff; --on-selected: #05060f; --selected-muted: #283056;
+    --pass: #7ee0a8; --pass-border: #7ee0a8; --fail: #b8405f; --fail-border: #ff5a6e; --na: #283056; --na-border: #8e98b8; --on-fill: #05060f;
+    --brand: #6fd3ff; --brand-strong: #a8e6ff; --brand-rgb: 111, 211, 255;
+    --red: #ff9db0; --red-rgb: 255, 90, 110; --amber: #ffd27a; --amber-rgb: 255, 200, 90;
+    --violet: #d6b8ff; --violet-rgb: 168, 120, 240; --violet-border: #b892f5;
+    --blue: #a9c4ff; --blue-rgb: 110, 140, 230; --orange: #ffb27a; --orange-rgb: 255, 150, 70;
+}
+/* Lunar New Year: lacquer red and gold */
+html[data-theme="lunar"] {
+    --bg: #2b0b0e; --fg: #fbe9d7;
+    --surface: #3d1216; --surface-50: #451519; --surface-100: #521a1f; --surface-200: #5f2026; --surface-300: #6d272e; --hover-50: #4a161b;
+    --t900: #fff4e6; --t800: #fbe9d7; --t700: #f1d9c2; --t600: #e6c7aa; --t500: #d4b08f; --t400: #c09a77; --t300: #8f6a52;
+    --t-hover: #ffffff; --placeholder: #a8846a;
+    --b100: #521a1f; --b200: #63242a; --b300: #763038; --b400: #8f4048;
+    --selected: #f2c45a; --on-selected: #2b0b0e; --selected-muted: #6d272e;
+    --pass: #8fd19e; --pass-border: #8fd19e; --fail: #b8405f; --fail-border: #e05a6f; --na: #6d272e; --na-border: #c09a77; --on-fill: #2b0b0e;
+    --brand: #f2c45a; --brand-strong: #ffe08a; --brand-rgb: 242, 196, 90;
+    --red: #ffa3a3; --red-rgb: 255, 100, 100; --amber: #ffd27a; --amber-rgb: 255, 200, 90;
+    --violet: #e0b8ff; --violet-rgb: 190, 140, 250; --violet-border: #c99cf5;
+    --blue: #a9c4ff; --blue-rgb: 110, 150, 240; --orange: #ffb27a; --orange-rgb: 255, 150, 70;
+}
+/* Diwali: an indigo night lit by saffron and marigold */
+html[data-theme="diwali"] {
+    --bg: #140f2e; --fg: #fbecd3;
+    --surface: #1f1842; --surface-50: #251d4c; --surface-100: #2c2457; --surface-200: #352c63; --surface-300: #403670; --hover-50: #272051;
+    --t900: #fff6e5; --t800: #fbecd3; --t700: #f0dcc0; --t600: #e2caa9; --t500: #cdb38f; --t400: #b89c7a; --t300: #7d6a8a;
+    --t-hover: #ffffff; --placeholder: #9d8ba8;
+    --b100: #2c2457; --b200: #3a3170; --b300: #4a4085; --b400: #5f55a0;
+    --selected: #ffb347; --on-selected: #140f2e; --selected-muted: #403670;
+    --pass: #7fd1a6; --pass-border: #7fd1a6; --fail: #b8405f; --fail-border: #d9577a; --na: #403670; --na-border: #b89c7a; --on-fill: #140f2e;
+    --brand: #ffb347; --brand-strong: #ffd27a; --brand-rgb: 255, 179, 71;
+    --red: #ff9db8; --red-rgb: 217, 87, 122; --amber: #ffd27a; --amber-rgb: 255, 200, 90;
+    --violet: #d6b8ff; --violet-rgb: 168, 120, 240; --violet-border: #b892f5;
+    --blue: #a9c4ff; --blue-rgb: 110, 140, 230; --orange: #ffb27a; --orange-rgb: 255, 150, 70;
+}
+/* Eid: a deep green night sky, gold, a crescent moon and stars */
+html[data-theme="eid"] {
+    --bg: #08221c; --fg: #ebe6d4;
+    --surface: #0f2f27; --surface-50: #12372e; --surface-100: #174036; --surface-200: #1c4a3e; --surface-300: #235647; --hover-50: #133a31;
+    --t900: #f4f1e6; --t800: #ebe6d4; --t700: #dcd5bd; --t600: #c9c1a5; --t500: #b0a98c; --t400: #9b9478; --t300: #5f7a6c;
+    --t-hover: #ffffff; --placeholder: #849583;
+    --b100: #174036; --b200: #1f4d41; --b300: #2a5d50; --b400: #3a7464;
+    --selected: #e8c766; --on-selected: #08221c; --selected-muted: #235647;
+    --pass: #9be3b9; --pass-border: #9be3b9; --fail: #b8405f; --fail-border: #d9577a; --na: #235647; --na-border: #9b9478; --on-fill: #08221c;
+    --brand: #e8c766; --brand-strong: #f6dd8f; --brand-rgb: 232, 199, 102;
+    --red: #ffa3b5; --red-rgb: 217, 87, 122; --amber: #f2d27a; --amber-rgb: 242, 210, 122;
+    --violet: #d6c2ff; --violet-rgb: 168, 130, 240; --violet-border: #b9a0f5;
+    --blue: #a9d0ff; --blue-rgb: 110, 160, 230; --orange: #ffb98a; --orange-rgb: 255, 160, 100;
+}
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) { color-scheme: dark; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) body { background-color: var(--bg) !important; color: var(--fg) !important; }
+
+/* Surfaces */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-white { background-color: var(--surface) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-50 { background-color: var(--surface-50) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-100 { background-color: var(--surface-100) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-300 { background-color: var(--surface-300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-200 { background-color: var(--surface-200) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:bg-slate-50:hover { background-color: var(--hover-50) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .from-white { --tw-gradient-from: var(--bg) var(--tw-gradient-from-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .to-forest-50\/50 { --tw-gradient-to: rgba(var(--brand-rgb), .08) var(--tw-gradient-to-position) !important; }
+
+/* Text */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-900 { color: var(--t900) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-800 { color: var(--t800) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-700 { color: var(--t700) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-600 { color: var(--t600) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-500 { color: var(--t500) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-400 { color: var(--t400) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-slate-300 { color: var(--t300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:text-slate-900:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:text-slate-800:hover { color: var(--t-hover) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) ::placeholder { color: var(--placeholder) !important; }
+
+/* Borders and dividers */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-slate-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--b100) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-slate-200 { border-color: var(--b200) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-slate-300 { border-color: var(--b300) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:border-slate-400:hover { border-color: var(--b400) !important; }
+
+/* Selected tabs and pills (dark-on-light in the light theme): flip to light-on-dark */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-slate-900 { border-color: var(--selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-slate-900 .text-slate-300 { color: var(--selected-muted) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) #viz-tip { background-color: var(--t900) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: var(--selected) !important; color: var(--on-selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:border-slate-900 { border-color: var(--selected) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: var(--surface-300) !important; color: var(--t800) !important; }
+/* Checked chips keep their fill (the dark surface override would otherwise win) */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: var(--pass) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:border-forest-600 { border-color: var(--pass-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-red-600 { background-color: var(--fail) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:border-red-600 { border-color: var(--fail-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-slate-500 { background-color: var(--na) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:border-slate-500 { border-color: var(--na-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:border-slate-300 { border-color: var(--t300) !important; }
+/* Checked chips with a solid fill (Pass / Fail / N/A, framework choices) keep their light-on-fill text */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:text-white:not(.peer-checked\:bg-slate-900) { color: #ffffff !important; }
+html:is([data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .peer:checked ~ .peer-checked\:bg-forest-600.peer-checked\:text-white { color: var(--on-fill) !important; }
+
+/* Brand colour */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-forest-600,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-forest-700,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:text-forest-700:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .file\:text-forest-700::file-selector-button { color: var(--brand) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-forest-800,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-forest-900 { color: var(--brand-strong) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-forest-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-forest-50\/50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:bg-forest-50:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .file\:bg-forest-50::file-selector-button { background-color: rgba(var(--brand-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-forest-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:bg-forest-100:hover,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:file\:bg-forest-100::file-selector-button:hover { background-color: rgba(var(--brand-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-forest-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-forest-200 { border-color: rgba(var(--brand-rgb), .28) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-forest-300 { border-color: rgba(var(--brand-rgb), .45) !important; }
+/* Solid green buttons (bg-forest-700 + white text) already have enough contrast on dark. Nord makes them
+   Frost blue with dark text, as Nord editors do */
+html[data-theme="nord"] .bg-forest-700,
+html[data-theme="nord"] .bg-forest-600 { background-color: #88c0d0 !important; color: #2e3440 !important; }
+html[data-theme="nord"] .hover\:bg-forest-800:hover { background-color: #8fbcbb !important; color: #2e3440 !important; }
+html[data-theme="nord"] .bg-red-600 { background-color: #b3545d !important; }
+/* Haunted: purple buttons, a moonlit sky fading into mist, and a ghost by the name */
+html[data-theme="haunted"] .bg-forest-700,
+html[data-theme="haunted"] .bg-forest-600 { background-color: #7a4cc2 !important; }
+html[data-theme="haunted"] .hover\:bg-forest-800:hover { background-color: #6a3db0 !important; }
+html[data-theme="haunted"] .bg-red-600 { background-color: #b8405f !important; }
+html[data-theme="haunted"] body {
+    background-image: radial-gradient(circle at 88% -6%, rgba(214, 196, 255, .22) 0, rgba(214, 196, 255, .06) 18%, transparent 34%),
+                      linear-gradient(to top, rgba(170, 150, 210, .14), transparent 28%) !important;
+    background-attachment: fixed;
+}
+html[data-theme="haunted"] header { box-shadow: 0 1px 0 #4b3d68, 0 6px 22px rgba(150, 100, 230, .28); }
+html[data-theme="haunted"] header > div > a:first-child .text-forest-600 { color: #ff7aa8 !important; }
+html[data-theme="haunted"] header > div > a:first-child::before { content: "👻"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="haunted"] .rounded-2xl.shadow-sm { box-shadow: 0 0 0 1px rgba(195, 166, 239, .08), 0 8px 24px rgba(10, 4, 20, .35) !important; }
+/* Lunar New Year, Diwali, Eid: gold or saffron buttons with dark text, a glow, and a symbol by the name */
+html[data-theme="lunar"] .bg-forest-700, html[data-theme="lunar"] .bg-forest-600 { background-color: #e0a82e !important; color: #2b0b0e !important; }
+html[data-theme="lunar"] .hover\:bg-forest-800:hover { background-color: #f2c45a !important; color: #2b0b0e !important; }
+html[data-theme="diwali"] .bg-forest-700, html[data-theme="diwali"] .bg-forest-600 { background-color: #f59e2a !important; color: #140f2e !important; }
+html[data-theme="diwali"] .hover\:bg-forest-800:hover { background-color: #ffb347 !important; color: #140f2e !important; }
+html[data-theme="eid"] .bg-forest-700, html[data-theme="eid"] .bg-forest-600 { background-color: #d4af37 !important; color: #08221c !important; }
+html[data-theme="eid"] .hover\:bg-forest-800:hover { background-color: #e8c766 !important; color: #08221c !important; }
+html:is([data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-red-600 { background-color: #b8405f !important; }
+html[data-theme="space"] .bg-forest-700, html[data-theme="space"] .bg-forest-600 { background-color: #4cc3f5 !important; color: #05060f !important; box-shadow: 0 0 14px rgba(111, 211, 255, .45); }
+html[data-theme="space"] .hover\:bg-forest-800:hover { background-color: #6fd3ff !important; color: #05060f !important; }
+html[data-theme="space"] body {
+    background-image: radial-gradient(1px 1px at 20px 30px, #fff, transparent), radial-gradient(1px 1px at 120px 80px, rgba(255, 255, 255, .8), transparent),
+                      radial-gradient(1.5px 1.5px at 200px 160px, #cfe8ff, transparent), radial-gradient(1px 1px at 60px 190px, rgba(255, 255, 255, .6), transparent),
+                      radial-gradient(1px 1px at 170px 20px, rgba(255, 255, 255, .7), transparent), radial-gradient(ellipse at 80% -10%, rgba(80, 90, 200, .25), transparent 50%) !important;
+    background-size: 230px 230px, 230px 230px, 230px 230px, 230px 230px, 230px 230px, auto; background-attachment: fixed;
+}
+html[data-theme="space"] header { box-shadow: 0 1px 0 #2e3762, 0 6px 24px rgba(111, 211, 255, .2); }
+html[data-theme="space"] header > div > a:first-child .text-forest-600 { color: #6fd3ff !important; text-shadow: 0 0 10px rgba(111, 211, 255, .7); }
+html[data-theme="space"] header > div > a:first-child::before { content: "🌌"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="lunar"] body { background-image: radial-gradient(circle at 50% -10%, rgba(242, 196, 90, .18), transparent 45%) !important; background-attachment: fixed; }
+html[data-theme="lunar"] header { box-shadow: 0 2px 0 #e0a82e, 0 6px 20px rgba(242, 196, 90, .25); }
+html[data-theme="lunar"] header > div > a:first-child .text-forest-600 { color: #f2c45a !important; }
+html[data-theme="lunar"] header > div > a:first-child::before { content: "🏮"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="diwali"] body { background-image: radial-gradient(ellipse at 50% 110%, rgba(255, 170, 60, .2), transparent 50%) !important; background-attachment: fixed; }
+html[data-theme="diwali"] header { box-shadow: 0 2px 0 #f59e2a, 0 6px 22px rgba(255, 160, 50, .3); }
+html[data-theme="diwali"] header > div > a:first-child .text-forest-600 { color: #ffb347 !important; }
+html[data-theme="diwali"] header > div > a:first-child::before { content: "🪔"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="eid"] body {
+    background-image: radial-gradient(circle at 85% 0%, rgba(246, 221, 143, .16), transparent 30%),
+                      radial-gradient(rgba(246, 221, 143, .55) 1px, transparent 1.4px), radial-gradient(rgba(246, 221, 143, .3) .8px, transparent 1.2px) !important;
+    background-size: auto, 97px 89px, 53px 61px; background-position: 0 0, 0 0, 23px 31px; background-attachment: fixed;
+}
+html[data-theme="eid"] header { box-shadow: 0 2px 0 #d4af37, 0 6px 20px rgba(232, 199, 102, .22); }
+html[data-theme="eid"] header > div > a:first-child .text-forest-600 { color: #e8c766 !important; }
+html[data-theme="eid"] header > div > a:first-child::before { content: "🌙"; margin-right: .35rem; font-size: .85em; }
+
+/* Status tints */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-red-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-red-50\/50 { background-color: rgba(var(--red-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-red-100 { background-color: rgba(var(--red-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-red-600,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-red-700,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-red-800 { color: var(--red) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-red-100,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-red-200 { border-color: rgba(var(--red-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-amber-50 { background-color: rgba(var(--amber-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-amber-100 { background-color: rgba(var(--amber-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-amber-800,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-amber-900 { color: var(--amber) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-amber-200 { border-color: rgba(var(--amber-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-violet-50,
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .hover\:bg-violet-50:hover { background-color: rgba(var(--violet-rgb), .14) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-violet-100 { background-color: rgba(var(--violet-rgb), .26) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-violet-800 { color: var(--violet) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-violet-100 { border-color: rgba(var(--violet-rgb), .35) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-violet-500 { border-color: var(--violet-border) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-blue-50 { background-color: rgba(var(--blue-rgb), .12) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-blue-100 { background-color: rgba(var(--blue-rgb), .24) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-blue-800 { color: var(--blue) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .border-blue-200 { border-color: rgba(var(--blue-rgb), .4) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .bg-orange-100 { background-color: rgba(var(--orange-rgb), .22) !important; }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) .text-orange-800 { color: var(--orange) !important; }
+
+/* Charts drawn with inline SVG colours (school score trends) */
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) svg line[stroke="#e2e8f0"] { stroke: var(--b200); }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) svg text[fill="#64748b"] { fill: var(--t500); }
+html:is([data-theme="dark"], [data-theme="nord"], [data-theme="haunted"], [data-theme="lunar"], [data-theme="diwali"], [data-theme="eid"], [data-theme="space"]) svg circle[stroke="#ffffff"] { stroke: var(--surface); }
+/* Neutral "Low" / "N/A" marks drawn in light grey stay readable; nothing to change */
+
+/* =====================================================================
+   Pride (June only, for everyone): light and colourful, with the rainbow flag's six colours.
+   Status colours (pass, fail, severity) are left as they are.
+   ===================================================================== */
+html[data-theme="pride"] body {
+    background-color: #fdfbff !important;
+    background-image: linear-gradient(180deg, rgba(255, 140, 0, .06), rgba(36, 64, 142, .05) 40%, rgba(115, 41, 130, .06) 100%) !important;
+    background-attachment: fixed;
+}
+html[data-theme="pride"] .bg-slate-50 { background-color: #f8f5fc !important; }
+html[data-theme="pride"] .hover\:bg-slate-50:hover { background-color: #f4effa !important; }
+/* Violet in place of the brand green, with flag blue for what's selected */
+html[data-theme="pride"] .text-forest-600,
+html[data-theme="pride"] .text-forest-700,
+html[data-theme="pride"] .hover\:text-forest-700:hover { color: #6a2479 !important; }
+html[data-theme="pride"] .text-forest-800,
+html[data-theme="pride"] .text-forest-900 { color: #561c63 !important; }
+html[data-theme="pride"] .bg-forest-700,
+html[data-theme="pride"] .bg-forest-600 { background-color: #732982 !important; }
+html[data-theme="pride"] .hover\:bg-forest-800:hover { background-color: #5c1f69 !important; }
+html[data-theme="pride"] .bg-forest-50,
+html[data-theme="pride"] .hover\:bg-forest-50:hover { background-color: #f6eefa !important; }
+html[data-theme="pride"] .border-forest-100,
+html[data-theme="pride"] .border-forest-200,
+html[data-theme="pride"] .border-forest-300 { border-color: #dcc3e4 !important; }
+html[data-theme="pride"] .bg-slate-900,
+html[data-theme="pride"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #24408e !important; color: #ffffff !important; }
+html[data-theme="pride"] .border-slate-900,
+html[data-theme="pride"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #24408e !important; }
+/* Each card wears a thin rainbow along its top */
+html[data-theme="pride"] .bg-white.rounded-2xl.shadow-sm {
+    background-image: linear-gradient(90deg, #e40303, #ff8c00, #ffed00, #008026, #24408e, #732982) !important;
+    background-size: 100% 4px; background-repeat: no-repeat;
+}
+/* The header: a rainbow stripe underneath, a rainbow ".School" and a 🌈 */
+html[data-theme="pride"] header { border-bottom-color: transparent !important; }
+html[data-theme="pride"] header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px;
+    background: linear-gradient(180deg, #e40303 0 16.7%, #ff8c00 16.7% 33.3%, #ffed00 33.3% 50%, #008026 50% 66.7%, #24408e 66.7% 83.3%, #732982 83.3%);
+}
+html[data-theme="pride"] header > div > a:first-child .text-forest-600 {
+    background: linear-gradient(90deg, #e40303, #ff8c00, #d4a300, #008026, #24408e, #732982);
+    -webkit-background-clip: text; background-clip: text; color: transparent !important;
+}
+html[data-theme="pride"] header > div > a:first-child::before { content: "🌈"; margin-right: .35rem; font-size: .85em; }
+
+/* =====================================================================
+   Silly: Comic Sans, lemon paper with polka dots, wonky cards
+   with chunky cartoon shadows and a 🤡. Status colours (pass, fail, severity) are left as they are.
+   ===================================================================== */
+html[data-theme="silly"] body,
+html[data-theme="silly"] :is(input, select, textarea, button, code, pre, kbd, .font-mono) {
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive !important;
+}
+html[data-theme="silly"] body {
+    background-color: #fff8c9 !important;
+    background-image: radial-gradient(rgba(255, 64, 160, .18) 3px, transparent 3.5px),
+                      radial-gradient(rgba(0, 170, 255, .16) 3px, transparent 3.5px) !important;
+    background-size: 34px 34px; background-position: 0 0, 17px 17px;
+}
+html[data-theme="silly"] .bg-slate-50 { background-color: #fff3a6 !important; }
+html[data-theme="silly"] .hover\:bg-slate-50:hover { background-color: #ffe9f5 !important; }
+/* Bubblegum pink in place of the brand green, with grape for what's selected */
+html[data-theme="silly"] .text-forest-600,
+html[data-theme="silly"] .text-forest-700,
+html[data-theme="silly"] .hover\:text-forest-700:hover { color: #c2187a !important; }
+html[data-theme="silly"] .text-forest-800,
+html[data-theme="silly"] .text-forest-900 { color: #8e0f58 !important; }
+html[data-theme="silly"] .bg-forest-700,
+html[data-theme="silly"] .bg-forest-600 {
+    background-color: #ff5aa8 !important; color: #2a0a1c !important;
+    border: 2px solid #2a0a1c !important; box-shadow: 3px 3px 0 #2a0a1c;
+}
+html[data-theme="silly"] .hover\:bg-forest-800:hover { background-color: #ff8cc4 !important; }
+html[data-theme="silly"] .bg-forest-50,
+html[data-theme="silly"] .hover\:bg-forest-50:hover { background-color: #ffe3f1 !important; }
+html[data-theme="silly"] .border-forest-100,
+html[data-theme="silly"] .border-forest-200,
+html[data-theme="silly"] .border-forest-300 { border-color: #ff9fcf !important; }
+html[data-theme="silly"] .bg-slate-900,
+html[data-theme="silly"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #6b2fd6 !important; color: #ffffff !important; }
+html[data-theme="silly"] .border-slate-900,
+html[data-theme="silly"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #6b2fd6 !important; }
+/* Wonky cards: lopsided corners, a chunky outline and cartoon shadow, each leaning a little a different way */
+html[data-theme="silly"] .bg-white.rounded-2xl.shadow-sm {
+    border: 3px solid #2a0a1c !important; border-radius: 22px 9px 26px 12px / 12px 24px 10px 20px !important;
+    box-shadow: 6px 6px 0 #00b4ff !important; transform: rotate(-.35deg);
+}
+html[data-theme="silly"] .bg-white.rounded-2xl.shadow-sm:nth-of-type(2n) { box-shadow: 6px 6px 0 #ffcc00 !important; transform: rotate(.4deg); }
+html[data-theme="silly"] .bg-white.rounded-2xl.shadow-sm:nth-of-type(3n) { box-shadow: 6px 6px 0 #ff5aa8 !important; transform: rotate(-.2deg); }
+html[data-theme="silly"] h1 { color: #6b2fd6 !important; text-shadow: 3px 3px 0 #ffcc00; transform: rotate(-1deg); transform-origin: left; }
+html[data-theme="silly"] h2 { color: #c2187a !important; }
+/* The header: a zig-zag edge, a 🤡 before the name and googly eyes after it */
+html[data-theme="silly"] header { background-color: #ffffff !important; border-bottom: 3px dashed #ff5aa8 !important; }
+html[data-theme="silly"] header > div > a:first-child::before { content: "🤡"; margin-right: .35rem; font-size: .9em; display: inline-block; }
+html[data-theme="silly"] header > div > a:first-child::after { content: "👀"; margin-left: .3rem; font-size: .8em; }
+/* Buttons and the clown wobble a bit when pointed at (not with reduced motion) */
+@keyframes silly-wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg) scale(1.04); } 75% { transform: rotate(4deg) scale(1.04); } }
+@media (prefers-reduced-motion: no-preference) {
+    html[data-theme="silly"]:not([data-motion="reduce"]) :is(button, a.bg-forest-700, a.bg-forest-600):hover,
+    html[data-theme="silly"]:not([data-motion="reduce"]) header > div > a:first-child:hover::before { animation: silly-wobble .4s ease-in-out; }
+}
+
+/* =====================================================================
+   Network Console: the clean look of a network controller.
+   Cool grey canvas, flat white panels with hairline borders, one bright blue, small tidy type and a green
+   "online" dot by the name. Status colours (pass, fail, severity) are left as they are.
+   ===================================================================== */
+html[data-theme="console"] body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+    background-color: #f4f5f6 !important; color: #212327;
+}
+html[data-theme="console"] .bg-slate-50 { background-color: #f9fafa !important; }
+html[data-theme="console"] .hover\:bg-slate-50:hover { background-color: #f0f4fb !important; }
+/* One bright blue in place of the brand green */
+html[data-theme="console"] .text-forest-600,
+html[data-theme="console"] .text-forest-700,
+html[data-theme="console"] .hover\:text-forest-700:hover { color: #006fff !important; }
+html[data-theme="console"] .text-forest-800,
+html[data-theme="console"] .text-forest-900 { color: #0055cc !important; }
+html[data-theme="console"] .bg-forest-700,
+html[data-theme="console"] .bg-forest-600,
+html[data-theme="console"] .bg-slate-900,
+html[data-theme="console"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #006fff !important; color: #ffffff !important; border-radius: 6px; }
+html[data-theme="console"] .hover\:bg-forest-800:hover { background-color: #0060dd !important; }
+html[data-theme="console"] .border-slate-900,
+html[data-theme="console"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #006fff !important; }
+html[data-theme="console"] .bg-forest-50,
+html[data-theme="console"] .hover\:bg-forest-50:hover { background-color: #ebf3ff !important; }
+html[data-theme="console"] .border-forest-100,
+html[data-theme="console"] .border-forest-200,
+html[data-theme="console"] .border-forest-300 { border-color: #b8d4ff !important; }
+/* Flat panels: hairline border, small corners, no shadow */
+html[data-theme="console"] .bg-white.rounded-2xl.shadow-sm {
+    border: 1px solid #e3e5e8 !important; border-radius: 8px !important; box-shadow: none !important;
+}
+html[data-theme="console"] :is(.border-slate-100, .border-slate-200) { border-color: #e9ebee !important; }
+html[data-theme="console"] h1 { font-weight: 600 !important; letter-spacing: -.01em; color: #212327 !important; }
+html[data-theme="console"] h2 { font-weight: 600 !important; color: #212327 !important; }
+/* The header: plain white bar, the name in blue-and-grey, and a green "online" dot */
+html[data-theme="console"] header { background-color: #ffffff !important; border-bottom: 1px solid #e3e5e8 !important; box-shadow: none !important; }
+html[data-theme="console"] header > div > a:first-child .text-forest-600 { color: #006fff !important; }
+html[data-theme="console"] header > div > a:first-child::after {
+    content: "Online"; margin-left: .6rem; padding: .1rem .5rem .1rem 1.05rem; border-radius: 999px;
+    font: 600 .55em/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17803d; vertical-align: middle;
+    background: #e6f6ec radial-gradient(circle at .55rem 50%, #39b54a .2rem, transparent .22rem);
+}
+
+/* =====================================================================
+   Frosted Glass (unlocked by typing the emergency number 0118 999 881 999 119 725 3):
+   a 2007 desktop look. A soft aurora sky, frosted glass header, glass-framed windows for cards and
+   glossy blue buttons. Status colours (pass, fail, severity) are left as they are.
+   ===================================================================== */
+html[data-theme="vista"] body { font-family: "Segoe UI", "Segoe UI Variable", Tahoma, system-ui, sans-serif !important; }
+html[data-theme="vista"] body {
+    background-color: #e9f3fa !important;
+    background-image: radial-gradient(ellipse 60% 220px at 18% 40px, rgba(120, 220, 160, .45), transparent 70%),
+                      radial-gradient(ellipse 50% 260px at 75% 0, rgba(60, 170, 230, .5), transparent 70%),
+                      linear-gradient(180deg, #bfe0f4 0, #e9f3fa 380px) !important;
+    background-repeat: no-repeat; background-attachment: fixed;
+}
+html[data-theme="vista"] .bg-slate-50 { background-color: #f1f7fc !important; }
+html[data-theme="vista"] .hover\:bg-slate-50:hover { background-color: #e5f3fb !important; }
+/* Link blue in place of the brand green */
+html[data-theme="vista"] .text-forest-600,
+html[data-theme="vista"] .text-forest-700,
+html[data-theme="vista"] .hover\:text-forest-700:hover { color: #0066cc !important; }
+html[data-theme="vista"] .text-forest-800,
+html[data-theme="vista"] .text-forest-900 { color: #003f80 !important; }
+html[data-theme="vista"] .bg-forest-50,
+html[data-theme="vista"] .hover\:bg-forest-50:hover { background-color: #e5f3fb !important; }
+html[data-theme="vista"] .border-forest-100,
+html[data-theme="vista"] .border-forest-200,
+html[data-theme="vista"] .border-forest-300 { border-color: #a6d2f0 !important; }
+/* Glossy buttons: a bright top half over a deeper bottom half */
+html[data-theme="vista"] .bg-forest-700,
+html[data-theme="vista"] .bg-forest-600,
+html[data-theme="vista"] .bg-slate-900,
+html[data-theme="vista"] .peer:checked ~ .peer-checked\:bg-slate-900 {
+    background: linear-gradient(180deg, #7cc3f2 0%, #3a96dd 49%, #1f74c0 50%, #3d9be2 100%) !important;
+    color: #ffffff !important; border: 1px solid #0d4a85 !important; text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 1px 3px rgba(0, 40, 90, .35);
+}
+html[data-theme="vista"] .hover\:bg-forest-800:hover {
+    background: linear-gradient(180deg, #9ad5fa 0%, #4fa9ec 49%, #2c86d4 50%, #57b1f2 100%) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 0 10px rgba(80, 180, 255, .8);
+}
+html[data-theme="vista"] .border-slate-900,
+html[data-theme="vista"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #0d4a85 !important; }
+/* Cards are windows: a frosted glass frame around white content */
+html[data-theme="vista"] .bg-white.rounded-2xl.shadow-sm {
+    border: 1px solid rgba(0, 30, 60, .55) !important; border-radius: 8px !important;
+    box-shadow: 0 0 0 6px rgba(170, 210, 235, .55), 0 0 0 7px rgba(0, 30, 60, .35), 0 12px 30px rgba(0, 40, 80, .3) !important;
+}
+/* The header: frosted glass with a shine across the top half */
+html[data-theme="vista"] header {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .8) 0%, rgba(225, 240, 250, .7) 50%, rgba(195, 222, 240, .7) 51%, rgba(215, 235, 248, .75) 100%) !important;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 40, 80, .35) !important; box-shadow: 0 2px 10px rgba(0, 50, 100, .2);
+}
+html[data-theme="vista"] header > div > a:first-child::before { content: "🪟"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="vista"] h1 { color: #003f80 !important; text-shadow: 0 1px 0 #ffffff, 0 0 12px rgba(255, 255, 255, .9); }
+
+/* =====================================================================
+   Memes (for everyone, all year): caption-style headings, doge-speak wallpaper, "yeeeee boiii" by
+   the name and, now and then, an air-horn entrance (seasonal.js). Status colours are left as they are.
+   ===================================================================== */
+html[data-theme="meme"] body {
+    background-color: #fdfdfd !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='420'%3E%3Cg font-family='Comic Sans MS, Chalkboard SE, cursive' font-size='22' opacity='.16'%3E%3Ctext x='20' y='50' fill='%23ff00aa' transform='rotate%28-12 20 50%29'%3Emuch secure%3C/text%3E%3Ctext x='300' y='70' fill='%230077ff' transform='rotate%288 300 70%29'%3Ewow%3C/text%3E%3Ctext x='180' y='160' fill='%2300a650' transform='rotate%28-6 180 160%29'%3Every audit%3C/text%3E%3Ctext x='30' y='250' fill='%23ff7a00' transform='rotate%2810 30 250%29'%3Esuch compliance%3C/text%3E%3Ctext x='340' y='240' fill='%238a2be2' transform='rotate%28-10 340 240%29'%3Estonks%3C/text%3E%3Ctext x='120' y='350' fill='%23e60000' transform='rotate%284 120 350%29'%3Eyeeeee boiii%3C/text%3E%3Ctext x='390' y='380' fill='%230077ff' transform='rotate%28-4 390 380%29'%3Eso patch%3C/text%3E%3C/g%3E%3C/svg%3E") !important;
+    background-size: 520px 420px;
+}
+html[data-theme="meme"] :is(h1, h2) {
+    font-family: Impact, "Anton", "Arial Black", sans-serif !important; text-transform: uppercase; letter-spacing: .03em;
+}
+html[data-theme="meme"] h1 {
+    color: #ffffff !important; -webkit-text-stroke: 1.5px #000000; paint-order: stroke fill;
+    text-shadow: 2px 2px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+}
+html[data-theme="meme"] h2 { color: #111111 !important; }
+html[data-theme="meme"] .bg-slate-50 { background-color: #f6f6f6 !important; }
+/* MLG lime and cyan for the brand, magenta for what's selected */
+html[data-theme="meme"] .text-forest-600,
+html[data-theme="meme"] .text-forest-700,
+html[data-theme="meme"] .hover\:text-forest-700:hover { color: #0a7d00 !important; }
+html[data-theme="meme"] .text-forest-800,
+html[data-theme="meme"] .text-forest-900 { color: #075400 !important; }
+html[data-theme="meme"] .bg-forest-700,
+html[data-theme="meme"] .bg-forest-600 {
+    background: linear-gradient(90deg, #7cff00, #00e5ff) !important; color: #000000 !important;
+    border: 2px solid #000000 !important; font-family: Impact, "Arial Black", sans-serif; letter-spacing: .03em;
+}
+html[data-theme="meme"] .hover\:bg-forest-800:hover { background: linear-gradient(90deg, #00e5ff, #ff00d4) !important; }
+html[data-theme="meme"] .bg-forest-50,
+html[data-theme="meme"] .hover\:bg-forest-50:hover { background-color: #efffe0 !important; }
+html[data-theme="meme"] .border-forest-100,
+html[data-theme="meme"] .border-forest-200,
+html[data-theme="meme"] .border-forest-300 { border-color: #9be86b !important; }
+html[data-theme="meme"] .bg-slate-900,
+html[data-theme="meme"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #d4009b !important; color: #ffffff !important; }
+html[data-theme="meme"] .border-slate-900,
+html[data-theme="meme"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #d4009b !important; }
+html[data-theme="meme"] .bg-white.rounded-2xl.shadow-sm { border: 3px solid #000000 !important; box-shadow: 5px 5px 0 #7cff00 !important; }
+/* The header: 😎 before the name, "yeeeee boiii" after it, and a "this is fine" sign in the corner on wide screens */
+html[data-theme="meme"] header { border-bottom: 3px solid #000000 !important; }
+html[data-theme="meme"] header > div > a:first-child::before { content: "😎"; margin-right: .35rem; font-size: .85em; }
+html[data-theme="meme"] header > div > a:first-child::after {
+    content: "yeeeee boiii"; margin-left: .45rem; font: .7em Impact, "Arial Black", sans-serif; letter-spacing: .03em;
+    color: #ffffff; -webkit-text-stroke: .6px #000000; paint-order: stroke fill; text-transform: uppercase;
+    display: inline-block; transform: rotate(-6deg) translateY(-2px);
+}
+@media (min-width: 1024px) {
+    html[data-theme="meme"] body::after {
+        content: "this is fine ☕🔥"; position: fixed; right: 14px; bottom: 12px; z-index: 5; pointer-events: none;
+        font: 15px "Comic Sans MS", "Chalkboard SE", cursive; background: #fff4b8; border: 2px solid #000000;
+        padding: 3px 10px; border-radius: 6px; transform: rotate(-3deg); opacity: .9;
+    }
+}
+
+/* =====================================================================
+   Black History Month (October, as in the UK, for everyone): calm and dignified. Warm cream, deep green and
+   gold, serif headings, and a stripe of the Pan-African red, black and green (with gold) under the header.
+   No animation. Red is kept to the stripe so it never looks like a fail; status colours are left as they are.
+   ===================================================================== */
+html[data-theme="heritage"] body { background-color: #fbf7ee !important; }
+html[data-theme="heritage"] .bg-slate-50 { background-color: #f6f0e2 !important; }
+html[data-theme="heritage"] .hover\:bg-slate-50:hover { background-color: #f3ecda !important; }
+html[data-theme="heritage"] .text-forest-600,
+html[data-theme="heritage"] .text-forest-700,
+html[data-theme="heritage"] .hover\:text-forest-700:hover { color: #0a6634 !important; }
+html[data-theme="heritage"] .text-forest-800,
+html[data-theme="heritage"] .text-forest-900 { color: #074a26 !important; }
+html[data-theme="heritage"] .bg-forest-700,
+html[data-theme="heritage"] .bg-forest-600 { background-color: #0a6634 !important; }
+html[data-theme="heritage"] .hover\:bg-forest-800:hover { background-color: #074a26 !important; }
+html[data-theme="heritage"] .bg-forest-50,
+html[data-theme="heritage"] .hover\:bg-forest-50:hover { background-color: #eaf3e6 !important; }
+html[data-theme="heritage"] .border-forest-100,
+html[data-theme="heritage"] .border-forest-200,
+html[data-theme="heritage"] .border-forest-300 { border-color: #d9c48f !important; }
+html[data-theme="heritage"] .bg-slate-900,
+html[data-theme="heritage"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #1c1a17 !important; color: #f6d77a !important; }
+html[data-theme="heritage"] .border-slate-900,
+html[data-theme="heritage"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #1c1a17 !important; }
+/* Cards: a fine gold rule along the top */
+html[data-theme="heritage"] .bg-white.rounded-2xl.shadow-sm {
+    background-image: linear-gradient(90deg, #c8962b, #e2b84f, #c8962b) !important;
+    background-size: 100% 3px; background-repeat: no-repeat; border-color: #e7dcc2 !important;
+}
+html[data-theme="heritage"] :is(h1, h2) { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif !important; }
+html[data-theme="heritage"] h1 { color: #1c1a17 !important; }
+/* The header: the red, black, green and gold stripe underneath, and a small gold label by the name */
+html[data-theme="heritage"] header { border-bottom-color: transparent !important; }
+html[data-theme="heritage"] header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px;
+    background: linear-gradient(180deg, #c8102e 0 25%, #1c1a17 25% 50%, #0a7a3d 50% 75%, #e2b84f 75%);
+}
+html[data-theme="heritage"] header > div > a:first-child::after {
+    content: "Black History Month"; margin-left: .6rem; padding: .1rem .55rem; border-radius: 999px; vertical-align: middle;
+    font: 600 .5em/1.6 Georgia, "Times New Roman", serif; letter-spacing: .02em; color: #1c1a17; background: #f6d77a;
+}
+@media (max-width: 639px) { html[data-theme="heritage"] header > div > a:first-child::after { display: none; } }
+
+/* =====================================================================
+   Safer Internet (the week of Safer Internet Day): bright, clear blues and teal, with a shield
+   ===================================================================== */
+html[data-theme="safer"] body {
+    background-color: #f4f8fd !important;
+    background-image: linear-gradient(135deg, rgba(11, 92, 173, .05) 25%, transparent 25%, transparent 50%, rgba(11, 92, 173, .05) 50%, rgba(11, 92, 173, .05) 75%, transparent 75%) !important;
+    background-size: 28px 28px;
+}
+html[data-theme="safer"] .bg-slate-50 { background-color: #eef4fb !important; }
+html[data-theme="safer"] .text-forest-600, html[data-theme="safer"] .text-forest-700,
+html[data-theme="safer"] .hover\:text-forest-700:hover { color: #0b5cad !important; }
+html[data-theme="safer"] .text-forest-800, html[data-theme="safer"] .text-forest-900 { color: #08447f !important; }
+html[data-theme="safer"] .bg-forest-700, html[data-theme="safer"] .bg-forest-600 { background-color: #0b5cad !important; }
+html[data-theme="safer"] .hover\:bg-forest-800:hover { background-color: #08447f !important; }
+html[data-theme="safer"] .bg-forest-50, html[data-theme="safer"] .hover\:bg-forest-50:hover { background-color: #e6f0fb !important; }
+html[data-theme="safer"] .border-forest-100, html[data-theme="safer"] .border-forest-200, html[data-theme="safer"] .border-forest-300 { border-color: #bcd5f0 !important; }
+html[data-theme="safer"] .bg-slate-900, html[data-theme="safer"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #0e7c86 !important; color: #ffffff !important; }
+html[data-theme="safer"] .border-slate-900, html[data-theme="safer"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #0e7c86 !important; }
+html[data-theme="safer"] .bg-white.rounded-2xl.shadow-sm { box-shadow: 0 1px 2px rgba(11, 92, 173, .08), inset 4px 0 0 #2bb3c0 !important; }
+html[data-theme="safer"] header { border-bottom: 3px solid #0b5cad !important; }
+html[data-theme="safer"] header > div > a:first-child .text-forest-600 { color: #0e7c86 !important; }
+html[data-theme="safer"] header > div > a:first-child::before { content: "🛡️"; margin-right: .35rem; font-size: .85em; }
+
+/* =====================================================================
+   Book Day (around World Book Day): a storybook farmhouse. Paper, barn red, straw and a serif font
+   ===================================================================== */
+html[data-theme="books"] body {
+    background-color: #fbf5e9 !important; color: #3a2a1c !important;
+    background-image: repeating-linear-gradient(0deg, transparent 0 31px, rgba(138, 59, 18, .05) 31px 32px) !important;
+}
+html[data-theme="books"] :is(h1, h2, h3) { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif !important; letter-spacing: 0; }
+html[data-theme="books"] .bg-slate-50 { background-color: #f6eddb !important; }
+html[data-theme="books"] .bg-slate-100 { background-color: #efe2c8 !important; }
+html[data-theme="books"] .text-slate-900 { color: #2e1f12 !important; }
+html[data-theme="books"] .text-slate-700, html[data-theme="books"] .text-slate-600 { color: #4e3a28 !important; }
+html[data-theme="books"] .text-slate-500 { color: #6b5540 !important; }
+html[data-theme="books"] .border-slate-200 { border-color: #e7d6b5 !important; }
+html[data-theme="books"] .border-slate-300 { border-color: #d9c296 !important; }
+html[data-theme="books"] .text-forest-600, html[data-theme="books"] .text-forest-700,
+html[data-theme="books"] .hover\:text-forest-700:hover { color: #8a3b12 !important; }
+html[data-theme="books"] .text-forest-800, html[data-theme="books"] .text-forest-900 { color: #6e2e0e !important; }
+html[data-theme="books"] .bg-forest-700, html[data-theme="books"] .bg-forest-600 { background-color: #8a3b12 !important; }
+html[data-theme="books"] .hover\:bg-forest-800:hover { background-color: #6e2e0e !important; }
+html[data-theme="books"] .bg-forest-50, html[data-theme="books"] .hover\:bg-forest-50:hover { background-color: #f7e9d6 !important; }
+html[data-theme="books"] .border-forest-100, html[data-theme="books"] .border-forest-200, html[data-theme="books"] .border-forest-300 { border-color: #e2c7a3 !important; }
+html[data-theme="books"] .bg-slate-900, html[data-theme="books"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #4f6b2a !important; color: #ffffff !important; }
+html[data-theme="books"] .border-slate-900, html[data-theme="books"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #4f6b2a !important; }
+html[data-theme="books"] .bg-white { background-color: #fffdf7 !important; }
+html[data-theme="books"] .bg-white.rounded-2xl.shadow-sm { box-shadow: 0 1px 0 #e7d6b5, 3px 4px 0 rgba(138, 59, 18, .08) !important; }
+html[data-theme="books"] header { border-bottom: 3px double #c99b5a !important; }
+html[data-theme="books"] header > div > a:first-child { font-family: Georgia, "Times New Roman", serif !important; }
+html[data-theme="books"] header > div > a:first-child .text-forest-600 { color: #8a3b12 !important; }
+html[data-theme="books"] header > div > a:first-child::before { content: "📚"; margin-right: .35rem; font-size: .85em; }
+
+/* =====================================================================
+   Raspberry π (around Pi Day, 14 March): raspberry red and leaf green, with π by the name
+   ===================================================================== */
+html[data-theme="pi"] body {
+    background-color: #fdf7f9 !important;
+    background-image: radial-gradient(rgba(176, 21, 74, .08) 1.5px, transparent 1.7px) !important; background-size: 22px 22px;
+}
+html[data-theme="pi"] .bg-slate-50 { background-color: #fbf0f4 !important; }
+html[data-theme="pi"] .text-forest-600, html[data-theme="pi"] .text-forest-700,
+html[data-theme="pi"] .hover\:text-forest-700:hover { color: #a3123f !important; }
+html[data-theme="pi"] .text-forest-800, html[data-theme="pi"] .text-forest-900 { color: #3f7d1e !important; }
+html[data-theme="pi"] .bg-forest-700, html[data-theme="pi"] .bg-forest-600 { background-color: #b0154a !important; }
+html[data-theme="pi"] .hover\:bg-forest-800:hover { background-color: #8e1039 !important; }
+html[data-theme="pi"] .bg-forest-50, html[data-theme="pi"] .hover\:bg-forest-50:hover { background-color: #fbe9ef !important; }
+html[data-theme="pi"] .border-forest-100, html[data-theme="pi"] .border-forest-200, html[data-theme="pi"] .border-forest-300 { border-color: #f0c3d2 !important; }
+html[data-theme="pi"] .bg-slate-900, html[data-theme="pi"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #3f7d1e !important; color: #ffffff !important; }
+html[data-theme="pi"] .border-slate-900, html[data-theme="pi"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #3f7d1e !important; }
+html[data-theme="pi"] .bg-white.rounded-2xl.shadow-sm { box-shadow: 0 1px 2px rgba(176, 21, 74, .08), inset 0 3px 0 #75a928 !important; }
+html[data-theme="pi"] header { border-bottom: 3px solid #b0154a !important; }
+html[data-theme="pi"] header > div > a:first-child .text-forest-600 { color: #b0154a !important; }
+html[data-theme="pi"] header > div > a:first-child::before { content: "π"; margin-right: .35rem; color: #3f7d1e; font-family: Georgia, serif; }
+
+/* =====================================================================
+   Festive (December only, for everyone): snowy cream, evergreen, cranberry and gold.
+   Light, so it suits everyone; status colours (pass, fail, severity) are left as they are.
+   ===================================================================== */
+html[data-theme="festive"] body {
+    background-color: #fbf7f0 !important; color: #23302a !important;
+    /* A light dusting of snow */
+    background-image: radial-gradient(#dfe7ee 1.4px, transparent 1.6px), radial-gradient(#e8eef3 1px, transparent 1.2px);
+    background-size: 46px 46px, 29px 29px; background-position: 0 0, 14px 21px;
+}
+html[data-theme="festive"] .bg-slate-50 { background-color: #f7f0e4 !important; }
+html[data-theme="festive"] .bg-slate-100 { background-color: #f0e6d6 !important; }
+html[data-theme="festive"] .hover\:bg-slate-50:hover { background-color: #f6eddf !important; }
+html[data-theme="festive"] .text-slate-900 { color: #1b2a22 !important; }
+html[data-theme="festive"] .text-slate-800 { color: #23302a !important; }
+html[data-theme="festive"] .text-slate-700 { color: #39463e !important; }
+html[data-theme="festive"] .text-slate-600 { color: #4d5a51 !important; }
+html[data-theme="festive"] .text-slate-500 { color: #5f6a61 !important; }
+html[data-theme="festive"] .border-slate-100,
+html[data-theme="festive"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #f0e6d6 !important; }
+html[data-theme="festive"] .border-slate-200 { border-color: #e6d9c3 !important; }
+html[data-theme="festive"] .border-slate-300 { border-color: #d8c7a8 !important; }
+
+/* Evergreen in place of the brand green, with gold for what's selected */
+html[data-theme="festive"] .text-forest-600,
+html[data-theme="festive"] .text-forest-700,
+html[data-theme="festive"] .hover\:text-forest-700:hover { color: #1d5c3c !important; }
+html[data-theme="festive"] .bg-forest-700,
+html[data-theme="festive"] .bg-forest-600 { background-color: #1d5c3c !important; }
+html[data-theme="festive"] .hover\:bg-forest-800:hover { background-color: #14462d !important; }
+html[data-theme="festive"] .bg-slate-900,
+html[data-theme="festive"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #1d5c3c !important; color: #ffffff !important; }
+html[data-theme="festive"] .border-slate-900,
+html[data-theme="festive"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #c9a227 !important; box-shadow: 0 0 0 1px #c9a227; }
+html[data-theme="festive"] :focus-visible { outline-color: #c9a227 !important; }
+
+/* Cards get a fine gold edge */
+html[data-theme="festive"] .rounded-2xl.shadow-sm { box-shadow: 0 1px 2px rgba(120, 90, 30, .08), inset 0 3px 0 #e2c766 !important; }
+
+/* The header: a candy-cane stripe underneath, a cranberry ".School" and a tree */
+html[data-theme="festive"] header { border-bottom-color: transparent !important; }
+html[data-theme="festive"] header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px;
+    background: repeating-linear-gradient(-45deg, #b3202e 0 9px, #ffffff 9px 18px);
+    box-shadow: 0 2px 4px rgba(120, 30, 30, .15);
+}
+html[data-theme="festive"] header > div > a:first-child .text-forest-600 { color: #b3202e !important; }
+html[data-theme="festive"] header > div > a:first-child::before { content: "🎄"; margin-right: .35rem; font-size: .85em; }
+
+/* =====================================================================
+   High contrast (light background, black text, strong borders and focus)
+   ===================================================================== */
+html[data-theme="contrast"] body { background-color: #ffffff !important; color: #000000 !important; }
+html[data-theme="contrast"] .bg-slate-50,
+html[data-theme="contrast"] .bg-slate-100 { background-color: #f0f0f0 !important; }
+html[data-theme="contrast"] .text-slate-900,
+html[data-theme="contrast"] .text-slate-800,
+html[data-theme="contrast"] .text-slate-700,
+html[data-theme="contrast"] .text-slate-600,
+html[data-theme="contrast"] .text-slate-500,
+html[data-theme="contrast"] .text-slate-400 { color: #000000 !important; }
+html[data-theme="contrast"] .text-slate-300 { color: #444444 !important; }
+/* Checked chips (filled black, green or red) keep white text */
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:text-white { color: #ffffff !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-500,
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #000000 !important; border-color: #000000 !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-forest-600 { background-color: #00501a !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-red-600 { background-color: #8a0000 !important; }
+html[data-theme="contrast"] .peer:checked ~ .peer-checked\:bg-slate-200 { background-color: #d0d0d0 !important; color: #000 !important; }
+html[data-theme="contrast"] ::placeholder { color: #505050 !important; }
+html[data-theme="contrast"] .border-slate-100,
+html[data-theme="contrast"] .border-slate-200,
+html[data-theme="contrast"] .border-slate-300,
+html[data-theme="contrast"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #000000 !important; }
+html[data-theme="contrast"] .shadow-sm { box-shadow: none !important; }
+html[data-theme="contrast"] .text-forest-600,
+html[data-theme="contrast"] .text-forest-700,
+html[data-theme="contrast"] .text-forest-800,
+html[data-theme="contrast"] .text-forest-900 { color: #00501a !important; }
+html[data-theme="contrast"] .bg-forest-700,
+html[data-theme="contrast"] .bg-forest-600 { background-color: #00501a !important; }
+html[data-theme="contrast"] .text-red-600,
+html[data-theme="contrast"] .text-red-700,
+html[data-theme="contrast"] .text-red-800 { color: #8a0000 !important; }
+html[data-theme="contrast"] .text-amber-800 { color: #5c3600 !important; }
+html[data-theme="contrast"] .text-violet-800 { color: #3b0a8f !important; }
+html[data-theme="contrast"] .text-blue-800 { color: #002f7a !important; }
+html[data-theme="contrast"] .text-orange-800 { color: #6b2a00 !important; }
+/* Tinted badges and panels get a solid outline so they don't rely on a pale fill */
+html[data-theme="contrast"] [class*="bg-red-"],
+html[data-theme="contrast"] [class*="bg-amber-"],
+html[data-theme="contrast"] [class*="bg-violet-"],
+html[data-theme="contrast"] [class*="bg-blue-"],
+html[data-theme="contrast"] [class*="bg-orange-"],
+html[data-theme="contrast"] .bg-forest-50,
+html[data-theme="contrast"] .bg-forest-100 { outline: 1px solid currentColor; }
+/* Links are underlined (buttons styled as links keep their fill instead) */
+html[data-theme="contrast"] a:not([class*="bg-"]):not([class*="rounded-lg"]):not([class*="rounded-xl"]) { text-decoration: underline; text-underline-offset: 2px; }
+html[data-theme="contrast"] :focus-visible { outline: 3px solid #000 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px #ffd400 !important; }
+
+} /* end @media screen */

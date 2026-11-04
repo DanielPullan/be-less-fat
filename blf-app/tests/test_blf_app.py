@@ -1,30 +1,27 @@
-import pytest
-
-from blf_app import __version__
+import html
 from datetime import date
 
-from blf_app.app import ageFrom, bmiCalc, bmiCategory, calorieTarget, create_app, mifflin
+import pytest
+
+from conftest import PASSWORD
+from kanto import db
+from kanto.models import User
+from nutrition import ageFrom, bmiCalc, bmiCategory, calorieTarget, mifflin
 
 
 @pytest.fixture
-def client(tmp_path):
-    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.sqlite3"), "SECRET_KEY": "test",
-                      "WTF_CSRF_ENABLED": False})
-    return app.test_client()
+def csrf_client(kanto_app):
+    kanto_app.config['WTF_CSRF_ENABLED'] = True
+    yield kanto_app.test_client()
+    kanto_app.config['WTF_CSRF_ENABLED'] = False
 
 
-@pytest.fixture
-def csrf_client(tmp_path):
-    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.sqlite3"), "SECRET_KEY": "test"})
-    return app.test_client()
+def register(client, username="lea", password=PASSWORD):
+    return client.post("/sign-up", data={"username": username, "password": password, "confirm_password": password})
 
 
-def register(client, username="lea", password="hunter22", pin="1234"):
-    return client.post("/register", data={"username": username, "password": password, "pin": pin})
-
-
-def test_version():
-    assert __version__ == '0.1.0'
+def text(response):
+    return html.unescape(response.data.decode())
 
 
 def test_bmi():
@@ -36,42 +33,43 @@ def test_bmi():
 
 def test_guest_pages(client):
     assert b"Create an account" in client.get("/").data
-    assert client.get("/settings").headers["Location"].endswith("/login")
+    assert client.get("/goals").headers["Location"].startswith("/login")
     assert client.get("/track-food").status_code == 302
 
 
 def test_register_login_logout(client):
-    assert register(client).headers["Location"].endswith("/settings")
+    assert register(client).headers["Location"] == "/goals"
+    assert User.query.filter_by(username="lea").first().roles == {"member"}
     client.post("/logout")
-    assert client.get("/settings").status_code == 302
+    assert client.get("/goals").status_code == 302
 
-    bad = client.post("/login", data={"username": "lea", "password": "hunter22", "pin": "9999"})
-    assert b"Login failed" in bad.data
+    bad = client.post("/login", data={"username": "lea", "password": "not-the-password"})
+    assert b"Invalid username or password" in bad.data
 
-    ok = client.post("/login", data={"username": "lea", "password": "hunter22", "pin": "1234"})
-    assert ok.headers["Location"] == "/"
-    assert b"Hello, Lea" in client.get("/").data
+    ok = client.post("/login", data={"username": "lea", "password": PASSWORD})
+    assert ok.headers["Location"] == "/home" or ok.headers["Location"] == "/today"
+    assert b"Hello, lea" in client.get("/today").data
 
 
 def test_duplicate_username(client):
     register(client)
     client.post("/logout")
-    assert b"already taken" in register(client).data
+    assert "There is already a user called lea" in text(register(client))
 
 
 def test_new_user_pages_dont_crash(client):
     register(client)
-    for page in ("/", "/weight-history", "/food-history", "/settings", "/notice"):
+    for page in ("/today", "/weight-history", "/food-history", "/goals", "/about", "/import-weights", "/profile"):
         assert client.get(page).status_code == 200, page
 
 
 def test_weight_tracking_and_bmi(client):
     register(client)
-    client.post("/settings", data={"height": "180", "goalweight": "75"})  # cm gets converted
+    client.post("/goals", data={"height": "180", "goalweight": "75"})  # cm gets converted
     client.post("/track-weight", data={"weight": "81"})
     client.post("/track-weight", data={"weight": "80"})
 
-    home = client.get("/").data.decode()
+    home = client.get("/today").data.decode()
     assert "80.0" in home and "24.7" in home and "Healthy weight" in home
     assert "5.0 kg to go" in home
     assert "▼ 1.0 kg" in home
@@ -80,7 +78,7 @@ def test_weight_tracking_and_bmi(client):
     assert "<svg" in history and "Goal 75.0 kg" in history
 
     client.post("/delete-last-weight")
-    assert "81.0" in client.get("/").data.decode()
+    assert "81.0" in client.get("/today").data.decode()
 
 
 def test_bad_weight_rejected(client):
@@ -98,7 +96,7 @@ def test_food_tracking(client):
     history = client.get("/food-history").data.decode()
     assert "Cheeky Nandos" in history
     assert "1090 kcal" in history
-    assert "1090" in client.get("/").data.decode()
+    assert "1090" in client.get("/today").data.decode()
 
 
 def test_users_cant_see_each_others_data(client):
@@ -145,9 +143,9 @@ def test_calorie_target_needs_profile():
 
 def test_calorie_target_on_pages(client):
     register(client)
-    assert b"to get a daily calorie target" in client.get("/").data
+    assert b"to get a daily calorie target" in client.get("/today").data
 
-    client.post("/settings", data={
+    client.post("/goals", data={
         "height": "1.8", "goalweight": "75", "birthdate": "1990-01-01", "sex": "male", "activity": "1",
     })
     client.post("/track-weight", data={"weight": "80"})
@@ -155,7 +153,7 @@ def test_calorie_target_on_pages(client):
 
     age = ageFrom("1990-01-01")
     target = round(calorieTarget(80, 1.8, 75, age, "male", 1)["target"])
-    body = client.get("/").data.decode()
+    body = client.get("/today").data.decode()
     assert f"of {target} kcal" in body
     assert f"{target - 36} kcal left" in body
 
@@ -163,7 +161,7 @@ def test_calorie_target_on_pages(client):
 def test_settings_rejects_under_18(client):
     register(client)
     young = date.today().replace(year=date.today().year - 16).isoformat()
-    resp = client.post("/settings", data={"height": "1.8", "goalweight": "75", "birthdate": young, "sex": "male"})
+    resp = client.post("/goals", data={"height": "1.8", "goalweight": "75", "birthdate": young, "sex": "male"})
     assert b"not for under 18s" in resp.data
 
 
@@ -189,25 +187,25 @@ def test_next_only_goes_to_this_site(client):
     register(client)
     resp = client.post("/track-weight", data={"weight": "80", "next": "https://evil.example/"})
     assert resp.headers["Location"] == "/weight-history"
-    resp = client.post("/track-weight", data={"weight": "80", "next": "/"})
-    assert resp.headers["Location"] == "/"
+    resp = client.post("/track-weight", data={"weight": "80", "next": "/today"})
+    assert resp.headers["Location"] == "/today"
 
 
 def test_forms_need_csrf_token(csrf_client):
-    resp = csrf_client.post("/register", data={"username": "lea", "password": "hunter22", "pin": "1234"})
+    resp = csrf_client.post("/sign-up", data={"username": "lea", "password": PASSWORD, "confirm_password": PASSWORD})
     assert resp.status_code == 400
-    assert b'name="csrf_token"' in csrf_client.get("/register").data
+    assert b'name="csrf_token"' in csrf_client.get("/sign-up").data
 
 
 def test_security_headers(client):
-    headers = client.get("/").headers
+    headers = client.get("/today").headers
     assert "script-src 'self'" in headers["Content-Security-Policy"]
     assert headers["X-Frame-Options"] == "DENY"
 
 
 def test_food_form_lists_meals(client):
     register(client)
-    for page in ("/", "/food-history"):
+    for page in ("/today", "/food-history"):
         html = client.get(page).data.decode()
         for meal in ("Breakfast", "Lunch", "Dinner", "Snack"):
             assert f'<option value="{meal}">' in html, (page, meal)
@@ -232,7 +230,7 @@ def test_import_preview_then_save_then_undo(client):
     assert "Found 3 weigh-ins" in preview
     assert "already has a weigh-in here" in preview
     # Nothing saved yet
-    assert client.get("/").data.decode().count("Imported") == 0
+    assert client.get("/today").data.decode().count("Imported") == 0
 
     rows = json.dumps([{"date": "2026-01-01", "kg": 91.0}, {"date": "2026-01-02", "kg": 90.5}, {"date": "2026-01-03", "kg": 90.1}])
     saved = client.post("/import-weights", data={"step": "save", "rows": rows, "existing": "skip"})
@@ -297,7 +295,7 @@ def test_long_history_shows_latest_50_with_show_all(client):
 
 
 def test_nutrient_targets_follow_uk_guidance():
-    from blf_app.app import nutrientTargets
+    from nutrition import nutrientTargets
     t = nutrientTargets(80, 1)
     assert t["protein"]["target"] == 60 and t["protein"]["per_kg"] == 0.75
     assert nutrientTargets(80, 2)["protein"]["target"] == 80
@@ -310,7 +308,7 @@ def test_nutrient_targets_follow_uk_guidance():
 
 
 def test_high_protein_rule():
-    from blf_app.app import is_high_protein
+    from nutrition import is_high_protein
     assert is_high_protein(31, 165)        # chicken breast: 18.8 g per 100 kcal
     assert is_high_protein(10, 100)        # exactly the bar
     assert not is_high_protein(9.9, 100)
@@ -320,13 +318,13 @@ def test_high_protein_rule():
 
 def test_protein_and_fibre_tracking(client):
     register(client)
-    client.post("/settings", data={"height": "1.8", "goalweight": "75", "birthdate": "1990-01-01", "sex": "male", "activity": "3"})
+    client.post("/goals", data={"height": "1.8", "goalweight": "75", "birthdate": "1990-01-01", "sex": "male", "activity": "3"})
     client.post("/track-weight", data={"weight": "80"})
     client.post("/track-food", data={"food": "Porridge", "calories": "300", "protein": "10.5", "fibre": "8"})
     client.post("/track-food", data={"food": "Chicken", "calories": "250", "protein": "40"})
     client.post("/track-food", data={"food": "Tea", "calories": "20"})
 
-    home = client.get("/").data.decode()
+    home = client.get("/today").data.decode()
     assert "50.5 g</strong> of 80 g" in home and "29.5 g to go" in home
     assert "8 g</strong> of 30 g" in home
     assert "2 foods today have no fibre amount" in home
@@ -340,7 +338,7 @@ def test_protein_goal_reached_and_bad_grams(client):
     register(client)
     client.post("/track-weight", data={"weight": "50"})
     client.post("/track-food", data={"food": "Steak", "calories": "600", "protein": "45"})
-    assert "✓ reached" in client.get("/").data.decode()
+    assert "✓ reached" in client.get("/today").data.decode()
     bad = client.post("/track-food", data={"food": "X", "calories": "1", "protein": "lots"}, follow_redirects=True)
     assert b"between 0 and 1000" in bad.data
 
@@ -362,7 +360,7 @@ def test_high_protein_foods_and_meals_are_marked(client):
 
 
 def test_high_fibre_rule():
-    from blf_app.app import is_high_fibre
+    from nutrition import is_high_fibre
     assert is_high_fibre(3.8, 37)       # Weetabix: 10.3 g per 100 g
     assert is_high_fibre(6, 100)        # exactly the NHS bar
     assert not is_high_fibre(8.5, 250)  # a big bowl of porridge: 3.4 g per 100 g
@@ -391,3 +389,49 @@ def test_portion_checks(client):
     assert b"weigh more than the whole portion" in bad.data
     bad = client.post("/track-food", data={"food": "X", "calories": "10", "portion": "0"}, follow_redirects=True)
     assert b"Portion needs to be grams" in bad.data
+
+
+def test_kanto_features_are_there(client):
+    register(client)
+    page = client.get("/profile").data.decode()
+    assert "Passkeys" in page and "Authenticator app" in page and "Goal setter" in page
+    assert client.get("/admin/users").status_code == 403  # members aren't admins
+    about = client.get("/about").data.decode()
+    assert "not for under 18s" in about and "Themes and celebrations" in about
+    nav = client.get("/today").data.decode()
+    for link in ("/today", "/food-history", "/weight-history", "/goals"):
+        assert f'href="{link}"' in nav
+
+
+def test_old_addresses_redirect(client):
+    assert client.get("/settings").headers["Location"] == "/goals"
+    assert client.get("/notice").headers["Location"] == "/about"
+
+
+def test_import_old_database(kanto_app, tmp_path):
+    import sqlite3
+    from werkzeug.security import generate_password_hash
+    from models import BodyDetails, FoodEntry, WeighIn
+    path = tmp_path / "blf.sqlite3"
+    old = sqlite3.connect(path)
+    old.executescript("""
+        CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password_hash TEXT, pin_hash TEXT,
+                            height REAL, goalweight REAL, birthdate TEXT, sex TEXT, activity INTEGER);
+        CREATE TABLE weight (id INTEGER PRIMARY KEY, user_id INTEGER, logdate TEXT, weight REAL, import_id INTEGER);
+        CREATE TABLE calories (id INTEGER PRIMARY KEY, user_id INTEGER, logdate TEXT, food TEXT, calories INTEGER,
+                               meal TEXT, protein REAL, fibre REAL, portion REAL);
+    """)
+    old.execute("INSERT INTO users VALUES (1, 'dan', ?, 'x', 1.8, 75, '1990-01-01', 'male', 2)",
+                (generate_password_hash("old-password"),))
+    old.execute("INSERT INTO weight VALUES (1, 1, '2026-10-01', 85.2, NULL)")
+    old.execute("INSERT INTO calories VALUES (1, 1, '2026-10-01', 'Porridge', 320, 'Breakfast', 11, 8.5, 250)")
+    old.commit()
+    result = kanto_app.test_cli_runner().invoke(args=["import-old-blf", str(path), "--admin", "dan"])
+    assert "1 account(s), 1 weigh-in(s) and 1 food entry copied" in result.output, result.output
+    user = User.query.filter_by(username="dan").first()
+    assert user.roles == {"member", "admin", "global_admin"}
+    assert db.session.get(BodyDetails, user.id).goalweight == 75
+    assert WeighIn.query.filter_by(user_id=user.id).one().weight == 85.2
+    assert FoodEntry.query.filter_by(user_id=user.id).one().portion == 250
+    client = kanto_app.test_client()
+    assert client.post("/login", data={"username": "dan", "password": "old-password"}).headers["Location"] == "/today"

@@ -1,0 +1,24 @@
+{# Small shared pieces. Import with {% from '_macros.html' import avatar, role_badges, csrf, card, field, btn_primary, btn_secondary %} #}
+
+{# Class strings used across Kanto's pages, handy for your own #}
+{% set card = 'bg-white rounded-2xl border border-slate-200 shadow-sm' %}
+{% set field = 'w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:ring-2 focus:ring-forest-600 focus:outline-none' %}
+{% set label_class = 'block text-sm font-medium text-slate-700 mb-1' %}
+{% set btn_primary = 'inline-flex items-center justify-center gap-2 bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm' %}
+{% set btn_secondary = 'inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50' %}
+
+{% macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}
+
+{#- An account's roles as small labels -#}
+{% macro role_badges(user) -%}
+{% set kind_style = {'admin': 'bg-slate-900 text-white'} %}
+{% for code, r in role_defs_all().items() if code in user.roles %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold whitespace-nowrap {{ kind_style.get(r.kind, 'bg-forest-100 text-forest-800') }}">{{ r.label }}{% if code in protected_roles() %} 🔒{% endif %}</span>{% if not loop.last %} {% endif %}{% else %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600">No roles</span>{% endfor %}
+{%- endmacro %}
+
+{# A person's avatar: their chosen animal on their chosen colour, or their initials #}
+{% macro avatar(user, box='w-7 h-7', text='text-xs') -%}
+{% if user.avatar %}<span class="{{ box }} rounded-full inline-flex shrink-0 overflow-hidden ring-1 ring-black/10" style="background:{{ avatar_colour(user) }}" aria-hidden="true"><svg viewBox="0 0 64 64" class="w-full h-full"><use href="{{ url_for('kanto.static', filename='img/avatars.svg') }}#{{ user.avatar }}"/></svg></span>
+{%- else %}<span class="{{ box }} rounded-full bg-forest-700 text-white {{ text }} font-bold inline-flex items-center justify-center shrink-0" aria-hidden="true">{{ user.username[:2]|upper }}</span>{% endif %}
+{%- endmacro %}

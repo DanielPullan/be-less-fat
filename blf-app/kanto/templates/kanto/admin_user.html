@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} — Users — {{ settings.APP_NAME }}{% endblock %}
+{% block content %}
+{% from '_macros.html' import role_badges, avatar %}
+{% set is_me = user == current_user %}
+<div class="max-w-6xl mx-auto px-6 py-10 space-y-6">
+    <a href="{{ url_for('admin_users') }}" class="text-sm font-semibold text-slate-600 hover:text-forest-700">← All users</a>
+
+    <!-- Summary -->
+    <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-5">
+        {{ avatar(user, 'w-14 h-14', 'text-xl') }}
+        <div class="flex-1 min-w-[12rem]">
+            <h1 class="text-3xl font-extrabold text-slate-900">{{ user.username }}{% if is_me %} <span class="text-base font-semibold text-slate-400">(you)</span>{% endif %}</h1>
+            <p class="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                {{ role_badges(user) }}
+                {% if not user.is_active %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-200 text-slate-700">Disabled</span>{% endif %}
+                {% if user.must_change_password %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-800">Temporary password</span>{% endif %}
+                {% if user.full_name %}<span class="font-semibold text-slate-700">{{ user.full_name }}</span>{% endif %}
+                {% if user.email %}<span>{{ user.email }}</span>{% endif %}
+                <span>Created {{ (user.created_at|localtime)[:10] or 'before records began' }}</span>
+                <span>· Account ID {{ user.id }}</span>
+                <span>· Last sign-in {{ last|localtime or 'never' }}</span>
+            </p>
+        </div>
+        <div class="text-sm font-semibold {{ 'text-forest-700' if user.has_two_step else 'text-amber-800' }}">
+            {{ '🔐 Two-step verification on' if user.has_two_step else '! Two-step verification off' }}
+            {% if user.mfa_enabled %}<span class="block text-xs font-normal text-slate-500">Authenticator app · {{ user.recovery_codes_left }} recovery code{{ 's' if user.recovery_codes_left != 1 }} left</span>{% endif %}
+            {% if user.passkeys %}<span class="block text-xs font-normal text-slate-500">{{ user.passkeys|length }} passkey{{ 's' if user.passkeys|length != 1 }}: {{ user.passkeys|map(attribute='name')|join(', ') }}</span>{% endif %}
+        </div>
+    </section>
+
+    {% if locked %}
+    <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-800 flex flex-wrap items-center gap-3">
+        <span class="flex-1"><span class="font-semibold">Locked out:</span>
+            {% for label, wait in locked.items() %}{{ label|lower }} (clears in {{ (wait / 60)|round(0, 'ceil')|int }} min){{ ', ' if not loop.last }}{% endfor %}.</span>
+        <form method="POST" action="{{ url_for('admin_unlock', user_id=user.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-white border border-red-300 text-red-700 font-semibold text-sm hover:bg-red-50">Unlock now</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Access -->
+        <form method="POST" class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4" data-role-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <h2 class="text-lg font-bold text-slate-900">Access</h2>
+            {% if user.has_protected_role and not current_user.has_protected_role %}
+            <p class="p-3 rounded-lg bg-violet-50 border border-violet-100 text-sm text-violet-900">🔒 {{ user.username }} has a protected role, so only an admin who also has one can change their roles, password or two-step verification.</p>
+            {% endif %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="text-sm font-semibold text-slate-700">Username <span class="font-normal text-slate-500">(to sign in)</span>
+                    <input type="text" name="username" value="{{ user.username }}" required pattern="[A-Za-z0-9._@\-]{3,50}" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
+                </label>
+                <label class="text-sm font-semibold text-slate-700">Full name <span class="font-normal text-slate-500">(optional)</span>
+                    <input type="text" name="full_name" value="{{ user.full_name or '' }}" maxlength="150" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
+                </label>
+                <label class="text-sm font-semibold text-slate-700">Email <span class="font-normal text-slate-500">(optional; also signs in)</span>
+                    <input type="email" name="email" value="{{ user.email or '' }}" maxlength="254" autocomplete="off" class="mt-1 block w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal">
+                </label>
+            </div>
+            <p class="text-xs text-slate-500 -mt-2">Changing these doesn't affect their history: everything is linked to their account ID, and records keep the name used at the time.</p>
+            {% with chosen = user.roles %}{% include '_role_picker.html' %}{% endwith %}
+            <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <input type="checkbox" name="active" class="w-4 h-4" {% if user.is_active %}checked{% endif %}> Account enabled
+            </label>
+            <p class="text-xs text-slate-500">Removing a role or disabling the account signs {{ 'you' if is_me else 'them' }} out everywhere so it takes effect at once.</p>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm">Save access</button>
+            </div>
+        </form>
+
+        <!-- Account actions -->
+        <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h2 class="text-lg font-bold text-slate-900">Account</h2>
+            {% if is_me %}
+            <p class="text-sm text-slate-600">Change your own password and two-step verification from <a href="{{ url_for('profile') }}#security" class="text-forest-700 font-semibold hover:underline">your profile</a>.</p>
+            {% else %}
+            <form method="POST" action="{{ url_for('admin_reset_password', user_id=user.id) }}" data-confirm="Reset {{ user.username }}'s password? They'll be signed out and need the temporary password you're given.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 text-left">Reset password…</button>
+                <p class="text-xs text-slate-500 mt-1">Gives a one-time temporary password; they must choose their own when they sign in.</p>
+            </form>
+            {% if user.mfa_enabled or user.totp_secret or user.passkeys %}
+            <form method="POST" action="{{ url_for('admin_reset_mfa', user_id=user.id) }}" data-confirm="Turn off two-step verification for {{ user.username }}? Their authenticator app, recovery codes and passkeys stop working and they'll be signed out.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 text-left">Reset two-step verification…</button>
+                <p class="text-xs text-slate-500 mt-1">For a lost phone or device with no recovery codes left. Removes their authenticator app and passkeys; they set them up again from their profile.</p>
+            </form>
+            {% endif %}
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin_sign_out', user_id=user.id) }}" data-confirm="Sign {{ 'out your other sessions' if is_me else user.username ~ ' out everywhere' }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 text-left">{{ 'Sign out my other sessions' if is_me else 'Sign out everywhere' }}</button>
+                <p class="text-xs text-slate-500 mt-1">Ends every session on every device{{ ' except this one' if is_me }}.</p>
+            </form>
+        </section>
+    </div>
+
+    <!-- Sign-in history -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+            <h2 class="text-lg font-bold text-slate-900">Sign-in history</h2>
+            <p class="text-sm text-slate-500">Last 25 sign-ins and failed attempts, newest first.</p>
+        </div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200"><th class="p-3 font-semibold">When (UK)</th><th class="p-3 font-semibold">Result</th><th class="p-3 font-semibold">IP address</th><th class="p-3 font-semibold">Detail</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for e in sign_ins %}
+                {% set ok = e.action == 'Logged in' %}
+                <tr>
+                    <td class="p-3 tabular-nums whitespace-nowrap text-slate-800">{{ e.timestamp|localtime }}</td>
+                    <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded-md text-xs font-semibold {{ 'bg-forest-100 text-forest-800' if ok else 'bg-red-100 text-red-700' }}">{{ '✓ Signed in' if ok else '✕ ' ~ e.action }}</span></td>
+                    <td class="p-3 font-mono text-xs text-slate-600">{{ e.ip_address or '—' }}</td>
+                    <td class="p-3 text-slate-600">{{ e.detail or ('Password only' if ok else '') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="p-6 text-center text-slate-400">No sign-ins recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Activity -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+            <h2 class="text-lg font-bold text-slate-900">Activity</h2>
+            <p class="text-sm text-slate-500">Everything {{ user.username }} has done, and everything done to their account by admins or on the command line.</p>
+        </div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200"><th class="p-3 font-semibold whitespace-nowrap">When (UK)</th><th class="p-3 font-semibold">Action</th><th class="p-3 font-semibold">Detail</th></tr></thead>
+            <tbody class="divide-y divide-slate-100 align-top">
+                {% for e in page.items %}
+                <tr>
+                    <td class="p-3 tabular-nums whitespace-nowrap text-slate-800">{{ e.timestamp|localtime }}</td>
+                    <td class="p-3 text-slate-800 whitespace-nowrap">{{ e.action }}{% if e.target_user_id == user.id and e.user_id != user.id %}<span class="block text-xs text-slate-500">by {{ e.username or 'command line' }}</span>{% endif %}</td>
+                    <td class="p-3 text-slate-600 whitespace-pre-wrap max-w-xl">{{ e.detail or '' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="p-6 text-center text-slate-400">No activity yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% if page.pages > 1 %}
+        <div class="p-4 flex justify-between items-center text-sm border-t border-slate-100">
+            {% if page.has_prev %}<a href="{{ url_for('admin_user', user_id=user.id, page=page.prev_num) }}" class="font-semibold text-forest-700 hover:underline">← Newer</a>{% else %}<span></span>{% endif %}
+            <span class="text-slate-500">Page {{ page.page }} of {{ page.pages }}</span>
+            {% if page.has_next %}<a href="{{ url_for('admin_user', user_id=user.id, page=page.next_num) }}" class="font-semibold text-forest-700 hover:underline">Older →</a>{% else %}<span></span>{% endif %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

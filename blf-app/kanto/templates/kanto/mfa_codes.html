@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Recovery codes — {{ settings.APP_NAME }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    {% if first_time %}
+    <div class="p-4 rounded-xl bg-forest-50 border border-forest-200 text-forest-800 text-sm font-semibold">✓ Two-step verification is on.</div>
+    {% endif %}
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Your recovery codes</h1>
+        <p class="text-sm text-slate-600 mt-1">If you lose your phone, each of these codes lets you sign in once instead of an authenticator code.
+            <span class="font-semibold text-slate-900">This is the only time they'll be shown</span>{% if not first_time %}, and your old codes no longer work{% endif %}.
+            Keep them somewhere safe, such as your password manager.</p>
+    </div>
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <ul id="recovery-codes" class="grid grid-cols-2 gap-3 font-mono text-lg text-slate-900">
+            {% for code in codes %}<li class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-center">{{ code }}</li>{% endfor %}
+        </ul>
+        <div class="flex flex-wrap gap-3 mt-5">
+            <button type="button" id="copy-codes" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50">Copy</button>
+            <button type="button" data-print class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50">Print</button>
+            <a href="{{ url_for('profile') }}#security" class="ml-auto bg-forest-700 hover:bg-forest-800 text-white font-semibold px-5 py-2 rounded-lg text-sm">I've saved them</a>
+        </div>
+        <p id="copy-status" class="text-xs text-slate-500 mt-2" aria-live="polite"></p>
+    </div>
+</div>
+<script nonce="{{ csp_nonce }}">
+document.getElementById('copy-codes').addEventListener('click', async () => {
+    const text = [...document.querySelectorAll('#recovery-codes li')].map(li => li.textContent).join('\n');
+    try { await navigator.clipboard.writeText(text); document.getElementById('copy-status').textContent = 'Copied.'; }
+    catch (e) { document.getElementById('copy-status').textContent = 'Copying isn\'t allowed here; select the codes and copy them instead.'; }
+});
+</script>
+{% endblock %}

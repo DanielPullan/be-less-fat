@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}View as a user — {{ settings.APP_NAME }}{% endblock %}
+{% block content %}
+{% from '_macros.html' import role_badges %}
+<div class="max-w-5xl mx-auto px-6 py-10 space-y-6">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">View as a user</h1>
+        <p class="text-sm text-slate-500 mt-1">See {{ settings.APP_NAME }} exactly as someone else does, to help them. It's <strong>read-only</strong>: nothing can be saved while you're viewing as them. Starting, stopping and anything you open is logged as "{{ current_user.username }} as them".</p>
+    </div>
+    <form method="GET" class="flex items-end gap-2">
+        <label class="text-xs font-semibold text-slate-500">Search
+            <input type="search" name="q" value="{{ search }}" placeholder="Username" class="mt-1 block w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal text-slate-900">
+        </label>
+        <button type="submit" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50">Search</button>
+    </form>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
+                <th class="p-4 font-semibold">User</th><th class="p-4 font-semibold">Roles</th><th class="p-4"></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for r in rows %}{% set u = r.user %}
+                <tr class="align-top">
+                    <td class="p-4 font-semibold text-slate-900">{{ u.username }}</td>
+                    <td class="p-4"><span class="flex flex-wrap gap-1">{{ role_badges(u) }}</span></td>
+                    <td class="p-4 text-right">
+                        {% if r.refusal %}<span class="text-xs text-slate-500">{{ r.refusal }}</span>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('start_viewing_as', user_id=u.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-violet-700 hover:bg-violet-800 text-white font-semibold text-sm whitespace-nowrap">👁 View as</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="p-6 text-center text-slate-500">No one matches.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

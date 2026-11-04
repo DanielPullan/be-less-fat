@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Import weights — {{ settings.APP_NAME }}{% endblock %}
+{% from '_blf.html' import card, field, label_class, btn_primary, btn_secondary, csrf with context %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div>
+        <a href="{{ url_for('weighthistory') }}" class="text-sm font-semibold text-forest-700 hover:underline"><span aria-hidden="true">←</span> Weight</a>
+        <h1 class="mt-2 text-3xl font-extrabold text-slate-900">Import weights</h1>
+        <p class="text-sm text-slate-500">Bring in weigh-ins you've logged in another app. You'll see what we found before anything is saved.</p>
+    </div>
+
+    {% if preview is defined %}
+    {# ---------- Step 2: check and save ---------- #}
+    <section class="{{ card }} overflow-hidden" aria-labelledby="found">
+        <div class="px-6 pt-6 pb-4 space-y-2">
+            <h2 id="found" class="text-lg font-bold text-slate-900">
+                {% if preview %}Found {{ preview|length }} weigh-in{{ 's' if preview|length != 1 }}{% if preview %}, {{ preview[0].date|longdate }} to {{ preview[-1].date|longdate }}{% endif %}{% else %}No weigh-ins found{% endif %}
+            </h2>
+            {% if result.columns %}<p class="text-sm text-slate-600">{{ result.columns }}.</p>{% endif %}
+            {% if result.merged %}<p class="text-sm text-slate-600">{{ result.merged }} extra reading{{ 's' if result.merged != 1 }} on days already in the file {{ 'were' if result.merged != 1 else 'was' }} left out: we keep the first one of each day.</p>{% endif %}
+        </div>
+
+        {% if result.skipped %}
+        <details class="mx-6 mb-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
+            <summary class="cursor-pointer px-4 py-3 font-semibold">{{ result.skipped|length }} row{{ 's' if result.skipped|length != 1 }} couldn't be read</summary>
+            <ul class="px-4 pb-3 space-y-1">
+                {% for s in result.skipped[:50] %}<li><span class="font-semibold">Line {{ s.line }}:</span> {{ s.reason }}{% if s.text %} <code class="text-xs">{{ s.text|truncate(60) }}</code>{% endif %}</li>{% endfor %}
+                {% if result.skipped|length > 50 %}<li>…and {{ result.skipped|length - 50 }} more.</li>{% endif %}
+            </ul>
+        </details>
+        {% endif %}
+
+        {% if preview %}
+        <div class="max-h-96 overflow-y-auto border-t border-slate-100">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500 sticky top-0">
+                    <tr><th scope="col" class="px-6 py-3">Date</th><th scope="col" class="px-6 py-3 text-right">Weight</th><th scope="col" class="px-6 py-3">Already here</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for r in preview|reverse %}
+                    <tr>
+                        <td class="px-6 py-2 text-slate-700">{{ r.date|longdate }}</td>
+                        <td class="px-6 py-2 text-right font-semibold text-slate-900 tabular-nums">{{ r.kg }} kg</td>
+                        <td class="px-6 py-2 text-slate-600">{% if r.existing is not none %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-800">{{ r.existing }} kg</span>{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <form method="POST" class="px-6 py-5 border-t border-slate-100 space-y-4">
+            {{ csrf() }}
+            <input type="hidden" name="step" value="save">
+            <input type="hidden" name="rows" value="{{ rows_json }}">
+            {% if clashes %}
+            <fieldset>
+                <legend class="{{ label_class }}">{{ clashes }} of these day{{ 's' if clashes != 1 }} already {{ 'have' if clashes != 1 else 'has' }} a weigh-in here</legend>
+                <div class="flex flex-wrap gap-2">
+                    {% for value, label in [('skip', 'Keep what I have'), ('replace', 'Replace with the imported weight')] %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="existing" value="{{ value }}" class="peer sr-only" {{ 'checked' if value == 'skip' }}>
+                        <span class="inline-block px-4 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:border-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-forest-600">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <p class="mt-2 text-xs text-slate-500">You can undo an import afterwards, but replaced weigh-ins don't come back.</p>
+            </fieldset>
+            {% endif %}
+            <div class="flex flex-wrap gap-3">
+                <button type="submit" class="{{ btn_primary }}">Import {{ preview|length }} weigh-in{{ 's' if preview|length != 1 }}</button>
+                <a href="{{ url_for('importweights') }}" class="{{ btn_secondary }}">Start again</a>
+            </div>
+        </form>
+        {% else %}
+        <p class="px-6 pb-6 text-sm text-slate-600">Check the file has a date and a weight on each row, or try the other date order or unit below.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {# ---------- Step 1: choose a file or paste ---------- #}
+    {% if preview is defined %}<details class="{{ card }}"{% if not preview %} open{% endif %}>
+        <summary class="cursor-pointer px-6 sm:px-8 py-5 text-lg font-bold text-slate-900">Try a different file or settings</summary>{% endif %}
+    <form method="POST" enctype="multipart/form-data" class="{{ 'px-6 sm:px-8 pb-8 space-y-5' if preview is defined else card ~ ' p-6 sm:p-8 space-y-5' }}">
+        {{ csrf() }}
+        <input type="hidden" name="step" value="preview">
+        {% if preview is not defined %}<h2 class="text-lg font-bold text-slate-900">Your weigh-ins</h2>{% endif %}
+        <div>
+            <label for="file" class="{{ label_class }}">A CSV file exported from another app</label>
+            <input type="file" id="file" name="file" accept=".csv,.txt,.tsv,text/csv,text/plain"
+                   class="block w-full text-sm text-slate-700 file:mr-4 file:px-4 file:py-2.5 file:rounded-xl file:border-0 file:font-semibold file:bg-forest-50 file:text-forest-700 hover:file:bg-forest-100">
+        </div>
+        <div>
+            <label for="text" class="{{ label_class }}">Or paste rows here</label>
+            <textarea id="text" name="text" rows="6" class="{{ field }} font-mono" placeholder="Date,Weight&#10;2026-09-01,86.4&#10;08/09/2026,13st 8lb&#10;15 Sep 2026  189.2 lb">{{ text if text is defined else '' }}</textarea>
+            <p class="mt-1 text-xs text-slate-500">One weigh-in per row: a date, then a weight. A header row is optional.</p>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="unit" class="{{ label_class }}">Weights are in</label>
+                <select id="unit" name="unit" class="{{ field }}">
+                    {% for value, label in units.items() %}<option value="{{ value }}" {{ 'selected' if value == unit }}>{{ label }}</option>{% endfor %}
+                </select>
+                <p class="mt-1 text-xs text-slate-500">Used unless the file says, e.g. “Weight (lbs)” or “13st 6lb”.</p>
+            </div>
+            <div>
+                <label for="order" class="{{ label_class }}">Dates like 03/11/2026 are</label>
+                <select id="order" name="order" class="{{ field }}">
+                    {% for value, label in orders.items() %}<option value="{{ value }}" {{ 'selected' if value == order }}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="{{ btn_primary }}">Check what's in it</button>
+    </form>
+    {% if preview is defined %}</details>{% endif %}
+
+    <section class="text-sm text-slate-600 space-y-2">
+        <h2 class="font-bold text-slate-900">Getting your data out of other apps</h2>
+        <ul class="list-disc pl-5 space-y-1">
+            <li>Most apps (MyFitnessPal, Fitbit, Withings, Garmin, Renpho, Happy Scale) have an <strong>Export</strong> or <strong>Download your data</strong> option that gives a CSV file.</li>
+            <li>If there's no export, copy the rows from a spreadsheet and paste them above.</li>
+            <li>If a day has several readings (a smart scale, say), we keep the first one.</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
