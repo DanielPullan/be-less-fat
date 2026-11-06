@@ -48,6 +48,26 @@ UK = ZoneInfo('Europe/London')
 
 load_dotenv(os.path.join(ROOT, '.env'))
 
+# Kanto's settings are in capitals. One written in lower case in .env (e.g. require_passkey=0) works anyway, with a
+# note in the log saying to rename it: on Linux, names are case-sensitive, so it would otherwise be silently ignored.
+KANTO_SETTINGS = ('SECRET_KEY', 'DATABASE_URL', 'STAGING', 'SEASON_DATE', 'REQUIRE_MFA', 'REQUIRE_PASSKEY',
+                  'SECURE_COOKIES', 'PASSKEY_RP_ID', 'PASSKEY_ORIGIN', 'BEHIND_PROXY', 'MAX_UPLOAD_MB')
+
+
+def _settings_in_any_case(path):
+    import sys
+    from dotenv import dotenv_values
+    for key, value in (dotenv_values(path) if os.path.exists(path) else {}).items():
+        wanted = (key or '').strip().upper()
+        if wanted in KANTO_SETTINGS and key != wanted and value is not None:
+            if wanted not in os.environ:
+                os.environ[wanted] = value
+            print(f'Kanto: .env says "{key}"; settings are in capitals, so it\'s been read as {wanted}. Rename it to '
+                  f'{wanted} in .env.', file=sys.stderr)
+
+
+_settings_in_any_case(os.path.join(ROOT, '.env'))
+
 
 def env_flag(name, default=''):
     return os.environ.get(name, default).strip().lower() in ('1', 'true', 'yes')

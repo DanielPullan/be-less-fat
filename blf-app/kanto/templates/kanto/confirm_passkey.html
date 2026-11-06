@@ -8,6 +8,9 @@
             {% set locked = passkey_locked_names() %}
             {% if locked %}{{ locked|join(' and ') }}{% if global_admin %} and global admin tools{% endif %} need
             {%- elif global_admin %}Global admin tools need{% else %}This page needs{% endif %} a passkey, not just a password and code. A passkey can't be phished, so it proves it's really you.</p>
+        {% if request.scheme == 'http' and request.host.split(':')[0] not in ('localhost', '127.0.0.1') %}
+        <p class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">This site is on plain <strong>http</strong>, and browsers only allow passkeys over <strong>https</strong>, so a passkey can't be used here yet. Until it has HTTPS, whoever runs the server can turn this check off: put <code>REQUIRE_PASSKEY=0</code> (in capitals) in its <code>.env</code> file, then restart {{ settings.APP_NAME }}.</p>
+        {% endif %}
         {% if current_user.passkeys %}
         <div data-passkey-supported class="hidden">
             <button type="button" data-passkey-login data-options-url="{{ url_for('confirm_passkey_options') }}" data-url="{{ url_for('confirm_passkey_check', next=next_url) }}"
