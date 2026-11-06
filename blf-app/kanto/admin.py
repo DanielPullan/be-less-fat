@@ -44,7 +44,8 @@ def admin_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not current_user.can_admin:
-            abort(403)
+            abort(403, description='Managing user accounts is for admins. Ask an admin to make the change for you, '
+                                   'or to give you the Admin role if you need it.')
         if not current_user.has_two_step:
             flash('User admin needs two-step verification on your own account. Set it up below first.', 'error')
             return redirect(url_for('profile') + '#security')
@@ -56,7 +57,8 @@ def log_viewer_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not current_user.can_view_log:
-            abort(403)
+            abort(403, description='The activity log is for admins and global admins. Ask an admin to look up what '
+                                   'you need.')
         return view(*args, **kwargs)
     return wrapped
 
@@ -171,11 +173,11 @@ def guards_protected_account(user):
     Returns a redirect to send instead, or None."""
     if user.has_protected_role and not current_user.has_protected_role:
         flash(f'{user.username} has a {PROTECTED_NAME} role, so only an admin who also has one can change '
-              'their account, password or two-step verification.', 'error')
+              'their account, password or two-step verification. Ask an admin who has it.', 'error')
         return redirect(url_for('admin_user', user_id=user.id))
     if 'global_admin' in user.roles and 'global_admin' not in current_user.roles:
         flash(f'{user.username} is a global admin, so only another global admin can change '
-              'their account, password or two-step verification.', 'error')
+              'their account, password or two-step verification. Ask another global admin.', 'error')
         return redirect(url_for('admin_user', user_id=user.id))
     if (user.has_protected_role or 'global_admin' in user.roles) and not passkey_confirmed():
         return needs_passkey_redirect(f'{user.username} has a {PROTECTED_NAME} or Global admin role. Confirm it\'s you '
@@ -193,7 +195,8 @@ def guards_protected_account(user):
 def view_as_list():
     """Global admins: pick someone to view the app as."""
     if 'global_admin' not in current_user.roles:
-        abort(403)
+        abort(403, description='Viewing the app as someone else is for global admins. Ask a global admin to look '
+                               'at it for you, or ask the person to share their screen.')
     if not current_user.has_two_step:
         flash('Viewing as other users needs two-step verification on your own account. Set it up below first.', 'error')
         return redirect(url_for('profile') + '#security')
@@ -610,7 +613,7 @@ def admin_reset_password(user_id):
     if blocked := guards_protected_account(user):
         return blocked
     if user == current_user:
-        flash('Change your own password from your profile.', 'error')
+        flash('Change your own password from your profile (Security), where it asks for your current one.', 'error')
         return redirect(url_for('admin_user', user_id=user.id))
     password = issue_temporary_password(user)
     log_action('Password reset by admin', target=user, detail='Temporary password issued; all sessions signed out')
@@ -628,7 +631,7 @@ def admin_reset_mfa(user_id):
     if blocked := guards_protected_account(user):
         return blocked
     if user == current_user:
-        flash('Manage your own two-step verification from your profile.', 'error')
+        flash('Manage your own two-step verification from your profile (Security).', 'error')
     else:
         user.clear_mfa()
         user.remove_passkeys()
@@ -684,7 +687,8 @@ def try_theme():
     """Switch the admin's own theme to any limited theme, whoever and whenever it's normally for."""
     theme = request.form.get('theme')
     if theme not in THEME_LABELS:
-        abort(400)
+        abort(400, description='That theme isn\'t one of the site\'s themes. Reload the page and choose one from '
+                               'the list.')
     save_theme(current_user, theme)
     db.session.commit()
     flash(f'Your theme is now {THEME_LABELS[theme]}, just for you. Choose another in the Aa menu to switch back.', 'success')
@@ -744,7 +748,7 @@ def set_season_date():
         try:
             day = date.fromisoformat(value)
         except ValueError:
-            flash('That isn\'t a date.', 'error')
+            flash('That isn\'t a date. Choose one with the date picker.', 'error')
             return redirect(url_for('admin_users') + '#pretend-date')
         if STAGING:
             with open(SEASON_DATE_FILE, 'w') as f:

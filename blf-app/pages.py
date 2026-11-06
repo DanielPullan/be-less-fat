@@ -145,12 +145,12 @@ def goals():
             try:
                 age = ageFrom(birthdate)
             except ValueError:
-                error = 'Date of birth needs to be a valid date.'
+                error = 'Date of birth needs to be a valid date. Pick it with the date picker.'
             else:
                 if age < 18:
                     error = 'Be Less Fat is not for under 18s.'
                 elif age > 120:
-                    error = "Date of birth doesn't look right."
+                    error = "Date of birth doesn't look right. Check the year, then save again."
         if error:
             flash(error, 'error')
         else:
@@ -181,9 +181,9 @@ def trackweight():
     except ValueError:
         day = None
     if weight is None:
-        flash('Weight needs to be a positive number (kg).', 'error')
+        flash('Weight needs to be a positive number in kg, e.g. 82.5.', 'error')
     elif day is None or day > date.today() or day.year < 1900:
-        flash('The date needs to be today or earlier.', 'error')
+        flash('The date needs to be today or earlier. Pick it with the date picker.', 'error')
     else:
         db.session.add(WeighIn(user_id=current_user.id, logdate=day.isoformat(), weight=weight))
         db.session.commit()
@@ -214,7 +214,7 @@ def trackfood():
     elif portion is False or portion == 0:
         flash('Portion needs to be grams between 1 and 5000, or left blank.', 'error')
     elif portion is not None and any(v is not None and v > portion for v in (protein, fibre)):
-        flash("Protein and fibre can't weigh more than the whole portion.", 'error')
+        flash("Protein and fibre can't weigh more than the whole portion. Check the grams, or leave the portion blank.", 'error')
     else:
         db.session.add(FoodEntry(user_id=current_user.id, logdate=today(), food=food[:200], calories=calories,
                                  meal=meal, protein=protein, fibre=fibre, portion=portion))
@@ -330,7 +330,8 @@ def importweights():
             if day <= date.today() and importer.MIN_KG <= kg <= importer.MAX_KG:
                 clean.append((day.isoformat(), round(kg, 1)))
         if not clean:
-            flash('There was nothing to import.', 'error')
+            flash('There was nothing to import: no row had a date (today or earlier) and a weight Be Less Fat '
+                  'could read. Check the file, then try again.', 'error')
             return redirect(url_for('importweights'))
         have = {w.logdate for w in mine}
         import_id = (db.session.query(db.func.max(WeighIn.import_id)).filter(WeighIn.user_id == current_user.id).scalar() or 0) + 1
@@ -394,7 +395,7 @@ def foodhistory():
     try:
         day = date.fromisoformat(logdate)
     except ValueError:
-        abort(400)
+        abort(400, description='That isn\'t a date. Pick a day with the date picker, or open today\'s food from the menu.')
     body = body_for(current_user)
     weight = latest_weight(current_user)
     results = foods_on(current_user, logdate)

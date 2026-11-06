@@ -145,13 +145,14 @@ def profile_password():
     current, new, confirm = (request.form.get(k, '') for k in ('current_password', 'new_password', 'confirm_password'))
     password_ok, wait = check_own_password(current)
     if not password_ok:
-        flash(wait or 'Your current password was wrong.', 'error')
+        flash(wait or 'Your current password wasn\'t right. Type it again; if you\'ve forgotten it, sign out and ask '
+                      'an admin to set a temporary one.', 'error')
     elif len(new) < MIN_PASSWORD:
         flash(f'Choose a new password of at least {MIN_PASSWORD} characters.', 'error')
     elif new != confirm:
-        flash('The new passwords don\'t match.', 'error')
+        flash('The new passwords don\'t match. Type the same new password in both boxes.', 'error')
     elif new == current:
-        flash('The new password must be different from the current one.', 'error')
+        flash('The new password is the same as the current one. Choose a different one.', 'error')
     else:
         current_user.password_hash = generate_password_hash(new)
         current_user.must_change_password = False
@@ -271,7 +272,8 @@ def passkey_add():
         return jsonify(error='The passkey couldn\'t be checked, so it wasn\'t added. Try again.'), 400
     credential_id = bytes_to_base64url(verified.credential_id)
     if Passkey.query.filter_by(credential_id=credential_id).first():
-        return jsonify(error='That passkey is already added.'), 400
+        return jsonify(error='That passkey is already added to an account: it\'s listed under Passkeys if it\'s '
+                             'yours. Use a different device or security key.'), 400
     first = not current_user.has_two_step
     name = ' '.join(str(data.get('name') or '').split())[:100] or f'Passkey {len(current_user.passkeys) + 1}'
     db.session.add(Passkey(user_id=current_user.id, credential_id=credential_id, name=name,

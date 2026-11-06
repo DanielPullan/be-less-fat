@@ -48,10 +48,12 @@ def set_role(username, role, off):
     they can give roles from the Users page."""
     user = User.query.filter_by(username=username).first()
     if user is None:
-        raise click.ClickException(f'No user called {username}.')
+        raise click.ClickException(f'No user called {username}. Check the spelling (usernames are lower case), or '
+                                   'make the account with create-user.')
     roles = user.roles - {role} if off else user.roles | {role}
     if not roles:
-        raise click.ClickException(f'{username} would have no roles left.')
+        raise click.ClickException(f'{username} would have no roles left. Give them another role first, '
+                                   f'e.g. set-role {username} OTHER_ROLE.')
     user.set_roles(roles)
     if off:
         user.end_other_sessions()
@@ -71,10 +73,10 @@ def reset_mfa(username, everyone):
     For one user this removes their authenticator app and passkeys. --all only resets authenticator apps
     (what changing SECRET_KEY breaks); passkeys don't depend on SECRET_KEY, so they're kept."""
     if everyone == bool(username):
-        raise click.ClickException('Give a USERNAME, or --all.')
+        raise click.ClickException('Give a USERNAME, or --all for everyone: e.g. reset-mfa dan.')
     users = User.query.all() if everyone else User.query.filter_by(username=username).all()
     if not users:
-        raise click.ClickException(f'No user called {username}.')
+        raise click.ClickException(f'No user called {username}. Check the spelling (usernames are lower case).')
     for user in users:
         if user.mfa_enabled or user.totp_secret or user.mfa_pending_secret or (user.passkeys and not everyone):
             user.clear_mfa()
@@ -93,13 +95,15 @@ def copy_from_sqlite(sqlite_path):
     """One-off move to PostgreSQL: copy every row from an SQLite database into this app's empty PostgreSQL
     database (DATABASE_URL), keeping every id. The SQLite file isn't changed. Run `flask db upgrade` on both first."""
     if USING_SQLITE:
-        raise click.ClickException('Set DATABASE_URL to the PostgreSQL database to copy into first.')
+        raise click.ClickException('Set DATABASE_URL to the PostgreSQL database to copy into first, e.g. in .env: '
+                                   'DATABASE_URL=postgresql://user:password@localhost/myapp')
     tables = db.metadata.sorted_tables  # parents before children, so foreign keys are satisfied
     with db.engine.connect() as conn:
         filled = [t.name for t in tables if conn.execute(select(func.count()).select_from(t)).scalar()]
     if filled:
         raise click.ClickException('The PostgreSQL database already has data in: ' + ', '.join(filled)
-                                   + '. This only copies into an empty database.')
+                                   + '. This only copies into an empty database: make a new one (createdb) and run '
+                                     '`flask db upgrade` on it, then this again.')
     source = create_engine(f'sqlite:///{os.path.abspath(sqlite_path)}')
     inspector = sa_inspect(source)
     for t in tables:

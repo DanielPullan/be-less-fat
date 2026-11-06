@@ -44,7 +44,7 @@ def test_register_login_logout(client):
     assert client.get("/goals").status_code == 302
 
     bad = client.post("/login", data={"username": "lea", "password": "not-the-password"})
-    assert b"Invalid username or password" in bad.data
+    assert b"That username or password isn" in bad.data
 
     ok = client.post("/login", data={"username": "lea", "password": PASSWORD})
     assert ok.headers["Location"] == "/home" or ok.headers["Location"] == "/today"

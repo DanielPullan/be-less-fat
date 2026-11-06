@@ -82,7 +82,8 @@ def security_headers(response):
 
 @app.errorhandler(413)
 def too_large(e):
-    flash(f'That upload is too big. Each save can include up to {MAX_UPLOAD_MB} MB.', 'error')
+    flash(f'That upload is too big: each save can include up to {MAX_UPLOAD_MB} MB. Upload fewer files at a time, '
+          'or make them smaller (e.g. zip them, or save a PDF at a smaller size).', 'error')
     return redirect(local_referrer() or url_for('home'))
 
 
@@ -237,7 +238,8 @@ def apply_view_as():
     g._login_user = target  # Flask-Login's per-request user: from here on, current_user is the viewed user
     if request.method not in ('GET', 'HEAD', 'OPTIONS') and request.endpoint not in VIEW_AS_ALLOWED_POSTS:
         if request.is_json or request.accept_mimetypes.best == 'application/json':
-            abort(403)
+            abort(403, description='Nothing was changed: viewing as another user is read-only. Stop viewing as them '
+                                   'to make changes.')
         flash(f'Nothing was changed: you\'re viewing as {target.username}, which is read-only.', 'error')
         return redirect(local_referrer() or url_for('home'))
     return None

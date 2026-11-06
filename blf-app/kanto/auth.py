@@ -34,6 +34,10 @@ USERNAME_PATTERN = re.compile(r'[A-Za-z0-9._@-]{3,50}')
 EMAIL_PATTERN = re.compile(r'[^@\s]{1,64}@[^@\s]+\.[^@\s]+')
 MIN_PASSWORD = 12
 
+# The same for a wrong password, an unknown name and a disabled account, so it doesn't tell anyone which accounts exist
+WRONG_SIGN_IN = ('That username or password isn\'t right. Check them (passwords are case-sensitive) and try again. '
+                 'If you\'ve forgotten your password, ask an admin to set a temporary one.')
+
 
 def throttle_wait(key):
     """Seconds until KEY may try again (0 if not locked)."""
@@ -190,7 +194,7 @@ def login():
         if user and password_ok and not user.is_active:
             log_action('Sign-in refused (account disabled)', username=username[:100])
             db.session.commit()
-            flash('Invalid username or password.', 'error')
+            flash(WRONG_SIGN_IN, 'error')
             return render_template('kanto/login.html')
         if user and password_ok:
             throttle_clear(user_ip_key)
@@ -206,7 +210,7 @@ def login():
         throttle_fail(ip_key, LIMIT_PER_IP)
         log_action('Failed login', username=username[:100])
         db.session.commit()
-        flash('Invalid username or password.', 'error')
+        flash(WRONG_SIGN_IN, 'error')
     return render_template('kanto/login.html')
 
 
@@ -229,7 +233,7 @@ def sign_up():
         elif len(password) < MIN_PASSWORD:
             flash(f'Choose a password of at least {MIN_PASSWORD} characters.', 'error')
         elif password != confirm:
-            flash('The passwords don\'t match.', 'error')
+            flash('The passwords don\'t match. Type the same password in both boxes.', 'error')
         else:
             user = User(username=username, email=email or None, password_hash=generate_password_hash(password))
             db.session.add(user)

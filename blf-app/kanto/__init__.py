@@ -275,7 +275,7 @@ def log_action(action, detail=None, user=None, username=None, target=None, **fie
 
 
 # The rest of Kanto: each module adds its models, routes and page hooks to `app`
-from . import models, display, security, auth, profile, admin, activity, debug, cli  # noqa: E402,F401
+from . import models, display, security, auth, profile, admin, activity, debug, cli, errors  # noqa: E402,F401
 
 
 def prepare_database():

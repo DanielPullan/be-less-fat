@@ -49,9 +49,9 @@
                 '"Use a phone or tablet" in the prompt and scan the code (this computer needs Bluetooth on).' +
                 (box.dataset.passkeyFallback ? ' ' + box.dataset.passkeyFallback : '');
         } else if (error.name === 'NotAllowedError') {
-            box.textContent = 'Cancelled, or the passkey prompt timed out.';
+            box.textContent = 'Cancelled, or the passkey prompt timed out. Press the button to try again, and finish within a minute or so.';
         } else if (error.name === 'InvalidStateError') {
-            box.textContent = 'This device already has a passkey for your account.';
+            box.textContent = 'This device already has a passkey for your account, so you can use it already. To add another, use a different device or security key.';
         } else {
             box.textContent = error.message;
         }
