@@ -49,7 +49,7 @@ def admins():
 
 
 def wants_json():
-    return request.is_json or request.accept_mimetypes.best == 'application/json'
+    return request.is_json or request.accept_mimetypes.best == 'application/json' or request.path.startswith('/api/')
 
 
 def error_page(code, heading, why, fix, reference=None):
