@@ -324,6 +324,7 @@ html[data-theme="teletext"] :is(input[type="checkbox"], input[type="radio"]) { a
 /* The header: a blue band with the page number, as at the top of every teletext page */
 html[data-theme="teletext"] header:not(#x) { background-color: #0000ff !important; border-bottom: 0 !important; }
 html[data-theme="teletext"] header :is(a, button, summary, span):not(#x) { color: #ffffff !important; }
+html[data-theme="teletext"] header .peer:checked ~ span:not(#x) { color: #000000 !important; }  /* the chosen option in the Aa menu: black on yellow */
 html[data-theme="teletext"] header > div > a:first-child .text-forest-600:not(#x) { color: #ffff00 !important; }
 html[data-theme="teletext"] header .text-red-600:not(#x) { color: #ffff00 !important; }
 html[data-theme="teletext"] header > div > a:first-child::before { content: "P100"; margin-right: .75rem; color: #ffffff; font-size: .7em; vertical-align: middle; }

@@ -87,8 +87,14 @@
 
     // Wire up every set of options (the header's Display menu and the profile page) and keep them in step
     document.addEventListener('DOMContentLoaded', function () {
-        const inputs = function () { return document.querySelectorAll('[data-display-options] input[data-pref]'); };
-        const sync = function () { inputs().forEach(function (input) { input.checked = prefs[input.dataset.pref] === input.value; }); };
+        // Radio buttons, and the theme's dropdown
+        const inputs = function () { return document.querySelectorAll('[data-display-options] [data-pref]'); };
+        const sync = function () {
+            inputs().forEach(function (input) {
+                if (input.tagName === 'SELECT') input.value = prefs[input.dataset.pref];
+                else input.checked = prefs[input.dataset.pref] === input.value;
+            });
+        };
         sync();
         inputs().forEach(function (input) {
             input.addEventListener('change', function () {
