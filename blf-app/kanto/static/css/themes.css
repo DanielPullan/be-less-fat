@@ -761,7 +761,7 @@ html[data-theme="pi"] header > div > a:first-child::before { content: "π"; marg
 
 /* =====================================================================
    Pocket (for everyone, all year): inspired by early-90s handheld adventure games. The four greens of a
-   pocket console's screen, a pixel font for headings, buttons and the header (Press Start 2P, kanto/static/fonts,
+   pocket console's screen, a pixel font for headings, main buttons and the app's name (Press Start 2P, kanto/static/fonts,
    SIL Open Font License; body text stays in the normal font so it's easy to read), cards drawn as chunky
    dialogue boxes, square-cornered buttons and a ▶ by the menu item you point at. Colours and style only:
    no names, art or fonts from any game. Status colours keep their meaning (red stays red).
@@ -772,14 +772,16 @@ html[data-theme="pi"] header > div > a:first-child::before { content: "π"; marg
     font-weight: 400; font-style: normal; font-display: swap;
 }
 html[data-theme="pocket"] body { background-color: #c5d29a !important; color: #1f2d16 !important; }
-html[data-theme="pocket"] :is(h1, h2, h3, button, .peer + span, header > div > a:first-child, .bg-forest-700, .bg-forest-600) {
+/* By look, not by element: plain buttons and menu items are sometimes links and sometimes buttons, so they keep
+   the normal font; headings, the filled main buttons, the Aa choices and the app's name are pixel */
+html[data-theme="pocket"] :is(h1, h2, h3, .peer + span, header > div > a:first-child, .bg-forest-700:not(.rounded-full), .bg-forest-600:not(.rounded-full)) {
     font-family: "Press Start 2P", ui-monospace, "Courier New", monospace !important; font-weight: 400 !important;
     font-synthesis: none; letter-spacing: 0 !important;
 }
 html[data-theme="pocket"] h1 { font-size: 1.25rem !important; line-height: 1.6 !important; }
 html[data-theme="pocket"] h2 { font-size: .95rem !important; line-height: 1.6 !important; }
 html[data-theme="pocket"] h3 { font-size: .8rem !important; line-height: 1.6 !important; }
-html[data-theme="pocket"] :is(button, .peer + span, .bg-forest-700, .bg-forest-600) { font-size: .7rem !important; line-height: 1.8 !important; }
+html[data-theme="pocket"] :is(.peer + span, .bg-forest-700:not(.rounded-full), .bg-forest-600:not(.rounded-full)) { font-size: .7rem !important; line-height: 1.8 !important; }
 html[data-theme="pocket"] .bg-slate-50, html[data-theme="pocket"] .hover\:bg-slate-50:hover { background-color: #d8e2b4 !important; }
 html[data-theme="pocket"] .bg-slate-100 { background-color: #cdd9a5 !important; }
 html[data-theme="pocket"] .bg-white { background-color: #eef3d6 !important; }
