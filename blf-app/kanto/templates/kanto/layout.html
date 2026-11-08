@@ -74,7 +74,7 @@
                 {% else %}
                 {% block signed_out_links %}
                 {% if settings.ALLOW_SIGN_UP %}<a href="{{ url_for('sign_up') }}" class="text-sm font-semibold text-slate-600 hover:text-forest-700 px-2 whitespace-nowrap">Sign up</a>{% endif %}
-                <a href="{{ url_for('login') }}" class="text-sm font-semibold text-forest-700 bg-forest-50 px-3 sm:px-4 py-2 rounded-xl border border-forest-100 hover:bg-forest-100 whitespace-nowrap">Sign in</a>
+                <a href="{{ url_for('login') }}" class="text-sm font-semibold text-slate-700 bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 whitespace-nowrap">Sign in</a>
                 {% endblock %}
                 {% endif %}
                 {% if kanto_search_on and current_user.is_authenticated %}
