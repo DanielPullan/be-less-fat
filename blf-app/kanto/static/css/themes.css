@@ -818,6 +818,13 @@ html[data-theme="pocket"] header :is(.border-slate-200, .border):not(#x) { borde
 html[data-theme="pocket"] header details > div:not(#x) { background-color: #eef3d6 !important; border: 4px solid #1f2d16 !important; border-radius: 8px !important; }
 html[data-theme="pocket"] header details > div :is(span, a, button, legend, label):not(#x) { color: #1f2d16 !important; }
 html[data-theme="pocket"] header details > div .peer:checked ~ span:not(#x) { color: #eef3d6 !important; }
+html[data-theme="pocket"] header a.bg-forest-50:not(#x) { background-color: #b6d36a !important; color: #1f2d16 !important; border: 2px solid #eef3d6 !important; }
+html[data-theme="pocket"] header a.bg-forest-50:hover:not(#x) { background-color: #eef3d6 !important; }
+/* Landing pages' hero bands fade from white: fade between the screen's greens instead */
+html[data-theme="pocket"] .bg-gradient-to-b.from-white { background-image: linear-gradient(to bottom, #e3eac6, #c5d29a) !important; }
+/* The pixel font is wide: on a phone, keep the app's name small enough to leave room for the buttons */
+@media (max-width: 640px) { html[data-theme="pocket"] header > div > a:first-child:not(#x) { font-size: .8rem !important; } }
+@media (max-width: 360px) { html[data-theme="pocket"] header > div > a:first-child:not(#x) { font-size: .6rem !important; } }
 html[data-theme="pocket"] footer { border-top: 4px solid #7d9150 !important; }
 
 /* =====================================================================
