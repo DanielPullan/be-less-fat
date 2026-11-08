@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block title %}About — {{ settings.APP_NAME }}{% endblock %}
-{% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-    {# Your app's own words: templates/about_text.html (Kanto's placeholder otherwise) #}
-    {% include ['about_text.html', 'kanto/_about_text.html'] %}
-
-</div>
-{% endblock %}

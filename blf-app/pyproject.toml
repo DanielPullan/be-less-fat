@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Be Less Fat: track your food and weight, with a daily calorie target. Built on Kanto."
 requires-python = ">=3.11"
 dependencies = [
+    "kanto",
     "flask>=3.0.2",
     "flask-sqlalchemy>=3.1.1",
     "flask-login>=0.6.3",
@@ -28,3 +29,6 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = [".", "tests"]
+
+[tool.uv.sources]
+kanto = { git = "ssh://git@github.com/DanielPullan/kanto.git", branch = "main" }

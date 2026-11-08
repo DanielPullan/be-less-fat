@@ -13,7 +13,7 @@ User=dan
 Group=dan
 WorkingDirectory=/home/dan/BeLessFat/blf-app
 # Database changes (migrations/) are applied before each start; nothing happens if it's already up to date
-ExecStartPre=/home/dan/BeLessFat/blf-app/.venv/bin/flask --app app db upgrade
+ExecStartPre=/home/dan/BeLessFat/blf-app/.venv/bin/flask --app app db upgrade heads
 ExecStart=/home/dan/BeLessFat/blf-app/.venv/bin/gunicorn --bind 127.0.0.1:8003 --workers 2 --threads 4 --timeout 120 --access-logfile - app:app
 Restart=on-failure
 RestartSec=5
