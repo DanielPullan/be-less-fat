@@ -21,11 +21,14 @@ import settings
 from . import STAGING, SEASON_DATE, UK, app
 
 STANDARD_THEMES = ['system', 'light', 'dark', 'contrast']
-ALL_YEAR_THEMES = getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear',
-                                                       'teletext'])
 # Themes only offered with a role ({theme: role}) or to one account ({theme: username}); an app sets these in settings
 ROLE_THEMES = getattr(settings, 'ROLE_THEMES', {})
 USER_THEMES = getattr(settings, 'USER_THEMES', {})
+# Themes for everyone, all year: all of these except any the app keeps for a role or an account above. A new theme
+# added here reaches every app; an app can still give its own list as settings.ALL_YEAR_THEMES
+ALL_YEAR_THEMES = [t for t in getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog',
+                                                                    'piranha', 'bear', 'teletext', 'pocket'])
+                   if t not in ROLE_THEMES and t not in USER_THEMES]
 # Themes unlocked by finding an easter egg (kanto/static/js/konami.js)
 EGG_THEMES = {'vista': 'emergency'}
 # Easter eggs a signed-in user can find (each a secret profile badge). An app adds its own in settings.EXTRA_EASTER_EGGS
@@ -52,7 +55,7 @@ FESTIVAL_DATES = {
             '2029-02-14', '2029-04-23', '2030-02-05', '2030-04-13'],
 }
 THEME_LABELS = {'haunted': 'Haunted 👻', 'meme': 'Memes 😎', 'nord': 'Nord', 'silly': 'Silly 🤡',
-                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'teletext': 'Teletext 📺', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
+                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'teletext': 'Teletext 📺', 'pocket': 'Pocket 🎮', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
                 'heritage': 'Black History Month', 'festive': 'Festive 🎄', 'safer': 'Safer Internet 🛡️',
                 'books': 'Book Day 📚', 'pi': 'Raspberry π', 'space': 'Galaxy 🌌', 'lunar': 'Lunar New Year 🏮',
                 'diwali': 'Diwali 🪔', 'eid': 'Eid 🌙'}
@@ -233,7 +236,7 @@ def extra_themes():
     themes = ([theme for theme, role in ROLE_THEMES.items() if role in roles]
               + [theme for theme, user in USER_THEMES.items() if signed_in and user == current_user.username.lower()]
               + [theme for theme, egg in EGG_THEMES.items() if egg in eggs]
-              + [t for t in ALL_YEAR_THEMES if t not in ROLE_THEMES and t not in USER_THEMES]
+              + ALL_YEAR_THEMES
               + themes_on(season_date()))
     # Admins can try any limited theme from the Users page (try_theme); keep whichever they're trying
     if signed_in and current_user.can_admin:

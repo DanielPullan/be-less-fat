@@ -755,6 +755,72 @@ html[data-theme="pi"] header > div > a:first-child .text-forest-600 { color: #b0
 html[data-theme="pi"] header > div > a:first-child::before { content: "π"; margin-right: .35rem; color: #3f7d1e; font-family: Georgia, serif; }
 
 /* =====================================================================
+   Pocket (for everyone, all year): inspired by early-90s handheld adventure games. The four greens of a
+   pocket console's screen, a pixel font for headings, buttons and the header (Press Start 2P, kanto/static/fonts,
+   SIL Open Font License; body text stays in the normal font so it's easy to read), cards drawn as chunky
+   dialogue boxes, square-cornered buttons and a ▶ by the menu item you point at. Colours and style only:
+   no names, art or fonts from any game. Status colours keep their meaning (red stays red).
+   ===================================================================== */
+@font-face {
+    font-family: "Press Start 2P";
+    src: url("../fonts/press-start-2p.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+}
+html[data-theme="pocket"] body { background-color: #c5d29a !important; color: #1f2d16 !important; }
+html[data-theme="pocket"] :is(h1, h2, h3, button, .peer + span, header > div > a:first-child, .bg-forest-700, .bg-forest-600) {
+    font-family: "Press Start 2P", ui-monospace, "Courier New", monospace !important; font-weight: 400 !important;
+    font-synthesis: none; letter-spacing: 0 !important;
+}
+html[data-theme="pocket"] h1 { font-size: 1.25rem !important; line-height: 1.6 !important; }
+html[data-theme="pocket"] h2 { font-size: .95rem !important; line-height: 1.6 !important; }
+html[data-theme="pocket"] h3 { font-size: .8rem !important; line-height: 1.6 !important; }
+html[data-theme="pocket"] :is(button, .peer + span, .bg-forest-700, .bg-forest-600) { font-size: .7rem !important; line-height: 1.8 !important; }
+html[data-theme="pocket"] .bg-slate-50, html[data-theme="pocket"] .hover\:bg-slate-50:hover { background-color: #d8e2b4 !important; }
+html[data-theme="pocket"] .bg-slate-100 { background-color: #cdd9a5 !important; }
+html[data-theme="pocket"] .bg-white { background-color: #eef3d6 !important; }
+html[data-theme="pocket"] .text-slate-900, html[data-theme="pocket"] .text-slate-800 { color: #1f2d16 !important; }
+html[data-theme="pocket"] .text-slate-700, html[data-theme="pocket"] .text-slate-600 { color: #2f4220 !important; }
+html[data-theme="pocket"] :is(.text-slate-500, .text-slate-400) { color: #4f6534 !important; }
+html[data-theme="pocket"] :is(.border-slate-100, .border-slate-200) { border-color: #a9bb78 !important; }
+html[data-theme="pocket"] .border-slate-300 { border-color: #7d9150 !important; }
+html[data-theme="pocket"] :is(.text-forest-600, .text-forest-700, .hover\:text-forest-700:hover, .text-forest-800, .text-forest-900) { color: #2c5a1e !important; }
+html[data-theme="pocket"] .bg-forest-50, html[data-theme="pocket"] .hover\:bg-forest-50:hover { background-color: #dbe7b0 !important; }
+html[data-theme="pocket"] :is(.border-forest-100, .border-forest-200, .border-forest-300) { border-color: #8fa85c !important; }
+/* Selected options and buttons: the darkest shade, square, with a hard pixel shadow */
+html[data-theme="pocket"] .bg-slate-900, html[data-theme="pocket"] .peer:checked ~ .peer-checked\:bg-slate-900 { background-color: #1f2d16 !important; color: #eef3d6 !important; }
+html[data-theme="pocket"] .border-slate-900, html[data-theme="pocket"] .peer:checked ~ .peer-checked\:border-slate-900 { border-color: #1f2d16 !important; }
+html[data-theme="pocket"] :is(.bg-forest-700, .bg-forest-600) { background-color: #2c5a1e !important; color: #eef3d6 !important; }
+html[data-theme="pocket"] :is(a, button).hover\:bg-forest-800:hover { background-color: #1f2d16 !important; }
+html[data-theme="pocket"] :is(a, button, .peer + span, summary, input, select, textarea) { border-radius: 0 !important; }
+html[data-theme="pocket"] :is(a, button):is(.bg-forest-700, .bg-forest-600, .bg-red-600) { box-shadow: 3px 3px 0 #1f2d16 !important; }
+html[data-theme="pocket"] :is(a, button):is(.bg-forest-700, .bg-forest-600, .bg-red-600):active { box-shadow: none !important; transform: translate(3px, 3px); }
+html[data-theme="pocket"] .bg-red-600 { background-color: #a82828 !important; color: #fff6e6 !important; }
+html[data-theme="pocket"] :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    background-color: #f4f7e4 !important; border: 2px solid #1f2d16 !important;
+}
+html[data-theme="pocket"] :is(input, select, textarea, button, a, summary):focus-visible { outline: 3px solid #1f2d16 !important; outline-offset: 2px; box-shadow: none !important; }
+html[data-theme="pocket"] :is(input[type="checkbox"], input[type="radio"]) { accent-color: #1f2d16; }
+/* Cards: dialogue boxes, a thick dark frame with a light line inside it */
+html[data-theme="pocket"] :is(.bg-white.rounded-2xl, .bg-white.rounded-xl):not(input, select, textarea) {
+    border-radius: 8px !important; border: 4px solid #1f2d16 !important;
+    box-shadow: inset 0 0 0 3px #eef3d6, inset 0 0 0 5px #7d9150 !important;
+}
+/* Progress bars: like a health bar */
+html[data-theme="pocket"] .h-full.rounded-full { border-radius: 0 !important; background-color: #3f8f2a !important; }
+/* The header: the darkest green band, light pixel lettering, and a ▶ by the link you point at */
+html[data-theme="pocket"] header:not(#x) { background-color: #1f2d16 !important; border-bottom: 4px solid #7d9150 !important; box-shadow: none !important; }
+html[data-theme="pocket"] header :is(a, button, summary, span):not(#x) { color: #eef3d6 !important; }
+html[data-theme="pocket"] header > div > a:first-child .text-forest-600:not(#x) { color: #b6d36a !important; }
+html[data-theme="pocket"] header .text-red-600:not(#x) { color: #ffb3a1 !important; }
+html[data-theme="pocket"] header nav a:not(#x) { position: relative; }
+html[data-theme="pocket"] header nav a:hover::before, html[data-theme="pocket"] header nav a[aria-current]::before { content: "▶"; position: absolute; left: -1rem; font-size: .7em; top: 50%; transform: translateY(-50%); }
+html[data-theme="pocket"] header :is(.border-slate-200, .border):not(#x) { border-color: #4f6534 !important; }
+html[data-theme="pocket"] header details > div:not(#x) { background-color: #eef3d6 !important; border: 4px solid #1f2d16 !important; border-radius: 8px !important; }
+html[data-theme="pocket"] header details > div :is(span, a, button, legend, label):not(#x) { color: #1f2d16 !important; }
+html[data-theme="pocket"] header details > div .peer:checked ~ span:not(#x) { color: #eef3d6 !important; }
+html[data-theme="pocket"] footer { border-top: 4px solid #7d9150 !important; }
+
+/* =====================================================================
    Festive (December only, for everyone): snowy cream, evergreen, cranberry and gold.
    Light, so it suits everyone; status colours (pass, fail, severity) are left as they are.
    ===================================================================== */
