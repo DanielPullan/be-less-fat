@@ -27,7 +27,7 @@ USER_THEMES = getattr(settings, 'USER_THEMES', {})
 # Themes for everyone, all year: all of these except any the app keeps for a role or an account above. A new theme
 # added here reaches every app; an app can still give its own list as settings.ALL_YEAR_THEMES
 ALL_YEAR_THEMES = [t for t in getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog',
-                                                                    'piranha', 'bear', 'teletext', 'pocket'])
+                                                                    'piranha', 'bear', 'teletext', 'pocket', 'bootstrap'])
                    if t not in ROLE_THEMES and t not in USER_THEMES]
 # Themes unlocked by finding an easter egg (kanto/static/js/konami.js)
 EGG_THEMES = {'vista': 'emergency'}
@@ -55,7 +55,7 @@ FESTIVAL_DATES = {
             '2029-02-14', '2029-04-23', '2030-02-05', '2030-04-13'],
 }
 THEME_LABELS = {'haunted': 'Haunted 👻', 'meme': 'Memes 😎', 'nord': 'Nord', 'silly': 'Silly 🤡',
-                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'teletext': 'Teletext 📺', 'pocket': 'Pocket 🎮', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
+                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'teletext': 'Teletext 📺', 'pocket': 'Pocket 🎮', 'bootstrap': 'Bootstrap 🥾', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
                 'heritage': 'Black History Month', 'festive': 'Festive 🎄', 'safer': 'Safer Internet 🛡️',
                 'books': 'Book Day 📚', 'pi': 'Raspberry π', 'space': 'Galaxy 🌌', 'lunar': 'Lunar New Year 🏮',
                 'diwali': 'Diwali 🪔', 'eid': 'Eid 🌙'}

@@ -833,6 +833,105 @@ html[data-theme="pocket"] .bg-gradient-to-b.from-white { background-image: linea
 html[data-theme="pocket"] footer { border-top: 4px solid #7d9150 !important; }
 
 /* =====================================================================
+   Bootstrap (for everyone, all year): the default look of Bootstrap 2 (2012, MIT licence), for anyone who
+   remembers. Helvetica Neue at 14px, the black gradient navbar, glossy gradient buttons with the blue primary,
+   inputs that glow blue when focused, grey wells, square-ish 4px corners, striped table rows, solid little labels,
+   the old alert colours and striped progress bars. Status colours keep their meaning: green done, red overdue.
+   ===================================================================== */
+html[data-theme="bootstrap"] body, html[data-theme="bootstrap"] :is(input, select, textarea, button) { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important; }
+html[data-theme="bootstrap"] body { background-color: #ffffff !important; color: #333333 !important; }
+html[data-theme="bootstrap"] :is(h1, h2, h3) { color: #333333 !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+html[data-theme="bootstrap"] .bg-slate-50 { background-color: #f9f9f9 !important; }
+html[data-theme="bootstrap"] .hover\:bg-slate-50:hover { background-color: #f5f5f5 !important; }
+html[data-theme="bootstrap"] .text-slate-900, html[data-theme="bootstrap"] .text-slate-800, html[data-theme="bootstrap"] .text-slate-700 { color: #333333 !important; }
+html[data-theme="bootstrap"] .text-slate-600, html[data-theme="bootstrap"] .text-slate-500 { color: #999999 !important; }
+html[data-theme="bootstrap"] :is(.border-slate-100, .border-slate-200, .divide-slate-100 > * + *) { border-color: #dddddd !important; }
+html[data-theme="bootstrap"] .border-slate-300 { border-color: #cccccc !important; }
+/* Links: that blue */
+html[data-theme="bootstrap"] :is(.text-forest-600, .text-forest-700, .text-forest-800) { color: #0088cc !important; }
+html[data-theme="bootstrap"] a.text-forest-700:hover, html[data-theme="bootstrap"] .hover\:text-forest-700:hover { color: #005580 !important; }
+/* Cards: white boxes with a hairline border and 4px corners; number cards are grey wells */
+html[data-theme="bootstrap"] :is(.rounded-2xl, .rounded-xl):not(input, select, textarea) { border-radius: 4px !important; }
+html[data-theme="bootstrap"] .bg-white.rounded-2xl { border: 1px solid #dddddd !important; box-shadow: 0 1px 1px rgba(0, 0, 0, .05) !important; }
+html[data-theme="bootstrap"] .bg-white.rounded-2xl.p-5.block { background-color: #f5f5f5 !important; border-color: #e3e3e3 !important; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05) !important; }
+html[data-theme="bootstrap"] .bg-white.rounded-2xl.p-5.block:hover { background-color: #eeeeee !important; }
+/* Buttons: glossy gradients. Plain ones white to grey; the main one blue; danger red */
+html[data-theme="bootstrap"] :is(a, button, summary).border:is(.bg-white, .border-slate-300):not(header *) {
+    background-color: #f5f5f5 !important; background-image: linear-gradient(to bottom, #ffffff, #e6e6e6) !important;
+    border: 1px solid #cccccc !important; border-bottom-color: #b3b3b3 !important; border-radius: 4px !important; color: #333333 !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, .75); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05) !important;
+}
+html[data-theme="bootstrap"] :is(a, button, summary).border:is(.bg-white, .border-slate-300):not(header *):hover { background-image: none !important; background-color: #e6e6e6 !important; }
+html[data-theme="bootstrap"] :is(a, button, input):is(.bg-forest-700, .bg-forest-600) {
+    background-color: #0074cc !important; background-image: linear-gradient(to bottom, #0088cc, #0044cc) !important; color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, .1) !important; border-bottom-color: rgba(0, 0, 0, .25) !important; border-radius: 4px !important;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .25); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05) !important;
+}
+html[data-theme="bootstrap"] :is(a, button, input):is(.bg-forest-700, .bg-forest-600):hover { background-image: none !important; background-color: #0044cc !important; }
+html[data-theme="bootstrap"] :is(a, button).bg-red-600 { background-color: #da4f49 !important; background-image: linear-gradient(to bottom, #ee5f5b, #bd362f) !important; color: #ffffff !important; border-radius: 4px !important; text-shadow: 0 -1px 0 rgba(0, 0, 0, .25); }
+html[data-theme="bootstrap"] :is(a, button).border-red-200 { background-image: linear-gradient(to bottom, #ee5f5b, #bd362f) !important; color: #ffffff !important; border: 1px solid rgba(0, 0, 0, .1) !important; border-radius: 4px !important; text-shadow: 0 -1px 0 rgba(0, 0, 0, .25); }
+/* Inputs: inset, then the blue glow */
+html[data-theme="bootstrap"] :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    border: 1px solid #cccccc !important; border-radius: 4px !important; background-color: #ffffff !important; color: #555555 !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075) !important;
+}
+html[data-theme="bootstrap"] :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):focus {
+    border-color: rgba(82, 168, 236, .8) !important; outline: 0 !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6) !important;
+}
+/* Choices in the Aa menu and elsewhere: buttons, the chosen one pressed in */
+html[data-theme="bootstrap"] .peer + span { border-radius: 4px !important; background-image: linear-gradient(to bottom, #ffffff, #e6e6e6); border-color: #cccccc !important; color: #333333 !important; }
+html[data-theme="bootstrap"] .peer:checked ~ .peer-checked\:bg-slate-900, html[data-theme="bootstrap"] .bg-slate-900 { background-image: none !important; background-color: #0044cc !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0, 0, 0, .15) !important; }
+html[data-theme="bootstrap"] .peer:checked ~ .peer-checked\:border-slate-900, html[data-theme="bootstrap"] .border-slate-900 { border-color: #0044cc !important; }
+/* Tables: striped rows */
+html[data-theme="bootstrap"] tbody tr:nth-child(odd) { background-color: #f9f9f9; }
+html[data-theme="bootstrap"] thead tr { background-color: #ffffff !important; color: #333333 !important; }
+html[data-theme="bootstrap"] th { font-weight: 700 !important; color: #333333 !important; }
+/* Labels: small solid badges with white text */
+html[data-theme="bootstrap"] span.rounded-md.text-xs:is(.bg-red-100, .bg-amber-100, .bg-green-100, .bg-forest-100, .bg-blue-100, .bg-slate-100, .bg-violet-100) {
+    border-radius: 3px !important; color: #ffffff !important; font-weight: 700 !important; text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+}
+html[data-theme="bootstrap"] span.rounded-md.text-xs:is(.bg-red-100, .bg-amber-100, .bg-green-100, .bg-forest-100, .bg-blue-100, .bg-slate-100, .bg-violet-100) * { color: #ffffff !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs.bg-red-100 { background-color: #b94a48 !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs.bg-amber-100 { background-color: #f89406 !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs:is(.bg-green-100, .bg-forest-100) { background-color: #468847 !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs.bg-blue-100 { background-color: #3a87ad !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs.bg-slate-100 { background-color: #999999 !important; }
+html[data-theme="bootstrap"] span.rounded-md.text-xs.bg-violet-100 { background-color: #333333 !important; }
+/* Messages: the old alert boxes */
+html[data-theme="bootstrap"] [data-flash] { border-radius: 4px !important; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
+html[data-theme="bootstrap"] [data-flash="warning"] { background-color: #fcf8e3 !important; border-color: #fbeed5 !important; color: #c09853 !important; }
+html[data-theme="bootstrap"] [data-flash="success"] { background-color: #dff0d8 !important; border-color: #d6e9c6 !important; color: #468847 !important; }
+html[data-theme="bootstrap"] [data-flash]:not([data-flash="warning"]):not([data-flash="success"]) { background-color: #f2dede !important; border-color: #eed3d7 !important; color: #b94a48 !important; }
+/* Progress bars: striped, green for done */
+html[data-theme="bootstrap"] .h-full.rounded-full {
+    border-radius: 0 !important; background-color: #5eb95e !important;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent), linear-gradient(to bottom, #62c462, #57a957) !important;
+    background-size: 20px 20px, auto !important;
+}
+html[data-theme="bootstrap"] :is(input[type="checkbox"], input[type="radio"]) { accent-color: #0088cc; }
+/* The navbar: black gradient, grey links, white for the page you're on */
+html[data-theme="bootstrap"] header:not(#x) { background-color: #1b1b1b !important; background-image: linear-gradient(to bottom, #222222, #111111) !important; border-bottom: 1px solid #252525 !important; box-shadow: 0 1px 10px rgba(0, 0, 0, .1) !important; }
+html[data-theme="bootstrap"] header > div:not(#x) { height: 3.25rem !important; }
+html[data-theme="bootstrap"] header > div > a:first-child:not(#x) { color: #999999 !important; font-weight: 200 !important; font-size: 1.25rem !important; letter-spacing: 0 !important; }
+html[data-theme="bootstrap"] header > div > a:first-child .text-forest-600:not(#x) { color: #999999 !important; }
+html[data-theme="bootstrap"] header > div > a:first-child:hover:not(#x), html[data-theme="bootstrap"] header > div > a:first-child:hover .text-forest-600:not(#x) { color: #ffffff !important; }
+html[data-theme="bootstrap"] header :is(a, button, summary, span):not(#x) { color: #999999 !important; text-shadow: 0 -1px 0 rgba(0, 0, 0, .25); }
+html[data-theme="bootstrap"] header :is(a, button, summary):hover:not(#x), html[data-theme="bootstrap"] header nav a[aria-current]:not(#x) { color: #ffffff !important; }
+html[data-theme="bootstrap"] header nav a[aria-current]:not(#x) { background-color: #111111; box-shadow: inset 0 3px 8px rgba(0, 0, 0, .125); padding: .6rem .75rem; margin: 0 -.75rem; }
+html[data-theme="bootstrap"] header :is(.border, .border-slate-200):not(details > div, details > div *):not(#x) { border-color: #444444 !important; background-color: transparent !important; }
+/* Its drop-downs: white menus, blue gradient on the item you point at */
+html[data-theme="bootstrap"] header details > div:not(#x) { background-color: #ffffff !important; border: 1px solid rgba(0, 0, 0, .2) !important; border-radius: 6px !important; box-shadow: 0 5px 10px rgba(0, 0, 0, .2) !important; }
+html[data-theme="bootstrap"] header details > div :is(a, span, legend, label, button):not(#x) { color: #333333 !important; text-shadow: none; }
+html[data-theme="bootstrap"] header details > div > a:hover:not(#x) { color: #ffffff !important; background-image: linear-gradient(to bottom, #0088cc, #0077b3) !important; }
+html[data-theme="bootstrap"] header details > div .peer:checked ~ span:not(#x) { color: #ffffff !important; }
+html[data-theme="bootstrap"] details[data-menu] > div > :is(a, form > button):hover { color: #ffffff !important; background-image: linear-gradient(to bottom, #0088cc, #0077b3) !important; }
+html[data-theme="bootstrap"] details[data-menu] > div { border-radius: 6px !important; border-color: rgba(0, 0, 0, .2) !important; box-shadow: 0 5px 10px rgba(0, 0, 0, .2) !important; }
+html[data-theme="bootstrap"] footer { background-color: #f5f5f5 !important; border-top: 1px solid #e5e5e5 !important; }
+/* Landing pages: the grey "hero unit" */
+html[data-theme="bootstrap"] .bg-gradient-to-b.from-white { background-image: none !important; background-color: #eeeeee !important; }
+
+/* =====================================================================
    Festive (December only, for everyone): snowy cream, evergreen, cranberry and gold.
    Light, so it suits everyone; status colours (pass, fail, severity) are left as they are.
    ===================================================================== */
