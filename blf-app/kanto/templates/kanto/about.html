@@ -1,41 +1,9 @@
 {% extends "base.html" %}
 {% block title %}About — {{ settings.APP_NAME }}{% endblock %}
 {% block content %}
-{% from '_macros.html' import card %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
     {# Your app's own words: templates/about_text.html (Kanto's placeholder otherwise) #}
     {% include ['about_text.html', 'kanto/_about_text.html'] %}
 
-    <section id="themes" class="{{ card }} p-6 sm:p-8 space-y-5 text-slate-700 scroll-mt-24" aria-labelledby="themes-heading">
-        <div>
-            <h2 id="themes-heading" class="text-xl font-bold text-slate-900">Themes and celebrations</h2>
-            <p class="mt-1 text-sm">Pick a theme from the <strong>Aa</strong> menu at the top. Some are only there at their time of year. Now and then a celebration plays when a page opens; turn them off in the same menu, and they never play with reduced motion.</p>
-        </div>
-        <div class="grid gap-5 sm:grid-cols-3 text-sm">
-            <div>
-                <h3 class="font-bold text-slate-900">All year</h3>
-                <ul class="mt-1 space-y-0.5">{% for code, label in all_year %}<li>{{ label }}</li>{% endfor %}<li class="text-slate-500">…and one you have to find</li></ul>
-            </div>
-            <div>
-                <h3 class="font-bold text-slate-900">For a month</h3>
-                <ul class="mt-1 space-y-0.5">{% for label, month in monthly %}<li>{{ label }} <span class="text-slate-500">· {{ month }}</span></li>{% endfor %}</ul>
-            </div>
-            <div>
-                <h3 class="font-bold text-slate-900">Around the day</h3>
-                <ul class="mt-1 space-y-0.5">{% for occasion, day in coming %}<li>{{ occasion_labels[occasion] }} <span class="text-slate-500">· {{ day.day }} {{ day.strftime('%B %Y') }}</span></li>{% endfor %}</ul>
-            </div>
-        </div>
-        {% if staging or (current_user.is_authenticated and current_user.can_admin) %}
-        <div>
-            <h3 class="text-sm font-bold text-slate-900">Try a celebration now</h3>
-            <div class="mt-2 flex flex-wrap gap-2">
-                {% for code, label in celebrations %}
-                <a href="{{ url_for('about', celebrate=code) }}#themes" class="inline-block px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50">{{ label }}</a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <p class="text-xs text-slate-500">There's also an old cheat code to find: ↑ ↑ ↓ ↓ ← → ← → B A.</p>
-    </section>
 </div>
 {% endblock %}

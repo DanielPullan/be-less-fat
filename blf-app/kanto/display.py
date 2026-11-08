@@ -113,7 +113,7 @@ CELEBRATIONS = {
     'occasion_day': ('Occasion, on the day', 'Safer Internet Day, Diwali and the rest, for everyone', 20),
     'occasion_theme': ('Occasion, with its theme', 'while that occasion\'s theme is chosen', 25),
 }
-# Each can be played on demand (?celebrate=, buttons on the Users page and the About page)
+# Each can be played on demand (?celebrate=, and buttons on the Users page)
 CELEBRATION_BUTTONS = [('ghost', 'Ghost 👻'), ('meme', 'Air horns 📯'), ('apple', 'Poison apple 🍎'), ('snow', 'Snow ❄️'),
                        ('fireworks', 'Fireworks 🎆'), ('balloons', 'Balloons 🎈'), ('safer', 'Safer Internet 🛡️'),
                        ('books', 'Book Day 📚'), ('pi', 'Pi Day π'), ('space', 'Galaxy 🌌'), ('lunar', 'Lunar New Year 🏮'),
@@ -302,17 +302,6 @@ def season_date_shortcuts():
     return [(label, day, shown(day)) for label, day in sorted(shortcuts.items(), key=lambda item: item[1])]
 
 
-def coming_occasions():
-    """The next date of each occasion, soonest first, for the About page."""
-    today = season_date()
-    coming = {}
-    for year in (today.year, today.year + 1):
-        for occasion, day in occasion_days(year):
-            if day >= today and occasion not in coming:
-                coming[occasion] = day
-    return sorted(coming.items(), key=lambda item: item[1])
-
-
 def save_theme(user, theme):
     """Switch USER's saved theme, keeping their other display settings. Caller commits."""
     prefs = dict(DISPLAY_DEFAULTS)
@@ -322,17 +311,15 @@ def save_theme(user, theme):
 
 
 # ---------------------------------------------------------------------------
-# Kanto's own pages: About (your text, then the themes and celebrations) and /favicon.ico
+# Kanto's own pages: About (your app's own words) and /favicon.ico. The themes and celebrations are for admins,
+# on the Users page (kanto/admin.py); everyone else just picks from the Aa menu
 # ---------------------------------------------------------------------------
 from flask import render_template, send_from_directory  # noqa: E402
 
 
 @app.route('/about')
 def about():
-    return render_template('kanto/about.html', celebrations=CELEBRATION_BUTTONS, coming=coming_occasions(),
-                           all_year=[(t, THEME_LABELS[t]) for t in ALL_YEAR_THEMES],
-                           monthly=[(THEME_LABELS[t], date(2000, m, 1).strftime('%B')) for t, m in SEASONAL_THEMES.items()],
-                           occasion_labels={o: THEME_LABELS[t] for o, (t, *_) in OCCASIONS.items()})
+    return render_template('kanto/about.html')
 
 
 @app.route('/favicon.ico')

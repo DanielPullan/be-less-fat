@@ -397,7 +397,7 @@ def test_kanto_features_are_there(client):
     assert "Passkeys" in page and "Authenticator app" in page and "Goal setter" in page
     assert client.get("/admin/users").status_code == 403  # members aren't admins
     about = client.get("/about").data.decode()
-    assert "not for under 18s" in about and "Themes and celebrations" in about
+    assert "not for under 18s" in about and "Themes and celebrations" not in about  # that's for admins, on Users
     nav = client.get("/today").data.decode()
     for link in ("/today", "/food-history", "/weight-history", "/goals"):
         assert f'href="{link}"' in nav
