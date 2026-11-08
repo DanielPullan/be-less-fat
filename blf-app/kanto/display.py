@@ -21,7 +21,8 @@ import settings
 from . import STAGING, SEASON_DATE, UK, app
 
 STANDARD_THEMES = ['system', 'light', 'dark', 'contrast']
-ALL_YEAR_THEMES = getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear'])
+ALL_YEAR_THEMES = getattr(settings, 'ALL_YEAR_THEMES', ['haunted', 'meme', 'nord', 'silly', 'console', 'frog', 'piranha', 'bear',
+                                                       'teletext'])
 # Themes only offered with a role ({theme: role}) or to one account ({theme: username}); an app sets these in settings
 ROLE_THEMES = getattr(settings, 'ROLE_THEMES', {})
 USER_THEMES = getattr(settings, 'USER_THEMES', {})
@@ -51,7 +52,7 @@ FESTIVAL_DATES = {
             '2029-02-14', '2029-04-23', '2030-02-05', '2030-04-13'],
 }
 THEME_LABELS = {'haunted': 'Haunted 👻', 'meme': 'Memes 😎', 'nord': 'Nord', 'silly': 'Silly 🤡',
-                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
+                'console': 'Network Console 🛜', 'frog': 'Fruity Frog 🐸', 'piranha': 'Pomegranate Piranha 🐟', 'bear': 'Blueberry Bear 🐻', 'teletext': 'Teletext 📺', 'vista': 'Frosted Glass 🪟', 'pride': 'Pride 🌈',
                 'heritage': 'Black History Month', 'festive': 'Festive 🎄', 'safer': 'Safer Internet 🛡️',
                 'books': 'Book Day 📚', 'pi': 'Raspberry π', 'space': 'Galaxy 🌌', 'lunar': 'Lunar New Year 🏮',
                 'diwali': 'Diwali 🪔', 'eid': 'Eid 🌙'}
